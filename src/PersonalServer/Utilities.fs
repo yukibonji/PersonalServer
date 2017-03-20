@@ -1,6 +1,5 @@
 namespace Jackfoxy.PersonalServer
 
-open System
 open System.Text.RegularExpressions
 
 module internal Utilities =

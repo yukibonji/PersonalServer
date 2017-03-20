@@ -2,9 +2,35 @@
 
 open DomainVerifications
 open Utilities
+open System
 
-type Tag = string
+//type Tag = Tag of string with
+//    member __.Get = match __ with Tag  r -> r
+//    override __.ToString() = __.Get
+type Tag(tag) =
+    do
+        if String.IsNullOrEmpty tag then Failure ("Tag", "tag is null or empty")
+        else Success ()
+        |> verifyConstructor
+    member __.Value = tag
+    override __.ToString() = __.Value
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? Tag as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = __.Value.GetHashCode()
 
+    with
+        interface System.IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? Tag as y -> 
+                    if __.Value > y.Value then 1
+                    elif __.Value < y.Value then -1
+                    else 0
+                | _ -> invalidArg "Tag" "cannot compare values of different types"
+
+[<CustomEquality; CustomComparison>]
 type PersonFullName =
     {
     Salutation : string option
@@ -13,7 +39,7 @@ type PersonFullName =
     Family : string option
     Suffix : string option
     NameOrder : NameOrder
-    Tags : Set<Tag>
+    Tags : Tag Set
     }
     member __.PersonName =
         let combineName foo =
@@ -39,17 +65,47 @@ type PersonFullName =
             Option.toList __.Suffix]
             |> combineName
         | Custom f -> f __
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? PersonFullName as y -> (__.PersonName = y.PersonName)
+        | _ -> false
+    override __.GetHashCode() = hash __
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? PersonFullName as y -> 
+                if __.Family > y.Family then 1
+                elif __.Family < y.Family then -1
+                elif __.First > y.First then 1
+                elif __.First < y.First then -1
+                elif __.Middle > y.Middle then 1
+                elif __.Middle < y.Middle then -1
+                else 0
+            | _ -> invalidArg "PersonFullName" "cannot compare values of different types"
 and NameOrder =
     /// Salutation, First, Middle, Family, Suffix
     | Western
     /// Salutation Family, First, Middle, Suffix
     | FamilyFirst
     | Custom of (PersonFullName -> PersonName)
-and PersonName (name: string, tags : Set<Tag>) = 
+and PersonName (name: string, tags : Tag Set) = 
     member __.Value = name
     member __.Tags = tags
     override __.ToString() = name
-    
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? PersonName as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? PersonName as y -> 
+                if __.Value > y.Value then 1
+                elif __.Value < y.Value then -1
+                else 0
+            | _ -> invalidArg "PersonName" "cannot compare values of different types"
+
 type NameOfPerson =
     | Name of PersonName
     | FullName of PersonFullName
@@ -64,11 +120,23 @@ and ZipCode5(zip) =
 
     member __.Value = zip
     override __.ToString() = zip
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? ZipCode5 as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
     static member Parse zip = 
         match zipCode5 zip with
         | Success _ -> ZipCode5 zip |> Success
         | Failure (caller,msg) -> Failure (caller,msg)
-
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? ZipCode5 as y -> 
+                if __.Value > y.Value then 1
+                elif __.Value < y.Value then -1
+                else 0
+            | _ -> invalidArg "ZipCode5" "cannot compare values of different types"
 and ZipCode5Plus4(zip : string) =
     do
         zipCode5Plus4 zip
@@ -76,17 +144,43 @@ and ZipCode5Plus4(zip : string) =
         
     member __.Value = zip
     override __.ToString() = zip
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? ZipCode5Plus4 as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
     static member Parse zip = 
         match zipCode5Plus4 zip with
         | Success _ -> ZipCode5Plus4 zip |> Success
         | Failure (caller,msg) -> Failure (caller,msg)
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? ZipCode5Plus4 as y -> 
+                if __.Value > y.Value then 1
+                elif __.Value < y.Value then -1
+                else 0
+            | _ -> invalidArg "ZipCode5Plus4" "cannot compare values of different types"
 and OtherPostalCode(other : string) =
     member __.Value = other
     override __.ToString() = other
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? OtherPostalCode as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
     static member Parse other = 
         match otherPostalCode other with
         | Success _ -> OtherPostalCode other |> Success
         | Failure (caller,msg) -> Failure (caller,msg)
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? OtherPostalCode as y -> 
+                if __.Value > y.Value then 1
+                elif __.Value < y.Value then -1
+                else 0
+            | _ -> invalidArg "OtherPostalCode" "cannot compare values of different types"
 
 type PostalCode =
     | ZipCode
@@ -99,20 +193,33 @@ type PhysicalAddress =
     State : string option
     PostalCode : PostalCode option
     Country : string option
-    Tags : Set<Tag>
+    Tags : Tag Set
     }
 
-type EmailAddress(email : string, tags : Set<Tag>) =
+type EmailAddress(email : string, tags : Tag Set) =
     do
         emailAddress email
         |> verifyConstructor
     member __.Value = email
     member __.Tags = tags
     override __.ToString() = email
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? EmailAddress as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
     static member Parse email = 
         match emailAddress email with
         | Success _ -> EmailAddress (email, Set.empty) |> Success
         | Failure (caller, msg) -> Failure (caller,msg)
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? EmailAddress as y -> 
+                if __.Value > y.Value then 1
+                elif __.Value < y.Value then -1
+                else 0
+            | _ -> invalidArg "EmailAddress" "cannot compare values of different types"
 
 type UsPhone (areaCode, exchange, suffix) =
     do
@@ -134,10 +241,27 @@ type UsPhone (areaCode, exchange, suffix) =
         | None ->
             sprintf "%s-%s" exchange suffix
     override __.ToString() = __.Formatted
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? UsPhone as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
     static member Parse areaCode exchange suffix = 
         match usPhone areaCode exchange suffix with
         | Success _ -> UsPhone (areaCode, exchange, suffix) |> Success
         | Failure (caller,msg) -> Failure (caller,msg)
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? UsPhone as y -> 
+                if __.AreaCode > y.AreaCode then 1
+                elif __.AreaCode < y.AreaCode then -1
+                elif __.Exchange > y.Exchange then 1
+                elif __.Exchange < y.Exchange then -1
+                elif __.Suffix > y.Suffix then 1
+                elif __.Suffix < y.Suffix then -1
+                else 0
+            | _ -> invalidArg "UsPhone" "cannot compare values of different types"
 and OtherPhone (phone) =
     do
         otherPhone phone
@@ -145,10 +269,23 @@ and OtherPhone (phone) =
     member __.Value = numbersFromString phone
     member __.Formatted = phone
     override __.ToString() = __.Formatted
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? OtherPhone as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
     static member Parse phone = 
         match otherPhone phone with
         | Success _ -> OtherPhone phone |> Success
         | Failure (caller,msg) -> Failure (caller,msg)
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? OtherPhone as y -> 
+                if __.Value > y.Value then 1
+                elif __.Value < y.Value then -1
+                else 0
+            | _ -> invalidArg "OtherPhone" "cannot compare values of different types"
 and Phone =
     | UsPhone of UsPhone
     | OtherPhone of OtherPhone
@@ -161,8 +298,8 @@ and Phone =
         match __ with
         | UsPhone x -> x.Formatted
         | OtherPhone x -> x.Formatted
-          
-type PhoneNumber (countryCode : string option, phone : Phone, extension : int option, tags : Set<Tag>) = 
+       
+type PhoneNumber (countryCode : string option, phone : Phone, extension : int option, tags : Tag Set) = 
     do 
         phoneNumber countryCode phone extension
         |> verifyConstructor
@@ -196,33 +333,75 @@ type PhoneNumber (countryCode : string option, phone : Phone, extension : int op
             | Some x -> " x" + x.ToString()
             | None -> "")
     override __.ToString() = __.Formatted
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? PhoneNumber as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
     static member Parse countryCode phone extension = 
         match phoneNumber countryCode phone extension with
         | Success _ -> PhoneNumber (countryCode, phone, extension, Set.empty) |> Success
         | Failure (caller,msg) -> Failure (caller,msg)
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? PhoneNumber as y -> 
+                if __.CountryCode > y.CountryCode then 1
+                elif __.CountryCode < y.CountryCode then -1
+                elif __.Phone > y.Phone then 1
+                elif __.Phone < y.Phone then -1
+                elif __.Extension > y.Extension then 1
+                elif __.Extension < y.Extension then -1
+                else 0
+            | _ -> invalidArg "PhoneNumber" "cannot compare values of different types"
 
 type Handle = 
     {
     Address : string
-    Tags : Set<Tag>
+    Tags : Tag Set
     }
+
+type Uri =    
+    val Uri : System.Uri
+    new (uri) =
+        { Uri = new System.Uri(uri);}
+    new (uri, (uriKind : System.UriKind)) =
+        { Uri = new System.Uri(uri, uriKind);}
+
+    override __.ToString() = __.Uri.ToString()
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? Uri as y -> (__.Uri.AbsolutePath = y.Uri.AbsolutePath)
+        | _ -> false
+    override __.GetHashCode() = __.Uri.GetHashCode()
+
+    with
+        interface System.IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? Uri as y -> 
+                    if __.Uri.AbsolutePath > y.Uri.AbsolutePath then 1
+                    elif __.Uri.AbsolutePath < y.Uri.AbsolutePath then -1
+                    else 0
+                | _ -> invalidArg "Uri" "cannot compare values of different types"
 
 type Address =
     | PhysicalAddress of PhysicalAddress
     | EmailAddress of EmailAddress
     | PhoneNumber of PhoneNumber
+    | Url of Uri
     | OtherHandle of Handle
 
 type Person =
     {
-    Names : NameOfPerson list
-    Addresses : Address list
-    Tags : Set<Tag>
+    Names : NameOfPerson Set
+    Addresses : Address Set
+    Tags : Tag Set
     }
 
 type Agent =
     | Person of string
-    | Uri of string
+    | Uri of Uri
 
 type Port (portNumber : int) =
     do

@@ -1,12 +1,10 @@
 source https://nuget.org/api/v2
 
-nuget FSharpx.Extras
+nuget FSharp.Core ~> 4.0 redirects: force
+nuget Fsharpx.Extras
 nuget FsVerbalExpressions
 
-nuget FSharp.Core redirects: force
-
 group Build
-
   source https://nuget.org/api/v2
 
   nuget SourceLink.Fake
@@ -15,11 +13,10 @@ group Build
 
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
-
 group Test
+	source https://www.nuget.org/api/v2
 
-  source https://nuget.org/api/v2
-
-  nuget NUnit 
-  nuget NUnit.Runners 
-  nuget FsUnit
+	nuget Expecto
+	nuget Expecto.BenchmarkDotNet
+	nuget Expecto.FsCheck
+	nuget Expecto.VisualStudio.TestAdapter version_in_path: true
