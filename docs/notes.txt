@@ -1,0 +1,14 @@
+PersonalServer notes
+
+1) OAuth2 Social Logins - Facebook, Google, Twitter, PayPal 
+https://www.codeproject.com/Articles/1006013/OAuth-Social-Logins-Facebook-Google-Twitter-PayPal
+
+2) ZeroFormatter Extensions for FSharp (serializer)
+https://github.com/pocketberserker/ZeroFormatter.FSharpExtensions
+
+3) Furl -- Interact with HTTP resources using F# scripting
+https://github.com/ploeh/Furl
+
+4) IMAP commands defined in RFC 3501. https://tools.ietf.org/html/rfc3501
+https://godoc.org/github.com/emersion/go-imap/commands (https://github.com/emersion/go-imap)
+https://github.com/alienscience/imapsrv

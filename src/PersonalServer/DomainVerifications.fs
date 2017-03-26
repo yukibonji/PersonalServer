@@ -3,6 +3,7 @@ namespace Jackfoxy.PersonalServer
 open Utilities
 open FSharpx.Choice
 open FsVerbalExpressions.VerbalExpression
+open System
 
 module internal DomainVerifications =
 
@@ -11,8 +12,24 @@ module internal DomainVerifications =
         | Success _ -> ()
         | Failure (caller,msg) -> invalidArg caller msg
 
+    let verifyTag tag =
+        if String.IsNullOrEmpty tag then Failure ("Tag", "tag is null or empty")
+        else Success ()
+
+    let verifyNonEmptyString value =
+        if String.IsNullOrEmpty value then Failure ("NonEmptyString", "value is empty or null")
+        else  Success ()
+
     let zipCode5 zip =
         verifyStringInt "ZipCode5" "zip" zip 5
+
+    let verifyDigitString localValue length value =
+        let label = sprintf "DigitString%i" length
+        match verifyStringInt label label value length with
+        | Success _ -> 
+            localValue := value
+        | failure -> 
+            verifyConstructor failure
 
     let zipCode5Plus4 (zip : string)  =
         let zipParts = zip.Split '-'
@@ -29,11 +46,6 @@ module internal DomainVerifications =
         else
             (caller, sprintf "%s is not numeric and dash" caller)
             |> Failure
-
-    let otherPostalCode (_ : string) =
-        match Success () with
-        | Success _ -> Success ()
-        | _ -> Failure ("", "")
 
     let emailAddress email =
         let caller = "EmailAddress"

@@ -1,17 +1,18 @@
 namespace PersonalServer.Tests
 
-//open PersonalServer
 open Expecto
 
 module Tests =
-    let tests =
-      test "A simple test" {
-        let subject = "Hello world"
-        Expect.equal subject "Hello World" "The strings should equal"
-      }
 
     [<EntryPoint>]
-    let main args =
-      runTestsWithArgs defaultConfig args tests |> ignore
+    let main _ =
+      
+      Tests.runTests defaultConfig DomainTypes.testTag |> ignore
+      Tests.runTests defaultConfig DomainTypes.testNonEmptyString |> ignore
+      Tests.runTests defaultConfig DomainTypes.testNonEmptyStringOption |> ignore
+      Tests.runTests defaultConfig DomainTypes.testDigitString |> ignore
+      Tests.runTests defaultConfig DomainTypes.testDigitString2 |> ignore
+      Tests.runTests defaultConfig DomainTypes.testDigitString3 |> ignore
+      Tests.runTests defaultConfig DomainTypes.testDigitString4 |> ignore
 
-      Tests.runTests defaultConfig DomainTypes.testTag
+      0
