@@ -2,121 +2,120 @@
 
 open System 
 
+[<Class>]
 type Tag =
     interface IComparable
-    new : tag:string -> Tag
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
     static member TryParse : tag:string -> Tag option
 
+[<Class>]
 type NonEmptyString =
     interface IComparable
-    new : value:string -> NonEmptyString
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
     static member TryParse : value:string -> NonEmptyString option
+    static member TryParse : value:string option -> NonEmptyString option
+    static member TryParse : value:string list -> NonEmptyString list
 
-type NonEmptyStringOption =
-    interface IComparable
-    new : value:string -> NonEmptyStringOption
-    override Equals : yobj:obj -> bool
-    override GetHashCode : unit -> int
-    member Value : string option
-
+[<Class>]
 type DigitString =
     interface IComparable
-    new : value:string -> DigitString
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
     static member TryParse : value:string -> DigitString option
 
+[<Class>]
 type DigitString2 =
     interface IComparable
-    new : value:string -> DigitString2
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
     static member TryParse : value:string -> DigitString2 option
 
+[<Class>]
 type DigitString3 =
     interface IComparable
-    new : value:string -> DigitString3
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
     static member TryParse : value:string -> DigitString3 option
 
+[<Class>]
 type DigitString4 =
     interface IComparable
-    new : value:string -> DigitString4
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
     static member TryParse : value:string -> DigitString4 option
 
-[<CustomEquality; CustomComparison>]
-type PersonFullName =
-  {Salutation: NonEmptyString list
-   First: NonEmptyStringOption
-   Middle: NonEmptyString list
-   Family: NonEmptyStringOption
-   Suffix: NonEmptyString list
-   NameOrder: NameOrder
-   Tags: Set<Tag>}
-  with
+[<Class>]
+type FullName =
     interface System.IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
+    member Salutation: NonEmptyString list
+    member First: NonEmptyString option
+    member Middle: NonEmptyString list
+    member Family: NonEmptyString option
+    member Suffix: NonEmptyString list
+    member NameOrder: NameOrder
+    member Tags: Set<Tag>
     member PersonName : PersonName
+    static member TryParse : salutation: string list * first: string option * middle: string list * family: string option * suffix: string list * nameOrder: NameOrder * tags:Set<Tag> -> FullName option
 and NameOrder =
-  | Western
-  | FamilyFirst
-  | Custom of (PersonFullName -> PersonName)
-and PersonName =
+    /// Salutation, First, Middle, Family, Suffix
+    | Western
+    /// Salutation Family, First, Middle, Suffix
+    | FamilyFirst
+    | Custom of (FullName -> PersonName)
+and [<Class>] PersonName =
     interface System.IComparable
-    new : name:NonEmptyString * tags:Set<Tag> -> PersonName
     override ToString : unit -> string
     member Tags : Set<Tag>
-    member Value : string
+    member Value : NonEmptyString
+    static member TryParse : name:string * tags:Set<Tag> -> PersonName option
 
 type NameOfPerson =
     | Name of PersonName
-    | FullName of PersonFullName
+    | FullName of FullName
 
+[<Class>]
  type ZipCode5 =
       interface IComparable
-      new : zip:string -> ZipCode5
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
       member Value : string
       static member TryParse : zip:string -> ZipCode5 option
 
+[<Class>]
  type ZipCode5Plus4 =
       interface IComparable
-      new : zip:string -> ZipCode5Plus4
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
       member Value : string
+      member ValueFormatted : string
       static member TryParse : zip:string -> ZipCode5Plus4 option
 
+[<Class>]
  type NonUsPostalCode =
       interface IComparable
-      new : postalCode:NonEmptyString -> NonUsPostalCode
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
-      member Value : string
+      member Value : NonEmptyString
+      static member TryParse : postalCode: string -> NonUsPostalCode option
 
  type ZipCode =
     | ZipCode5 of ZipCode5
@@ -128,10 +127,10 @@ type PostalCode =
 
 type PhysicalAddress =
     {StreetAddress: NonEmptyString list
-     City: NonEmptyStringOption
-     State: NonEmptyStringOption
+     City: NonEmptyString option
+     State: NonEmptyString option
      PostalCode: PostalCode option
-     Country: NonEmptyStringOption
+     Country: NonEmptyString option
      Tags: Set<Tag>}
 
 type EmailAddress =

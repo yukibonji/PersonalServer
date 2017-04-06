@@ -70,6 +70,7 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="DomainGenerators.fs" />
     <Compile Include="DomainTypes.fs" />
     <Compile Include="RunTests.fs" />
     <None Include="paket.references" />
@@ -77,6 +78,8 @@
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
     <None Include="Scripts\Script1.fsx" />
+    <None Include="Scripts\load-references-release.fsx" />
+    <None Include="Scripts\load-project-release.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

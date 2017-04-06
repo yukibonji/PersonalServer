@@ -5,14 +5,14 @@ open Expecto
 module Tests =
 
     [<EntryPoint>]
-    let main _ =
-      
-      Tests.runTests defaultConfig DomainTypes.testTag |> ignore
-      Tests.runTests defaultConfig DomainTypes.testNonEmptyString |> ignore
-      Tests.runTests defaultConfig DomainTypes.testNonEmptyStringOption |> ignore
-      Tests.runTests defaultConfig DomainTypes.testDigitString |> ignore
-      Tests.runTests defaultConfig DomainTypes.testDigitString2 |> ignore
-      Tests.runTests defaultConfig DomainTypes.testDigitString3 |> ignore
-      Tests.runTests defaultConfig DomainTypes.testDigitString4 |> ignore
+    let main args =
 
-      0
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testTag |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testNonEmptyString |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testDigitString |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testDigitString2 |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testDigitString3 |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testDigitString4 |> ignore
+//        Tests.runTestsWithArgs defaultConfig args DomainTypes.testNameOfPerson |> ignore
+
+        0

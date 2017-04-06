@@ -12,13 +12,30 @@ module internal DomainVerifications =
         | Success _ -> ()
         | Failure (caller,msg) -> invalidArg caller msg
 
-    let verifyTag tag =
-        if String.IsNullOrEmpty tag then Failure ("Tag", "tag is null or empty")
-        else Success ()
+    let verifyNonEmptyString source (value : string) =
+        if String.IsNullOrWhiteSpace <| value.Trim() then 
+            Failure (source, "value is null, empty, or white space")
+        else 
+            Success ()
 
-    let verifyNonEmptyString value =
-        if String.IsNullOrEmpty value then Failure ("NonEmptyString", "value is empty or null")
-        else  Success ()
+    let fullName (first : string option) (middle : string list) (family : string option) =
+        match first, middle, family with  //to do
+        | Some x, _, Some y when String.IsNullOrWhiteSpace(x) && String.IsNullOrWhiteSpace(y) ->
+            match middle with
+            | [] -> 
+                Failure ("FullName", "no first middle or family name specified")
+            | _ ->
+                match middle |> List.filter (String.IsNullOrWhiteSpace >> not) with
+                | [] -> 
+                    Failure ("FullName", "no first middle or family name specified")
+                    | _ -> 
+                        Success ()
+        | Some x, _, _ when String.IsNullOrWhiteSpace(x) |> not ->
+            Success ()
+        |_, _, Some y when String.IsNullOrWhiteSpace(y) |> not ->
+            Success ()
+        | _ -> 
+            Failure ("FullName", "no first middle or family name specified")
 
     let zipCode5 zip =
         verifyStringInt "ZipCode5" "zip" zip 5
