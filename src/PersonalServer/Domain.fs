@@ -2,23 +2,18 @@
 
 open DomainVerifications
 open Utilities
-open System
 
 type Tag internal (tag: string) =
-    do
-        verifyNonEmptyString "Tag" tag
-        |> verifyConstructor
-
-    member __.Value = tag.Trim()
-    override __.ToString() = __.Value
+    member __.Value = tag
+    override __.ToString() = tag
     override __.Equals(yobj) = 
         match yobj with
         |  :? Tag as y -> (__.Value = y.Value)
         | _ -> false
-    override __.GetHashCode() = hash __.Value
+    override __.GetHashCode() = hash tag
     static member TryParse (tag : string) =
-        match verifyNonEmptyString "NonEmptyString" tag with
-        | Success () -> Tag tag |> Some
+        match verifyTrimNonEmptyString tag with
+        | Some x -> Tag x |> Some
         | _ -> None
 
     with
@@ -31,59 +26,51 @@ type Tag internal (tag: string) =
                     else 0
                 | _ -> invalidArg "Tag" "cannot compare values of different types"
 
-type NonEmptyString internal (value : string) =
-    do
-        verifyNonEmptyString "NonEmptyString" value
-        |> verifyConstructor
-
-    member __.Value = value.Trim()
-    override __.ToString() =  __.Value
+type TrimNonEmptyString internal (value : string) =
+    member __.Value = value
+    override __.ToString() =  value
     override __.Equals(yobj) = 
         match yobj with
-        |  :? NonEmptyString as y -> (__.Value = y.Value)
+        |  :? TrimNonEmptyString as y -> (__.Value = y.Value)
         | _ -> false
-    override __.GetHashCode() = hash __.Value
+    override __.GetHashCode() = hash value
     static member TryParse (value : string) =
-        match verifyNonEmptyString "NonEmptyString" value with
-        | Success () -> NonEmptyString value |> Some
+        match verifyTrimNonEmptyString value with
+        | Some x -> TrimNonEmptyString x |> Some
         | _ -> None
     static member TryParse (value : string option) =
         match value with
         | Some x ->
-            match verifyNonEmptyString "NonEmptyString" x with
-            | Success () -> NonEmptyString x |> Some
+            match verifyTrimNonEmptyString x with
+            | Some x2 -> TrimNonEmptyString x2 |> Some
             | _ -> None
         | None -> None
-    static member TryParse (xs : string list) =
+    static member Parse (xs : string list) =
         xs
-        |> List.map NonEmptyString.TryParse 
+        |> List.map TrimNonEmptyString.TryParse 
         |> List.choose id
 
     with
         interface System.IComparable with
             member __.CompareTo yobj =
                 match yobj with
-                | :? NonEmptyString as y -> 
+                | :? TrimNonEmptyString as y -> 
                     if __.Value > y.Value then 1
                     elif __.Value < y.Value then -1
                     else 0
-                | _ -> invalidArg "NonEmptyString" "cannot compare values of different types"
+                | _ -> invalidArg "TrimNonEmptyString" "cannot compare values of different types"
 
 type DigitString internal (value) =
-    do
-        verifyStringInt "DigitString" "DigitString" value value.Length
-        |> verifyConstructor
-
     member __.Value = value
     override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
         |  :? DigitString as y -> (__.Value = y.Value)
         | _ -> false
-    override __.GetHashCode() = hash __
+    override __.GetHashCode() = hash value
     static member TryParse value =
-        match verifyStringInt "" "" value value.Length with
-        | Success () -> DigitString value |> Some
+        match verifyStringInt value value.Length with
+        | Some x -> DigitString x |> Some
         | _ -> None
 
     with
@@ -97,20 +84,16 @@ type DigitString internal (value) =
                 | _ -> invalidArg "DigitString" "cannot compare values of different types"
 
 type DigitString2 internal (value) =
-    let digitString2 = ref String.Empty
-    do
-        verifyDigitString digitString2 2 value
-
-    member __.Value = !digitString2
-    override __.ToString() = !digitString2
+    member __.Value = value
+    override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
         |  :? DigitString2 as y -> (__.Value = y.Value)
         | _ -> false
-    override __.GetHashCode() = hash __
+    override __.GetHashCode() = hash value
     static member TryParse value =
-        match verifyStringInt "" "" value 2 with
-        | Success () -> DigitString2 value |> Some
+        match verifyStringInt value 2 with
+        |Some x -> DigitString2 x |> Some
         | _ -> None
 
     with
@@ -124,20 +107,16 @@ type DigitString2 internal (value) =
                 | _ -> invalidArg "DigitString2" "cannot compare values of different types"
 
 type DigitString3 internal (value) =
-    let digitString3 = ref String.Empty
-    do
-        verifyDigitString digitString3 3 value
-
-    member __.Value = !digitString3
-    override __.ToString() = !digitString3
+    member __.Value = value
+    override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
         |  :? DigitString3 as y -> (__.Value = y.Value)
         | _ -> false
-    override __.GetHashCode() = hash __
+    override __.GetHashCode() = hash value
     static member TryParse value =
-        match verifyStringInt "" "" value 3 with
-        | Success () -> DigitString3 value |> Some
+        match verifyStringInt value 3 with
+        | Some x -> DigitString3 x |> Some
         | _ -> None
 
     with
@@ -151,20 +130,16 @@ type DigitString3 internal (value) =
                 | _ -> invalidArg "DigitString3" "cannot compare values of different types"
 
 type DigitString4 internal (value) =
-    let digitString4 = ref String.Empty
-    do
-        verifyDigitString digitString4 4 value
-
-    member __.Value = !digitString4
-    override __.ToString() = !digitString4
+    member __.Value = value
+    override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
         |  :? DigitString4 as y -> (__.Value = y.Value)
         | _ -> false
-    override __.GetHashCode() = hash __
+    override __.GetHashCode() = hash value
     static member TryParse value =
-        match verifyStringInt "" "" value 4 with
-        | Success () -> DigitString4 value |> Some
+        match verifyStringInt value 4 with
+        | Some x -> DigitString4 x |> Some
         | _ -> None
 
     with
@@ -177,17 +152,12 @@ type DigitString4 internal (value) =
                     else 0
                 | _ -> invalidArg "DigitString4" "cannot compare values of different types"
 
-type FullName internal (salutation : string list, first, middle, family, suffix : string list, nameOrder, tags) =
-    do
-        match fullName first middle family with
-        | Success () -> ()
-        | Failure _ -> fullName first middle family |> verifyConstructor
-
-    member __.Salutation = NonEmptyString.TryParse salutation
-    member __.First = NonEmptyString.TryParse first
-    member __.Middle = NonEmptyString.TryParse middle
-    member __.Family = NonEmptyString.TryParse family
-    member __.Suffix = NonEmptyString.TryParse suffix
+type FullName internal (salutation, first, middle, family, suffix, nameOrder, tags) =
+    member __.Salutation = salutation 
+    member __.First = first 
+    member __.Middle = middle 
+    member __.Family = family 
+    member __.Suffix = suffix 
     member __.NameOrder : NameOrder = nameOrder
     member __.Tags : Tag Set = tags
     member __.PersonName =
@@ -200,11 +170,11 @@ type FullName internal (salutation : string list, first, middle, family, suffix 
 
         match __.NameOrder with
         | Western -> 
-            [__.Salutation |> List.map (fun x -> x.Value);
+            [__.Salutation |> List.map (fun (x : TrimNonEmptyString) -> x.Value);
             Option.toList <| Option.map (fun x -> x.ToString()) __.First;
-            __.Middle |> List.map (fun x -> x.Value);
+            __.Middle |> List.map (fun (x : TrimNonEmptyString) -> x.Value);
             Option.toList <| Option.map (fun x -> x.ToString()) __.Family;
-            __.Suffix |> List.map (fun x -> x.Value)]
+            __.Suffix |> List.map (fun (x : TrimNonEmptyString) -> x.Value)]
             |> combineName
         | FamilyFirst ->
             [__.Salutation |> List.map (fun x -> x.Value);
@@ -219,10 +189,10 @@ type FullName internal (salutation : string list, first, middle, family, suffix 
         |  :? FullName as y -> (__.PersonName = y.PersonName)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse (salutation, first, middle, family, suffix, nameOrder, tags) =
+    static member TryParse (salutation : string list, first, middle, family, suffix, nameOrder, tags) =
         match fullName first middle family with
-        | Success () -> FullName (salutation, first, middle, family, suffix, nameOrder, tags) |> Some 
-        | Failure _ -> None
+        | Some (fi, m, fa) -> FullName (TrimNonEmptyString.Parse salutation, TrimNonEmptyString.TryParse fi, TrimNonEmptyString.Parse m, TrimNonEmptyString.TryParse fa, TrimNonEmptyString.Parse suffix, nameOrder, tags) |> Some 
+        | None -> None
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -240,11 +210,7 @@ and NameOrder =
     | FamilyFirst
     | Custom of (FullName -> PersonName)
 and PersonName internal (name: string, tags : Tag Set) = 
-    do
-        verifyNonEmptyString "PersonName" name
-        |> verifyConstructor
-
-    member __.Value = NonEmptyString name
+    member __.Value = TrimNonEmptyString name
     member __.Tags = tags
     override __.ToString() = name
     override __.Equals(yobj) = 
@@ -253,8 +219,8 @@ and PersonName internal (name: string, tags : Tag Set) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse (name, tags) =
-        match verifyNonEmptyString "PersonName" name with
-        | Success () -> PersonName (name, tags) |> Some
+        match verifyTrimNonEmptyString name with
+        | Some x -> PersonName (x, tags) |> Some
         | _ -> None
     interface System.IComparable with
         member __.CompareTo yobj =
@@ -269,11 +235,7 @@ type NameOfPerson =
     | Name of PersonName
     | FullName of FullName
 
-type ZipCode5(zip) =
-    do
-        zipCode5 zip
-        |> verifyConstructor
-
+type ZipCode5 internal (zip) =
     member __.Value = zip
     override __.ToString() = zip
     override __.Equals(yobj) = 
@@ -282,8 +244,8 @@ type ZipCode5(zip) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse zip = 
-        match zipCode5 zip with
-        | Success _ -> ZipCode5 zip |> Some
+        match verifyStringInt zip 5 with
+        | Some x -> ZipCode5 x |> Some
         | _ -> None
     interface System.IComparable with
         member __.CompareTo yobj =
@@ -294,11 +256,7 @@ type ZipCode5(zip) =
                 else 0
             | _ -> invalidArg "ZipCode5" "cannot compare values of different types"
 
-type ZipCode5Plus4(zip : string) =
-    do
-        zipCode5Plus4 zip
-        |> verifyConstructor
-        
+type ZipCode5Plus4 internal (zip : string) = 
     member __.Value = zip
     member __.ValueFormatted = zip
     override __.ToString() = zip
@@ -309,7 +267,7 @@ type ZipCode5Plus4(zip : string) =
     override __.GetHashCode() = hash __
     static member TryParse zip = 
         match zipCode5Plus4 zip with
-        | Success _ -> ZipCode5Plus4 zip |> Some
+        | Some x -> ZipCode5Plus4 x |> Some
         | _ -> None
     interface System.IComparable with
         member __.CompareTo yobj =
@@ -321,11 +279,7 @@ type ZipCode5Plus4(zip : string) =
             | _ -> invalidArg "ZipCode5Plus4" "cannot compare values of different types"
 
 type NonUsPostalCode internal (postalCode) =
-    do
-        verifyNonEmptyString "NonUsPostalCode" postalCode
-        |> verifyConstructor
-
-    member __.Value = NonEmptyString postalCode
+    member __.Value = TrimNonEmptyString postalCode
     override __.ToString() = postalCode
     override __.Equals(yobj) = 
         match yobj with
@@ -333,8 +287,8 @@ type NonUsPostalCode internal (postalCode) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse postalCode =
-        match verifyNonEmptyString "NonUsPostalCode" postalCode with
-        | Success () -> NonUsPostalCode postalCode |> Some
+        match verifyTrimNonEmptyString postalCode with
+        | Some x -> NonUsPostalCode x |> Some
         | _ -> None
     interface System.IComparable with
         member __.CompareTo yobj =
@@ -355,18 +309,15 @@ type PostalCode =
 
 type PhysicalAddress =
     {
-    StreetAddress : NonEmptyString list
-    City : NonEmptyString option
-    State : NonEmptyString option
+    StreetAddress : TrimNonEmptyString list
+    City : TrimNonEmptyString option
+    State : TrimNonEmptyString option
     PostalCode : PostalCode option
-    Country : NonEmptyString option
+    Country : TrimNonEmptyString option
     Tags : Tag Set
     }
 
-type EmailAddress(email : string, tags : Tag Set) =
-    do
-        emailAddress email
-        |> verifyConstructor
+type EmailAddress internal (email : string, tags : Tag Set) =
     member __.Value = email
     member __.Tags = tags
     override __.ToString() = email
@@ -392,11 +343,7 @@ type EmailAddress(email : string, tags : Tag Set) =
                 else 0
             | _ -> invalidArg "EmailAddress" "cannot compare values of different types"
 
-type UsPhone (areaCode, exchange, suffix) =
-    do
-        usPhone areaCode exchange suffix
-        |> verifyConstructor
-
+type UsPhone internal (areaCode, exchange, suffix) =
     member __.AreaCode = Option.map DigitString3 <| areaCode
     member __.Exchange = DigitString3 exchange
     member __.Suffix = DigitString4 suffix
@@ -420,7 +367,7 @@ type UsPhone (areaCode, exchange, suffix) =
     override __.GetHashCode() = hash __
     static member TryParse areaCode exchange suffix = 
         match usPhone areaCode exchange suffix with
-        | Success _ -> UsPhone (areaCode, exchange, suffix) |> Some
+        | Some (a, e, s) -> UsPhone (a, e, s) |> Some
         | _ -> None
     interface System.IComparable with
         member __.CompareTo yobj =
@@ -434,10 +381,7 @@ type UsPhone (areaCode, exchange, suffix) =
                 elif __.Suffix < y.Suffix then -1
                 else 0
             | _ -> invalidArg "UsPhone" "cannot compare values of different types"
-and OtherPhone (phone) =
-    do
-        otherPhone phone
-        |> verifyConstructor
+and OtherPhone internal (phone) =
     member __.Value = DigitString <| numbersFromString phone
     member __.Formatted = phone
     override __.ToString() = __.Formatted
@@ -471,11 +415,7 @@ and Phone =
         | UsPhone x -> x.Formatted
         | OtherPhone x -> x.Formatted
        
-type PhoneNumber (countryCode : string option, phone : Phone, extension : int option, tags : Tag Set) = 
-    do 
-        phoneNumber countryCode phone extension
-        |> verifyConstructor
-        
+type PhoneNumber internal (countryCode : string option, phone : Phone, extension : int option, tags : Tag Set) = 
     member __.CountryCode = Option.map DigitString2 <| countryCode       
     member __.Phone = phone
     member __.Extension = extension
@@ -576,10 +516,6 @@ type Agent =
     | Uri of Uri
 
 type Port (portNumber : int) =
-    do
-        port portNumber
-        |> verifyConstructor
-
     member __.Value = portNumber
     override __.ToString() = portNumber.ToString()
     static member TryParse portNumber = 

@@ -4,65 +4,66 @@ open Utilities
 open FSharpx.Choice
 open FsVerbalExpressions.VerbalExpression
 open System
+open System.Text.RegularExpressions
 
-module internal DomainVerifications =
+module internal DomainVerifications =  
 
-    let verifyConstructor f =
-        match f with
-        | Success _ -> ()
-        | Failure (caller,msg) -> invalidArg caller msg
-
-    let verifyNonEmptyString source (value : string) =
-        if String.IsNullOrWhiteSpace <| value.Trim() then 
-            Failure (source, "value is null, empty, or white space")
+    let verifyTrimNonEmptyString (value : string) =
+        if String.IsNullOrWhiteSpace value then
+            None        
         else 
-            Success ()
+            Some <| value.Trim()
 
     let fullName (first : string option) (middle : string list) (family : string option) =
-        match first, middle, family with  //to do
-        | Some x, _, Some y when String.IsNullOrWhiteSpace(x) && String.IsNullOrWhiteSpace(y) ->
+        match first, middle, family with  
+        
+        | (Some x), _, (Some y) when String.IsNullOrWhiteSpace x && String.IsNullOrWhiteSpace y ->
             match middle with
             | [] -> 
-                Failure ("FullName", "no first middle or family name specified")
+                None
             | _ ->
                 match middle |> List.filter (String.IsNullOrWhiteSpace >> not) with
                 | [] -> 
-                    Failure ("FullName", "no first middle or family name specified")
-                    | _ -> 
-                        Success ()
-        | Some x, _, _ when String.IsNullOrWhiteSpace(x) |> not ->
-            Success ()
-        |_, _, Some y when String.IsNullOrWhiteSpace(y) |> not ->
-            Success ()
+                    None
+                | _ -> 
+                   Some (first, middle, family)
+        | (Some x), _, _ when String.IsNullOrWhiteSpace x |> not ->
+            Some (first, middle, family)
+        |_, _, (Some y) when String.IsNullOrWhiteSpace y |> not ->
+            Some (first, middle, family)
         | _ -> 
-            Failure ("FullName", "no first middle or family name specified")
+            None
 
-    let zipCode5 zip =
-        verifyStringInt "ZipCode5" "zip" zip 5
+    let verifyStringInt part length =
+        if String.length(part) <> length then 
+            None
+        else
+            let regex = new Regex("^[0-9]+$")
 
-    let verifyDigitString localValue length value =
-        let label = sprintf "DigitString%i" length
-        match verifyStringInt label label value length with
-        | Success _ -> 
-            localValue := value
-        | failure -> 
-            verifyConstructor failure
+            if regex.IsMatch part then 
+                Some part
+            else 
+                None
 
     let zipCode5Plus4 (zip : string)  =
         let zipParts = zip.Split '-'
-        let caller = "ZipCode5Plus4"
 
         if zipParts.Length = 2 then
             match choose {
-                            do! verifyStringInt caller "zip5" zipParts.[0] 5
-                            do! verifyStringInt caller "zip4" zipParts.[1] 4
+                            do! 
+                                match verifyStringInt zipParts.[0] 5 with
+                                | Some _ -> Success ()
+                                | _ -> Failure ""
+                            do! 
+                                match  verifyStringInt zipParts.[1] 4 with
+                                | Some _ -> Success ()
+                                | _ -> Failure ""
                             return ()
                             } with
-            | Success _ -> Success ()
-            | Failure (_,msg) -> Failure (caller, msg)
+            | Success _ -> Some zip
+            | _ -> None
         else
-            (caller, sprintf "%s is not numeric and dash" caller)
-            |> Failure
+            None
 
     let emailAddress email =
         let caller = "EmailAddress"
@@ -88,22 +89,29 @@ module internal DomainVerifications =
             |> Failure
 
     let usPhone (areaCode : string option) (exchange : string) (suffix : string) =
-        let caller = "UsPhone"
 
         let area() =
             match areaCode with
             | Some x ->
-                verifyStringInt caller "areaCode" x 3
+                match verifyStringInt x 3 with
+                | Some _ -> Success ()
+                | _ -> Failure ""
             | None -> Success ()
         
         match choose {
                         do! area()
-                        do! verifyStringInt caller "exchange" exchange 3
-                        do! verifyStringInt caller "suffix" suffix 4
+                        do! 
+                            match verifyStringInt exchange 3 with
+                            | Some _ -> Success ()
+                            | _ -> Failure ""
+                        do! 
+                            match verifyStringInt suffix 4 with
+                            | Some _ -> Success ()
+                            | _ -> Failure ""
                         return ()
                         } with
-        | Success _ -> Success ()
-        | Failure (_,msg) -> Failure (caller, msg)
+        | Success _ -> Some (areaCode, exchange, suffix)
+        | Failure _ -> None
 
     let otherPhone (phone : string) =
         let caller = "OtherPhone"

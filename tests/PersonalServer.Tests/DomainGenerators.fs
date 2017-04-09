@@ -47,7 +47,7 @@ module DomainGeneratorsCode =
         gen {
                 let! nonEmptyString = Arb.generate<NonEmptyString>
                 return!  
-                    [Jackfoxy.PersonalServer.NonEmptyString.TryParse (nonEmptyString.ToString())]
+                    [TrimNonEmptyString.TryParse (nonEmptyString.ToString())]
                     |> List.choose id
                     |> Gen.elements
             }
@@ -82,16 +82,6 @@ module DomainGeneratorsCode =
                 else s
                     ) false charA )
         |> Gen.map (fun x -> x.ToString())
-        
-
-//    let genNonEmptyStringList() =
-//        let positiveInt = Arb.generate<PositiveInt> 
-//        let length = 
-//            Gen.sample 30 1 positiveInt
-//            |> List.head
-//            |> int
-//
-//        Gen.listOfLength length <| personalServerNonEmptyString()
 
     let genNonEmptyNonAllWhitespaceStringList() =
         let positiveInt = Arb.generate<PositiveInt> 
@@ -102,24 +92,14 @@ module DomainGeneratorsCode =
 
         Gen.listOfLength length <| nonEmptyNonAllWhitespaceString()
 
-//    let genEmptyList =
-//        gen {return List.empty}
-
     let genFullName() =
         gen { 
-//                let! salutation = 
-//                    Gen.frequency [(1, genEmptyList); (4, (genNonEmptyStringList()))]
-//                let! first = Arb.generate<NonEmptyStringOption>
-//                let! middle =
-//                    Gen.frequency [(1, genEmptyList); (19, (genNonEmptyStringList()))]
-//                let! family = Arb.generate<NonEmptyStringOption>
-//                let! suffix = 
-//                    Gen.frequency [(1, genEmptyList); (5, (genNonEmptyStringList()))]
                 let! salutation =  Arb.generate<string list> 
                 let! first = Arb.generate<string option>
                 let! middle = Arb.generate<string list> 
                 let! family = Arb.generate<string option>
                 let! suffix = Arb.generate<string list> 
+
                 return
                     FullName.TryParse (salutation, first, middle, family, suffix, NameOrder.Western, Set.empty<Tag>)
         }
@@ -138,8 +118,4 @@ type DomainGenerators =
         static member NonEmptyStringList() =
             {new Arbitrary<string list>() with
                 override __.Generator = DomainGeneratorsCode.genNonEmptyNonAllWhitespaceStringList()}
-
-//        static member NonDigitalString() =
-//            {new Arbitrary<NonDigitalString>() with
-//                override __.Generator = DomainGeneratorsCode.nonDigitalString()}
 

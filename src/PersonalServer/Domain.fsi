@@ -3,7 +3,7 @@
 open System 
 
 [<Class>]
-type Tag =
+type Tag =  //to do: equals performance testing -- http://stackoverflow.com/questions/28142655/iequatable-in-f-operator-performance-and-structural-equality
     interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
@@ -12,15 +12,15 @@ type Tag =
     static member TryParse : tag:string -> Tag option
 
 [<Class>]
-type NonEmptyString =
+type TrimNonEmptyString =
     interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
-    static member TryParse : value:string -> NonEmptyString option
-    static member TryParse : value:string option -> NonEmptyString option
-    static member TryParse : value:string list -> NonEmptyString list
+    static member TryParse : value:string -> TrimNonEmptyString option
+    static member TryParse : value:string option -> TrimNonEmptyString option
+    static member Parse : value:string list -> TrimNonEmptyString list
 
 [<Class>]
 type DigitString =
@@ -58,16 +58,17 @@ type DigitString4 =
     member Value : string
     static member TryParse : value:string -> DigitString4 option
 
-[<Class>]
+[<Class>]  
 type FullName =
     interface System.IComparable
+    
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
-    member Salutation: NonEmptyString list
-    member First: NonEmptyString option
-    member Middle: NonEmptyString list
-    member Family: NonEmptyString option
-    member Suffix: NonEmptyString list
+    member Salutation: TrimNonEmptyString list
+    member First: TrimNonEmptyString option
+    member Middle: TrimNonEmptyString list
+    member Family: TrimNonEmptyString option
+    member Suffix: TrimNonEmptyString list
     member NameOrder: NameOrder
     member Tags: Set<Tag>
     member PersonName : PersonName
@@ -82,7 +83,7 @@ and [<Class>] PersonName =
     interface System.IComparable
     override ToString : unit -> string
     member Tags : Set<Tag>
-    member Value : NonEmptyString
+    member Value : TrimNonEmptyString
     static member TryParse : name:string * tags:Set<Tag> -> PersonName option
 
 type NameOfPerson =
@@ -114,7 +115,7 @@ type NameOfPerson =
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
-      member Value : NonEmptyString
+      member Value : TrimNonEmptyString
       static member TryParse : postalCode: string -> NonUsPostalCode option
 
  type ZipCode =
@@ -126,16 +127,16 @@ type PostalCode =
     | NonUsPostalCode of NonUsPostalCode
 
 type PhysicalAddress =
-    {StreetAddress: NonEmptyString list
-     City: NonEmptyString option
-     State: NonEmptyString option
+    {StreetAddress: TrimNonEmptyString list
+     City: TrimNonEmptyString option
+     State: TrimNonEmptyString option
      PostalCode: PostalCode option
-     Country: NonEmptyString option
+     Country: TrimNonEmptyString option
      Tags: Set<Tag>}
 
+[<Class>]
 type EmailAddress =
       interface System.IComparable
-      new : email:string * tags:Set<Tag> -> EmailAddress
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
@@ -144,9 +145,9 @@ type EmailAddress =
       static member TryParse : email:string -> EmailAddress option
       static member TryParse : email:string * tags:Tag Set -> EmailAddress option
 
+[<Class>]
 type UsPhone =
       interface System.IComparable
-      new : areaCode: string option * exchange:string * suffix:string -> UsPhone
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
@@ -156,9 +157,8 @@ type UsPhone =
       member Suffix : DigitString4
       member Value : DigitString
       static member TryParse : areaCode:string option -> exchange:string -> suffix:string -> UsPhone option
-and OtherPhone =
+and [<Class>] OtherPhone =
       interface System.IComparable
-      new : phone:string -> OtherPhone
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
@@ -173,9 +173,9 @@ and Phone =
       member Formatted : string
       member Value : DigitString
 
+[<Class>]
 type PhoneNumber =
       interface System.IComparable
-      new : countryCode:string option * phone:Phone * extension:int option *  tags:Set<Tag> -> PhoneNumber
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
