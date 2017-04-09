@@ -14,23 +14,38 @@ module internal DomainVerifications =
         else 
             Some <| value.Trim()
 
+    let isMiddleEmpty (middle : string list) =
+        match middle with
+        | [] -> true
+        | _ ->
+            match middle |> List.filter (String.IsNullOrWhiteSpace >> not) with
+            | [] -> true
+            | _ -> false
+        
     let fullName (first : string option) (middle : string list) (family : string option) =
         match first, middle, family with  
-        
+        | None, [], None ->
+            None
         | (Some x), _, (Some y) when String.IsNullOrWhiteSpace x && String.IsNullOrWhiteSpace y ->
-            match middle with
-            | [] -> 
+            if isMiddleEmpty middle then
                 None
-            | _ ->
-                match middle |> List.filter (String.IsNullOrWhiteSpace >> not) with
-                | [] -> 
-                    None
-                | _ -> 
-                   Some (first, middle, family)
+            else
+                Some (first, middle, family)
         | (Some x), _, _ when String.IsNullOrWhiteSpace x |> not ->
-            Some (first, middle, family)
+            if isMiddleEmpty middle then
+                None
+            else
+                Some (first, middle, family)
         |_, _, (Some y) when String.IsNullOrWhiteSpace y |> not ->
-            Some (first, middle, family)
+            if isMiddleEmpty middle then
+                None
+            else
+                Some (first, middle, family)
+        | _, _:_, _ -> 
+            if isMiddleEmpty middle then
+                None
+            else
+                Some (first, middle, family)
         | _ -> 
             None
 

@@ -374,13 +374,8 @@ module DomainTypes =
                                     let family = fullName.Value.Family |> Option.map (fun x -> x.Value)
                                     let suffix = fullName.Value.Suffix |> List.map (fun x -> x.Value)
                                     FullName.TryParse (salutation, first, middle, family, suffix, fullName.Value.NameOrder, Set.empty<Tag>)
-                                match t with
-                                | Some x ->
-                                    1 .=. 1
-                                | None ->
-                                    2 .=. fullName.Value.Middle.Length |@ sprintf "middle length %i" fullName.Value.Middle.Length
 
-//                                t = fullName
+                                t = fullName
                             )
 
 //            testPropertyWithConfig configReplay "FullName.PersonName is equal" <|
