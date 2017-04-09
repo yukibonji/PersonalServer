@@ -26,28 +26,24 @@ module internal DomainVerifications =
         match first, middle, family with  
         | None, [], None ->
             None
+
         | (Some x), _, (Some y) when String.IsNullOrWhiteSpace x && String.IsNullOrWhiteSpace y ->
             if isMiddleEmpty middle then
                 None
             else
                 Some (first, middle, family)
+
         | (Some x), _, _ when String.IsNullOrWhiteSpace x |> not ->
-            if isMiddleEmpty middle then
-                None
-            else
-                Some (first, middle, family)
+            Some (first, middle, family)
+
         |_, _, (Some y) when String.IsNullOrWhiteSpace y |> not ->
-            if isMiddleEmpty middle then
-                None
-            else
-                Some (first, middle, family)
+            Some (first, middle, family)
+
         | _, _:_, _ -> 
             if isMiddleEmpty middle then
                 None
             else
                 Some (first, middle, family)
-        | _ -> 
-            None
 
     let verifyStringInt part length =
         if String.length(part) <> length then 
