@@ -94,28 +94,45 @@ module DomainGeneratorsCode =
 
     let genFullName() =
         gen { 
-                let! salutation =  Arb.generate<string list> 
                 let! first = Arb.generate<string option>
                 let! middle = Arb.generate<string list> 
                 let! family = Arb.generate<string option>
-                let! suffix = Arb.generate<string list> 
 
                 return
-                    FullName.TryParse (salutation, first, middle, family, suffix, NameOrder.Western, Set.empty<Tag>)
+                    FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
         }
         |> Gen.filter Option.isSome
+        |> Gen.map (fun x -> x.Value)
+
+    let genNameAndAffixes() =
+        gen { 
+                let! salutations = Arb.generate<string list>
+                let! personName = Arb.generate<NonEmptyString>
+                let! suffixes = Arb.generate<string list>
+
+                return
+                    NameAndAffixes.TryParse (salutations, personName.ToString(), suffixes, Set.empty<Tag>)
+        }
+        |> Gen.filter Option.isSome
+        |> Gen.map (fun x -> x.Value)
 
     let genWhiteSpace =
         System.Globalization.UnicodeCategory.SpaceSeparator
         
-        
 type DomainGenerators =
         static member FullName() =
-            {new Arbitrary<FullName option>() with
+            {new Arbitrary<FullName>() with
                 override __.Generator = 
                     DomainGeneratorsCode.genFullName()
-                     }
+                    }
+        static member NameAndAffixes() =
+            {new Arbitrary<NameAndAffixes>() with
+                override __.Generator = 
+                    DomainGeneratorsCode.genNameAndAffixes()
+                    }
         static member NonEmptyStringList() =
             {new Arbitrary<string list>() with
-                override __.Generator = DomainGeneratorsCode.genNonEmptyNonAllWhitespaceStringList()}
+                override __.Generator = 
+                    DomainGeneratorsCode.genNonEmptyNonAllWhitespaceStringList()
+                    }
 

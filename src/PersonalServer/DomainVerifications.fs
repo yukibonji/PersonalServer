@@ -8,11 +8,11 @@ open System.Text.RegularExpressions
 
 module internal DomainVerifications =  
 
-    let verifyTrimNonEmptyString (value : string) =
+    let verifyTrimNonEmptyString (value : string) t =
         if String.IsNullOrWhiteSpace value then
             None        
         else 
-            Some <| value.Trim()
+            Some (t <| value.Trim())
 
     let isMiddleEmpty (middle : string list) =
         match middle with
@@ -45,36 +45,17 @@ module internal DomainVerifications =
             else
                 Some (first, middle, family)
 
-    let verifyStringInt part length =
-        if String.length(part) <> length then 
+    let verifyStringInt (s : string) length t =
+        let s = s.Trim()
+        if String.length(s) <> length then 
             None
         else
             let regex = new Regex("^[0-9]+$")
 
-            if regex.IsMatch part then 
-                Some part
+            if regex.IsMatch s then 
+                Some <| t s
             else 
                 None
-
-    let zipCode5Plus4 (zip : string)  =
-        let zipParts = zip.Split '-'
-
-        if zipParts.Length = 2 then
-            match choose {
-                            do! 
-                                match verifyStringInt zipParts.[0] 5 with
-                                | Some _ -> Success ()
-                                | _ -> Failure ""
-                            do! 
-                                match  verifyStringInt zipParts.[1] 4 with
-                                | Some _ -> Success ()
-                                | _ -> Failure ""
-                            return ()
-                            } with
-            | Success _ -> Some zip
-            | _ -> None
-        else
-            None
 
     let emailAddress email =
         let caller = "EmailAddress"
@@ -104,7 +85,7 @@ module internal DomainVerifications =
         let area() =
             match areaCode with
             | Some x ->
-                match verifyStringInt x 3 with
+                match verifyStringInt x 3 id with
                 | Some _ -> Success ()
                 | _ -> Failure ""
             | None -> Success ()
@@ -112,11 +93,11 @@ module internal DomainVerifications =
         match choose {
                         do! area()
                         do! 
-                            match verifyStringInt exchange 3 with
+                            match verifyStringInt exchange 3 id with
                             | Some _ -> Success ()
                             | _ -> Failure ""
                         do! 
-                            match verifyStringInt suffix 4 with
+                            match verifyStringInt suffix 4 id with
                             | Some _ -> Success ()
                             | _ -> Failure ""
                         return ()

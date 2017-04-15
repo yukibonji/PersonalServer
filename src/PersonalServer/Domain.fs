@@ -1,6 +1,8 @@
 ﻿namespace Jackfoxy.PersonalServer
 
 open DomainVerifications
+open FSharpx.Choice
+open System
 open Utilities
 
 type Tag internal (tag: string) =
@@ -11,11 +13,7 @@ type Tag internal (tag: string) =
         |  :? Tag as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash tag
-    static member TryParse (tag : string) =
-        match verifyTrimNonEmptyString tag with
-        | Some x -> Tag x |> Some
-        | _ -> None
-
+    static member TryParse (tag : string) = verifyTrimNonEmptyString tag Tag
     with
         interface System.IComparable with
             member __.CompareTo yobj =
@@ -34,22 +32,16 @@ type TrimNonEmptyString internal (value : string) =
         |  :? TrimNonEmptyString as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse (value : string) =
-        match verifyTrimNonEmptyString value with
-        | Some x -> TrimNonEmptyString x |> Some
-        | _ -> None
     static member TryParse (value : string option) =
         match value with
         | Some x ->
-            match verifyTrimNonEmptyString x with
-            | Some x2 -> TrimNonEmptyString x2 |> Some
-            | _ -> None
+            verifyTrimNonEmptyString x TrimNonEmptyString
         | None -> None
+    static member TryParse (value : string) = verifyTrimNonEmptyString value TrimNonEmptyString
     static member Parse (xs : string list) =
         xs
         |> List.map TrimNonEmptyString.TryParse 
         |> List.choose id
-
     with
         interface System.IComparable with
             member __.CompareTo yobj =
@@ -68,11 +60,7 @@ type DigitString internal (value) =
         |  :? DigitString as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse value =
-        match verifyStringInt value value.Length with
-        | Some x -> DigitString x |> Some
-        | _ -> None
-
+    static member TryParse value = verifyStringInt value value.Length DigitString
     with
         interface System.IComparable with
             member __.CompareTo yobj =
@@ -91,11 +79,7 @@ type DigitString2 internal (value) =
         |  :? DigitString2 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse value =
-        match verifyStringInt value 2 with
-        |Some x -> DigitString2 x |> Some
-        | _ -> None
-
+    static member TryParse value = verifyStringInt value 2 DigitString2
     with
         interface System.IComparable with
             member __.CompareTo yobj =
@@ -114,11 +98,7 @@ type DigitString3 internal (value) =
         |  :? DigitString3 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse value =
-        match verifyStringInt value 3 with
-        | Some x -> DigitString3 x |> Some
-        | _ -> None
-
+    static member TryParse value = verifyStringInt value 3 DigitString3
     with
         interface System.IComparable with
             member __.CompareTo yobj =
@@ -137,11 +117,7 @@ type DigitString4 internal (value) =
         |  :? DigitString4 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse value =
-        match verifyStringInt value 4 with
-        | Some x -> DigitString4 x |> Some
-        | _ -> None
-
+    static member TryParse value = verifyStringInt value 4 DigitString4
     with
         interface System.IComparable with
             member __.CompareTo yobj =
@@ -152,12 +128,10 @@ type DigitString4 internal (value) =
                     else 0
                 | _ -> invalidArg "DigitString4" "cannot compare values of different types"
 
-type FullName internal (salutation, first, middle, family, suffix, nameOrder, tags) =
-    member __.Salutation = salutation 
+type FullName internal (first, middle, family, nameOrder, tags) =
     member __.First = first 
     member __.Middle = middle 
     member __.Family = family 
-    member __.Suffix = suffix 
     member __.NameOrder : NameOrder = nameOrder
     member __.Tags : Tag Set = tags
     member __.PersonName =
@@ -170,18 +144,14 @@ type FullName internal (salutation, first, middle, family, suffix, nameOrder, ta
 
         match __.NameOrder with
         | Western -> 
-            [__.Salutation |> List.map (fun (x : TrimNonEmptyString) -> x.Value);
-            Option.toList <| Option.map (fun x -> x.ToString()) __.First;
+            [Option.toList <| Option.map (fun x -> x.ToString()) __.First;
             __.Middle |> List.map (fun (x : TrimNonEmptyString) -> x.Value);
-            Option.toList <| Option.map (fun x -> x.ToString()) __.Family;
-            __.Suffix |> List.map (fun (x : TrimNonEmptyString) -> x.Value)]
+            Option.toList <| Option.map (fun x -> x.ToString()) __.Family]
             |> combineName
         | FamilyFirst ->
-            [__.Salutation |> List.map (fun x -> x.Value);
-            Option.toList <| Option.map (fun x -> x.ToString()) __.Family;
+            [Option.toList <| Option.map (fun x -> x.ToString()) __.Family;
             Option.toList <| Option.map (fun x -> x.ToString()) __.First;
-            __.Middle |> List.map (fun x -> x.Value);
-            __.Suffix |> List.map (fun x -> x.Value)]
+            __.Middle |> List.map (fun x -> x.Value)]
             |> combineName
         | Custom f -> f __
     override __.Equals(yobj) = 
@@ -189,9 +159,9 @@ type FullName internal (salutation, first, middle, family, suffix, nameOrder, ta
         |  :? FullName as y -> (__.PersonName = y.PersonName)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse (salutation : string list, first, middle, family, suffix, nameOrder, tags) =
+    static member TryParse (first, middle, family, nameOrder, tags) =
         match fullName first middle family with
-        | Some (fi, m, fa) -> FullName (TrimNonEmptyString.Parse salutation, TrimNonEmptyString.TryParse fi, TrimNonEmptyString.Parse m, TrimNonEmptyString.TryParse fa, TrimNonEmptyString.Parse suffix, nameOrder, tags) |> Some 
+        | Some (fi, m, fa) -> FullName (TrimNonEmptyString.TryParse fi, TrimNonEmptyString.Parse m, TrimNonEmptyString.TryParse fa, nameOrder, tags) |> Some 
         | None -> None
     interface System.IComparable with
         member __.CompareTo yobj =
@@ -219,9 +189,10 @@ and PersonName internal (name: string, tags : Tag Set) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse (name, tags) =
-        match verifyTrimNonEmptyString name with
-        | Some x -> PersonName (x, tags) |> Some
-        | _ -> None
+        if String.IsNullOrWhiteSpace name then
+            None        
+        else 
+            Some <| PersonName ((name.Trim()), tags)
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -230,10 +201,42 @@ and PersonName internal (name: string, tags : Tag Set) =
                 elif __.Value < y.Value then -1
                 else 0
             | _ -> invalidArg "PersonName" "cannot compare values of different types"
+and NameAndAffixes (salutations, personName, suffixes) =
+    member __.Salutations = salutations 
+    member __.PersonName : PersonName = personName
+    member __.Suffixes = suffixes
+    member __.Value =
+        TrimNonEmptyString <| __.ToString()
+    override __.ToString() = 
+        [salutations |> List.map (fun (x : TrimNonEmptyString) -> x.Value);
+        [personName.ToString()];
+        suffixes |> List.map (fun (x : TrimNonEmptyString) -> x.Value)]
+        |> List.concat
+        |> String.concat " "
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? NameAndAffixes as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __
+    static member TryParse ((salutations : string list), (personName : string), (suffixes : string list), tags) =
+        match PersonName.TryParse (personName, tags) with
+        | Some x -> 
+            Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes))
+        | None -> None
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? NameAndAffixes as y -> 
+                if __.Value > y.Value then 1
+                elif __.Value < y.Value then -1
+                else 0
+            | _ -> invalidArg "NameAndAffixes" "cannot compare values of different types"
+        
 
 type NameOfPerson =
     | Name of PersonName
     | FullName of FullName
+    | NameAndAffixes of NameAndAffixes
 
 type ZipCode5 internal (zip) =
     member __.Value = zip
@@ -243,10 +246,7 @@ type ZipCode5 internal (zip) =
         |  :? ZipCode5 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse zip = 
-        match verifyStringInt zip 5 with
-        | Some x -> ZipCode5 x |> Some
-        | _ -> None
+    static member TryParse zip = verifyStringInt zip 5 ZipCode5
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -258,17 +258,37 @@ type ZipCode5 internal (zip) =
 
 type ZipCode5Plus4 internal (zip : string) = 
     member __.Value = zip
-    member __.ValueFormatted = zip
+    member __.ValueFormatted = 
+        sprintf "%s-%s" (zip.Substring(0,5)) (zip.Substring(5))
+        
     override __.ToString() = zip
     override __.Equals(yobj) = 
         match yobj with
         |  :? ZipCode5Plus4 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse zip = 
-        match zipCode5Plus4 zip with
-        | Some x -> ZipCode5Plus4 x |> Some
-        | _ -> None
+    static member TryParse (zip : string) = 
+        let zipParts = zip.Split '-'
+
+        if zipParts.Length = 2 then
+            match choose {
+                            do! 
+                                match verifyStringInt (zipParts.[0].Trim()) 5 id with
+                                | Some _ -> Success ()
+                                | _ -> Failure ""
+                            do! 
+                                match  verifyStringInt (zipParts.[1].Trim()) 4 id with
+                                | Some _ -> Success ()
+                                | _ -> Failure ""
+                            return ()
+                            } with
+            | Success _ -> ZipCode5Plus4 (sprintf "%s%s" (zipParts.[0].Trim()) (zipParts.[1].Trim())) |> Some
+            | _ -> None
+        else
+            match verifyStringInt (zip.Trim()) 9 id with
+            | Some x -> ZipCode5Plus4 x |> Some
+            | _ -> None
+
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -286,10 +306,7 @@ type NonUsPostalCode internal (postalCode) =
         |  :? NonUsPostalCode as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse postalCode =
-        match verifyTrimNonEmptyString postalCode with
-        | Some x -> NonUsPostalCode x |> Some
-        | _ -> None
+    static member TryParse postalCode = verifyTrimNonEmptyString postalCode NonUsPostalCode
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with

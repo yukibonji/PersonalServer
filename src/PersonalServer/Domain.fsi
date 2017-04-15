@@ -18,8 +18,8 @@ type TrimNonEmptyString =
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
-    static member TryParse : value:string -> TrimNonEmptyString option
     static member TryParse : value:string option -> TrimNonEmptyString option
+    static member TryParse : value:string -> TrimNonEmptyString option
     static member Parse : value:string list -> TrimNonEmptyString list
 
 [<Class>]
@@ -58,21 +58,21 @@ type DigitString4 =
     member Value : string
     static member TryParse : value:string -> DigitString4 option
 
+
+//to do: name with affixes
+//type NameAndAffixes
 [<Class>]  
 type FullName =
     interface System.IComparable
-    
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
-    member Salutation: TrimNonEmptyString list
     member First: TrimNonEmptyString option
     member Middle: TrimNonEmptyString list
     member Family: TrimNonEmptyString option
-    member Suffix: TrimNonEmptyString list
     member NameOrder: NameOrder
     member Tags: Set<Tag>
     member PersonName : PersonName
-    static member TryParse : salutation: string list * first: string option * middle: string list * family: string option * suffix: string list * nameOrder: NameOrder * tags:Set<Tag> -> FullName option
+    static member TryParse : first: string option * middle: string list * family: string option * nameOrder: NameOrder * tags:Set<Tag> -> FullName option
 and NameOrder =
     /// Salutation, First, Middle, Family, Suffix
     | Western
@@ -85,10 +85,20 @@ and [<Class>] PersonName =
     member Tags : Set<Tag>
     member Value : TrimNonEmptyString
     static member TryParse : name:string * tags:Set<Tag> -> PersonName option
+and NameAndAffixes =
+    new : salutation: TrimNonEmptyString list * personName : PersonName * suffix: TrimNonEmptyString list -> NameAndAffixes
+    interface System.IComparable
+    override ToString : unit -> string
+    member Salutations: TrimNonEmptyString list
+    member PersonName : PersonName
+    member Suffixes: TrimNonEmptyString list
+    member Value : TrimNonEmptyString
+    static member TryParse : salutations: string list * personName : string * suffixes: string list * tags:Set<Tag> -> NameAndAffixes option
 
 type NameOfPerson =
     | Name of PersonName
     | FullName of FullName
+    | NameAndAffixes of NameAndAffixes
 
 [<Class>]
  type ZipCode5 =
