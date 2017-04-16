@@ -28,9 +28,10 @@ module internal DomainVerifications =
             None
 
         | (Some x), _, (Some y) when String.IsNullOrWhiteSpace x && String.IsNullOrWhiteSpace y ->
-            if isMiddleEmpty middle then
-                None
-            else
+        //commenting this code will cause some test failures
+//            if isMiddleEmpty middle then
+//                None
+//            else
                 Some (first, middle, family)
 
         | (Some x), _, _ when String.IsNullOrWhiteSpace x |> not ->
@@ -40,9 +41,9 @@ module internal DomainVerifications =
             Some (first, middle, family)
 
         | _, _:_, _ -> 
-            if isMiddleEmpty middle then
-                None
-            else
+//            if isMiddleEmpty middle then
+//                None
+//            else
                 Some (first, middle, family)
 
     let verifyStringInt (s : string) length t =
