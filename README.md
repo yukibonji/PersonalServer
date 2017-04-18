@@ -1,3 +1,19 @@
+Reproduce "failed test succeeds when replay attempted"
+
+1) use testexpectofscheck branch
+2) run PersonalServer/tests/PersonalServer.Tests/PersonalServerTests
+
+(this will fail, probably not on the first test)
+
+3) take the FsCheck seed of the failing test and paste into let declaration of  configReplay in PersonalServer/tests/PersonalServer.Tests/DomainTypes.fs
+
+4) rebuild solution in debug
+
+5) re-run PersonalServerTests and notice Expecto reports success
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 3 (possibly related) problems with Expecto FsCheck integration
 
 See the "testexpectofscheck" branch of https://github.com/jackfoxy/personalServer for demonstration code.
