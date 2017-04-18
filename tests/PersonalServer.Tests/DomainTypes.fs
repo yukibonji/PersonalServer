@@ -6,11 +6,11 @@ open FsCheck
 
 module DomainTypes =
 
-    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
-    let configReplay = { FsCheckConfig.defaultConfig with replay = Some <| (1057044718,296287820) }  //see Tips & Tricks for FsCheck
+    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 ; arbitrary = [typeof<DomainGenerators>] }
+    let configReplay = { FsCheckConfig.defaultConfig with replay = Some <| (1057044718,296287820) ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
     let (.=.) left right = left = right |@ sprintf "%A = %A" left right
 
-    do Arb.register<DomainGenerators>() |> ignore
+    //do Arb.register<DomainGenerators>() |> ignore
 
     let validDigits digits length =
         if digits.ToString().Length = length then
@@ -241,12 +241,13 @@ module DomainTypes =
                     let t = DigitString.TryParse <| digits.ToString()
                     (digits.ToString()) = t.Value.Value
 
-            testPropertyWithConfig config10k "TryParse trims" <|
-                fun  (digits : NonNegativeInt) ->
-                    let digitString = digits.ToString()
-                    //let x = Gen.s
-                    let t = DigitString.TryParse <| digits.ToString()
-                    (digits.ToString()) = t.Value.Value
+                    //to do: digit strings wrapped in whitespace
+//            testPropertyWithConfig config10k "TryParse trims" <|
+//                fun  (digits : NonNegativeInt) ->
+//                    let digitString = digits.ToString()
+//                    //let x = Gen.s
+//                    let t = DigitString.TryParse <| digits.ToString()
+//                    (digits.ToString()) = t.Value.Value
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
@@ -270,8 +271,7 @@ module DomainTypes =
                            t.IsNone)
 
             testPropertyWithConfig config10k "TryParse None on wrong length digital string" <|
-                fun  () ->
-                    fun  (digits : NonNegativeInt) ->
+                fun  (digits : NonNegativeInt) ->
                     let t = DigitString2.TryParse <| invalidDigits digits 2
                     t.IsNone
 
@@ -303,8 +303,7 @@ module DomainTypes =
                            let t = DigitString3.TryParse x
                            t.IsNone)
             testPropertyWithConfig config10k "TryParse None on wrong length digital string" <|
-                fun  () ->
-                    fun  (digits : NonNegativeInt) ->
+                fun  (digits : NonNegativeInt) ->
                     let t = DigitString3.TryParse <| invalidDigits digits 3
                     t.IsNone
             
@@ -336,8 +335,7 @@ module DomainTypes =
                            let t = DigitString4.TryParse x
                            t.IsNone)
             testPropertyWithConfig config10k "TryParse None on wrong length digital string" <|
-                fun  () ->
-                    fun  (digits : NonNegativeInt) ->
+                fun  (digits : NonNegativeInt) ->
                     let t = DigitString4.TryParse <| invalidDigits digits 4
                     t.IsNone
             
@@ -362,28 +360,14 @@ module DomainTypes =
                 Expect.isNone (FullName.TryParse (None, [], (Some System.String.Empty), NameOrder.Western, Set.empty<Tag>) ) "Expected None"
 
             testPropertyWithConfig config10k "equality" <|
-//                fun  (fullName : FullName) ->
-//
-//                    let t = 
-//                        let first = fullName.First |> Option.map (fun x -> x.Value)
-//                        let middle = fullName.Middle |> List.map (fun x -> x.ToString())
-//                        let family = fullName.Family |> Option.map (fun x -> x.Value)
-//                        FullName.TryParse (first, middle, family,  NameOrder.Western, Set.empty<Tag>)
-// 
-//                    t.Value = fullName
+                fun  (fullName : FullName) ->
+                    let first = fullName.First |> Option.map (fun x -> x.Value)
+                    let middle = fullName.Middle |> List.map (fun x -> x.ToString())
+                    let family = fullName.Family |> Option.map (fun x -> x.Value)
 
-                fun  () ->
-                    Prop.forAll (DomainGenerators.FullName()) // (Arb.fromGen <| DomainGeneratorsCode.genFullName())
-                        (fun (fullName : FullName) -> 
-
-                                let t =  
-                                    let first = fullName.First |> Option.map (fun x -> x.Value)
-                                    let middle = fullName.Middle |> List.map (fun x -> x.Value)
-                                    let family = fullName.Family |> Option.map (fun x -> x.Value)
-                                    FullName.TryParse (first, middle, family, fullName.NameOrder, Set.empty<Tag>)
-
-                                t.Value = fullName
-                            )
+                    let t = FullName.TryParse (first, middle, family,  NameOrder.Western, Set.empty<Tag>)
+ 
+                    t.Value = fullName
             ]
 
     [<Tests>]
@@ -458,8 +442,7 @@ module DomainTypes =
                            let t = ZipCode5.TryParse x
                            t.IsNone)
             testPropertyWithConfig config10k "TryParse None on wrong length digital string" <|
-                fun  () ->
-                    fun  (digits : NonNegativeInt) ->
+                fun  (digits : NonNegativeInt) ->
                     let t = ZipCode5.TryParse <| invalidDigits digits 5
                     t.IsNone
             

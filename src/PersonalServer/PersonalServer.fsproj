@@ -59,7 +59,6 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Utilities.fs" />
-    <Compile Include="DomainVerifications.fs" />
     <Compile Include="Domain.fsi" />
     <Compile Include="Domain.fs" />
     <None Include="paket.references" />

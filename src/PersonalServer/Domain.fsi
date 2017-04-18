@@ -131,18 +131,25 @@ type NameOfPerson =
  type ZipCode =
     | ZipCode5 of ZipCode5
     | ZipCode5Plus4 of ZipCode5Plus4
+    static member TryParse : postalCode: string -> ZipCode option
 
 type PostalCode =
     | ZipCode of ZipCode
     | NonUsPostalCode of NonUsPostalCode
+    static member TryParse : postalCode: string -> PostalCode option
 
+[<Class>]
 type PhysicalAddress =
-    {StreetAddress: TrimNonEmptyString list
-     City: TrimNonEmptyString option
-     State: TrimNonEmptyString option
-     PostalCode: PostalCode option
-     Country: TrimNonEmptyString option
-     Tags: Set<Tag>}
+    interface System.IComparable
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    member StreetAddress: TrimNonEmptyString list
+    member City: TrimNonEmptyString option
+    member State: TrimNonEmptyString option
+    member PostalCode: PostalCode option
+    member Country: TrimNonEmptyString option
+    member Tags: Set<Tag>
+    static member TryParse : streetAddress: string list * city: string option * state: string option * postalCode: string option * country: string option * tags:Set<Tag> -> PhysicalAddress option
 
 [<Class>]
 type EmailAddress =
@@ -152,7 +159,6 @@ type EmailAddress =
       override ToString : unit -> string
       member Tags : Set<Tag>
       member Value : string
-      static member TryParse : email:string -> EmailAddress option
       static member TryParse : email:string * tags:Tag Set -> EmailAddress option
 
 [<Class>]
@@ -166,7 +172,8 @@ type UsPhone =
       member Formatted : string
       member Suffix : DigitString4
       member Value : DigitString
-      static member TryParse : areaCode:string option -> exchange:string -> suffix:string -> UsPhone option
+      static member TryParse : areaCode:string option * exchange:string * suffix:string -> UsPhone option
+      static member TryParse : phone:string -> UsPhone option
 and [<Class>] OtherPhone =
       interface System.IComparable
       override Equals : yobj:obj -> bool
