@@ -8,9 +8,6 @@ module DomainTypes =
 
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 ; arbitrary = [typeof<DomainGenerators>] }
     let configReplay = { FsCheckConfig.defaultConfig with replay = Some <| (1057044718,296287820) ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
-    let (.=.) left right = left = right |@ sprintf "%A = %A" left right
-
-    //do Arb.register<DomainGenerators>() |> ignore
 
     let validDigits digits length =
         if digits.ToString().Length = length then
@@ -242,12 +239,12 @@ module DomainTypes =
                     (digits.ToString()) = t.Value.Value
 
                     //to do: digit strings wrapped in whitespace
-//            testPropertyWithConfig config10k "TryParse trims" <|
-//                fun  (digits : NonNegativeInt) ->
-//                    let digitString = digits.ToString()
-//                    //let x = Gen.s
-//                    let t = DigitString.TryParse <| digits.ToString()
-//                    (digits.ToString()) = t.Value.Value
+            testPropertyWithConfig config10k "TryParse trims" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.genDigitsInWhiteSpace())
+                        (fun (x : string) -> 
+                           let t = DigitString.TryParse x
+                           x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
