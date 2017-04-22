@@ -40,7 +40,7 @@ module DomainGeneratorsCode =
         '\u00A0'
     ]
 
-    let whiteSpace = 
+    let whiteSpace = //spaceSeparator
         List.concat [spaceSeparator; lineSeparator; paragraphSeparator; miscWhitespace]
 
     let personalServerNonEmptyString() =
@@ -116,8 +116,17 @@ module DomainGeneratorsCode =
         |> Gen.filter Option.isSome
         |> Gen.map (fun x -> x.Value)
 
-    let genWhiteSpace =
-        System.Globalization.UnicodeCategory.SpaceSeparator
+//    let genWhiteSpace =
+//        System.Globalization.UnicodeCategory.SpaceSeparator
+
+    let genDigitsInWhiteSpace () =
+        gen {
+                let! frontWhitespace = whitespaceString()
+                let! digits = Arb.generate<NonNegativeInt>
+                let! endWhitespace = whitespaceString()
+//                return sprintf "%s%s%s" frontWhitespace (digits.ToString()) endWhitespace
+                return frontWhitespace + (digits.ToString()) + endWhitespace
+            }
         
 type DomainGenerators =
         static member FullName() =

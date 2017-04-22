@@ -1,6 +1,5 @@
 ﻿namespace Jackfoxy.PersonalServer
 
-open DomainVerifications
 open FSharpx.Choice
 open System
 open Utilities
@@ -129,9 +128,9 @@ type DigitString4 internal (value) =
                 | _ -> invalidArg "DigitString4" "cannot compare values of different types"
 
 type FullName internal (first, middle, family, nameOrder, tags) =
-    member __.First = first 
-    member __.Middle = middle 
-    member __.Family = family 
+    member __.First : TrimNonEmptyString option = first 
+    member __.Middle : TrimNonEmptyString list = middle 
+    member __.Family : TrimNonEmptyString option = family 
     member __.NameOrder : NameOrder = nameOrder
     member __.Tags : Tag Set = tags
     member __.PersonName =
@@ -159,10 +158,15 @@ type FullName internal (first, middle, family, nameOrder, tags) =
         |  :? FullName as y -> (__.PersonName = y.PersonName)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse (first, middle, family, nameOrder, tags) =
-        match fullName first middle family with
-        | Some (fi, m, fa) -> FullName (TrimNonEmptyString.TryParse fi, TrimNonEmptyString.Parse m, TrimNonEmptyString.TryParse fa, nameOrder, tags) |> Some 
-        | None -> None
+    static member TryParse ((first : string option), middle, (family : string option), nameOrder, tags) =
+        let fi = TrimNonEmptyString.TryParse first
+        let m = TrimNonEmptyString.Parse middle
+        let fa = TrimNonEmptyString.TryParse family
+        match fi, m, fa with
+        | Some _, _, _ -> FullName (fi, m, fa, nameOrder, tags) |> Some
+        | _, x, _ when x.Length > 0 -> FullName (fi, m, fa, nameOrder, tags) |> Some 
+        | _, _, Some _ -> FullName (fi, m, fa, nameOrder, tags) |> Some 
+        | _ -> None
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -174,7 +178,7 @@ type FullName internal (first, middle, family, nameOrder, tags) =
                 elif __.Middle > y.Middle then 1
                 elif __.Middle < y.Middle then -1
                 else 0
-            | _ -> invalidArg "PersonFullName" "cannot compare values of different types"
+            | _ -> invalidArg "FullName" "cannot compare values of different types"
 and NameOrder =
     | Western
     | FamilyFirst
@@ -319,20 +323,69 @@ type NonUsPostalCode internal (postalCode) =
 type ZipCode =
     | ZipCode5 of ZipCode5
     | ZipCode5Plus4 of ZipCode5Plus4
+    static member TryParse zipcode =
+        match ZipCode5Plus4.TryParse zipcode with
+        | Some x -> Some <| ZipCode.ZipCode5Plus4 x
+        | None ->
+            match ZipCode5.TryParse zipcode with
+            | Some x -> Some <| ZipCode.ZipCode5 x
+            | None -> None
 
 type PostalCode =
     | ZipCode of ZipCode
     | NonUsPostalCode of NonUsPostalCode
+    static member TryParse postalCode =
+        match ZipCode.TryParse postalCode with
+        | Some x -> Some <| PostalCode.ZipCode  x
+        | None -> 
+            match NonUsPostalCode.TryParse postalCode with
+            | Some x -> Some (PostalCode.NonUsPostalCode  x)
+            | None -> None
 
-type PhysicalAddress =
-    {
-    StreetAddress : TrimNonEmptyString list
-    City : TrimNonEmptyString option
-    State : TrimNonEmptyString option
-    PostalCode : PostalCode option
-    Country : TrimNonEmptyString option
-    Tags : Tag Set
-    }
+type PhysicalAddress internal (streetAddress, city, state, postalCode, country, tags) =
+    member __.StreetAddress : TrimNonEmptyString list = streetAddress 
+    member __.City : TrimNonEmptyString option = city 
+    member __.State : TrimNonEmptyString option = state 
+    member __.PostalCode : PostalCode option = postalCode
+    member __.Country : TrimNonEmptyString option = country
+    member __.Tags : Tag Set = tags
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? PhysicalAddress as y -> 
+            __.Country > y.Country
+            && __.State < y.State
+            && __.City > y.City
+            && __.PostalCode < y.PostalCode
+            && __.StreetAddress > y.StreetAddress
+        | _ -> false
+    override __.GetHashCode() = hash __
+    static member TryParse ((streetAddress : string list), (city : string option), (state : string option), (postalCode : string option), (country : string option), tags) =
+        let sa = TrimNonEmptyString.Parse streetAddress
+        let cy = TrimNonEmptyString.TryParse city
+        let s = TrimNonEmptyString.TryParse state
+        let p = 
+            match postalCode with
+            | Some x ->  PostalCode.TryParse x
+            | None -> None 
+        let c = TrimNonEmptyString.TryParse country
+        match sa, cy, s, p, c with
+        | x, _, _, _, _ when x.Length > 0 -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some 
+        | _, Some _, _, _, _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
+        | _, _, Some _, _, _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
+        | _, _, _, Some _, _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
+        | _, _, _, _, Some _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
+        | _ -> None
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? PhysicalAddress as y -> 
+                if __.Country > y.Country then 1
+                elif __.State < y.State then -1
+                elif __.City > y.City then 1
+                elif __.PostalCode < y.PostalCode then -1
+                elif __.StreetAddress > y.StreetAddress then 1
+                else 0
+            | _ -> invalidArg "PhysicalAddress" "cannot compare values of different types"
 
 type EmailAddress internal (email : string, tags : Tag Set) =
     member __.Value = email
@@ -343,14 +396,29 @@ type EmailAddress internal (email : string, tags : Tag Set) =
         |  :? EmailAddress as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse email = 
-        match emailAddress email with
-        | Success _ -> EmailAddress (email, Set.empty) |> Some
-        | _ -> None
     static member TryParse (email, tags) = 
-        match emailAddress email with
-        | Success _ -> EmailAddress (email,tags) |> Some
-        | _ -> None
+        //to do: @ is present, not start or end
+        //      no illegal characters
+        // https://tools.ietf.org/html/rfc2822
+        // https://tools.ietf.org/html/rfc2822#section-3.2.4
+        // https://tools.ietf.org/html/rfc2822#section-3.4.1
+        // http://www.ex-parrot.com/pdw/Mail-RFC822-Address.html
+        //
+        // http://emailregex.com/
+        // ( see also RFC 5322 )
+        //  [a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?
+
+        // http://stackoverflow.com/questions/297420/list-of-email-addresses-that-can-be-used-to-test-a-javascript-validation-script
+        // http://code.iamcal.com/php/rfc822/tests/
+        if String.IsNullOrWhiteSpace email then
+            None
+        else
+            let s = email.Split '@'
+            if s.Length = 2 && s.[0].Length > 0 && s.[1].Length > 0 then
+                Some <| EmailAddress (email, tags)
+            else
+                None
+
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -361,31 +429,52 @@ type EmailAddress internal (email : string, tags : Tag Set) =
             | _ -> invalidArg "EmailAddress" "cannot compare values of different types"
 
 type UsPhone internal (areaCode, exchange, suffix) =
-    member __.AreaCode = Option.map DigitString3 <| areaCode
-    member __.Exchange = DigitString3 exchange
-    member __.Suffix = DigitString4 suffix
+    member __.AreaCode : DigitString3 option = areaCode
+    member __.Exchange : DigitString3 =  exchange
+    member __.Suffix : DigitString4 = suffix
     member __.Value =
-        [Option.toList areaCode;
-        [exchange];
-        [suffix];]
-        |> combineNumber
-        |> DigitString
+        match areaCode with
+        | Some x -> DigitString <| sprintf "%s%s%s" x.Value exchange.Value suffix.Value
+        | None -> DigitString <| sprintf "%s%s" exchange.Value suffix.Value
     member __.Formatted =
         match areaCode with
         | Some x ->
-            sprintf "(%s) %s-%s" x exchange suffix
+            sprintf "(%s) %s-%s" x.Value exchange.Value suffix.Value
         | None ->
-            sprintf "%s-%s" exchange suffix
+            sprintf "%s-%s" exchange.Value suffix.Value
     override __.ToString() = __.Formatted
     override __.Equals(yobj) = 
         match yobj with
         |  :? UsPhone as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse areaCode exchange suffix = 
-        match usPhone areaCode exchange suffix with
-        | Some (a, e, s) -> UsPhone (a, e, s) |> Some
-        | _ -> None
+    static member TryParse (areaCode, exchange, suffix) = 
+        let a = 
+            match areaCode with
+            | Some x ->
+                DigitString3.TryParse x
+            | None -> None
+        let e = DigitString3.TryParse exchange
+        let s = DigitString4.TryParse suffix
+        match e, s with
+        | None, _ -> None
+        | _, None -> None
+        | Some ee, Some ss -> Some <| UsPhone (a, ee, ss)
+    static member TryParse (phone : string) =
+        let digits = digitsFromString phone
+
+        match digits.Length with
+        | 10 ->
+            let a = DigitString3 <| new string(Array.sub digits 0 3)
+            let e = DigitString3 <| new string(Array.sub digits 4 3)
+            let s = DigitString4 <| new string(Array.sub digits 7 4)
+            Some <| UsPhone (Some a, e, s)
+        | 7 ->
+            let e = DigitString3 <| new string(Array.sub digits 0 3)
+            let s = DigitString4 <| new string(Array.sub digits 3 4)
+            Some <| UsPhone (None, e, s)
+        | _ ->
+            None
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -399,18 +488,24 @@ type UsPhone internal (areaCode, exchange, suffix) =
                 else 0
             | _ -> invalidArg "UsPhone" "cannot compare values of different types"
 and OtherPhone internal (phone) =
-    member __.Value = DigitString <| numbersFromString phone
-    member __.Formatted = phone
+    member __.Value : DigitString =  phone
+    member __.Formatted = phone.ToString()
     override __.ToString() = __.Formatted
     override __.Equals(yobj) = 
         match yobj with
         |  :? OtherPhone as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse phone = 
-        match otherPhone phone with
-        | Success _ -> OtherPhone phone |> Some
-        | _ -> None
+    static member TryParse (phone : string) = 
+        let digits = digitsFromString phone
+
+        if digits.Length < 4 then
+            None
+        else 
+            new string(digits)
+            |> DigitString
+            |> OtherPhone
+            |> Some
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -440,7 +535,7 @@ type PhoneNumber internal (countryCode : string option, phone : Phone, extension
         let cc =
             match countryCode with
             | Some x ->
-                numbersFromString x
+                new string(digitsFromString x)
             | None -> ""
         sprintf "%s%s%s" cc phone.Value.Value
             (match extension with
@@ -468,9 +563,7 @@ type PhoneNumber internal (countryCode : string option, phone : Phone, extension
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse countryCode phone extension = 
-        match phoneNumber countryCode phone extension with
-        | Success _ -> PhoneNumber (countryCode, phone, extension, Set.empty) |> Some
-        | _ -> None
+         PhoneNumber (countryCode, phone, extension, Set.empty) |> Some    //to do
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
