@@ -70,7 +70,6 @@
   </Target>
   -->
   <ItemGroup>
-    <Content Include="packages.config" />
     <Compile Include="DomainGenerators.fs" />
     <Compile Include="DomainTypes.fs" />
     <Compile Include="RunTests.fs" />
@@ -84,9 +83,6 @@
     <None Include="Scripts\ArgRegister.fsx" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Expecto.VisualStudio.TestAdapter">
-      <HintPath>..\..\packages\Expecto.VisualStudio.TestAdapter.4.0.0-alpha007\tools\Expecto.VisualStudio.TestAdapter.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
     </Reference>
