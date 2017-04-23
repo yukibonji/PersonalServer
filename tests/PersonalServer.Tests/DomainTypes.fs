@@ -116,7 +116,7 @@ module DomainTypes =
                                 |> List.choose id
                                 
                             tagsFromOrderedList = orderedTags)
-            ]
+        ]
 
     [<Tests>]
     let testTrimNonEmptyString =
@@ -205,7 +205,7 @@ module DomainTypes =
                         |> TrimNonEmptyString.Parse 
 
                     list2 = listTrimNonEmptyStringSorted
-            ]
+        ]
 
     [<Tests>]
     let testDigitString =
@@ -239,7 +239,7 @@ module DomainTypes =
                     let t = DigitString.TryParse <| digits.ToString()
                     let t2 = DigitString.TryParse t.Value.Value
                     t2 = t
-            ]
+        ]
 
     [<Tests>]
     let testDigitString2 =
@@ -263,14 +263,14 @@ module DomainTypes =
             testPropertyWithConfig config10k "TryParse" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 2
-                    let t = DigitString2.TryParse <| validDigits digits 2
+                    let t = DigitString2.TryParse validDigit
                     validDigit = t.Value.Value
 
             testPropertyWithConfig config10k "TryParse trims" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 2)
                         (fun (x : string) -> 
-                           let t = DigitString.TryParse x
+                           let t = DigitString2.TryParse x
                            x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
@@ -279,7 +279,7 @@ module DomainTypes =
                     let t = DigitString2.TryParse validDigit
                     let t2 = DigitString2.TryParse t.Value.Value
                     t2 = t
-            ]
+        ]
 
     [<Tests>]
     let testDigitString3 =
@@ -302,14 +302,14 @@ module DomainTypes =
             testPropertyWithConfig config10k "TryParse" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 3
-                    let t = DigitString3.TryParse <| validDigits digits 3
+                    let t = DigitString3.TryParse validDigit
                     validDigit = t.Value.Value
 
             testPropertyWithConfig config10k "TryParse trims" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 3)
                         (fun (x : string) -> 
-                           let t = DigitString.TryParse x
+                           let t = DigitString3.TryParse x
                            x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
@@ -318,7 +318,7 @@ module DomainTypes =
                     let t = DigitString3.TryParse validDigit
                     let t2 = DigitString3.TryParse t.Value.Value
                     t2 = t
-            ]
+        ]
 
     [<Tests>]
     let testDigitString4 =
@@ -340,15 +340,15 @@ module DomainTypes =
             
             testPropertyWithConfig config10k "TryParse" <|
                 fun  (digits : NonNegativeInt) ->
-                    let validDigit = validDigits digits
-                    let t = DigitString4.TryParse <| validDigits digits 4
-                    validDigit 4 = t.Value.Value
+                    let validDigit = validDigits digits 4
+                    let t = DigitString4.TryParse validDigit
+                    validDigit = t.Value.Value
 
             testPropertyWithConfig config10k "TryParse trims" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 4)
                         (fun (x : string) -> 
-                           let t = DigitString.TryParse x
+                           let t = DigitString4.TryParse x
                            x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
@@ -357,7 +357,7 @@ module DomainTypes =
                     let t = DigitString4.TryParse validDigit 
                     let t2 = DigitString4.TryParse t.Value.Value
                     t2 = t
-            ]
+        ]
 
     [<Tests>]
     let testFullName =
@@ -374,7 +374,7 @@ module DomainTypes =
                     let t = FullName.TryParse (first, middle, family,  NameOrder.Western, Set.empty<Tag>)
  
                     t.Value = fullName
-            ]
+        ]
 
     [<Tests>]
     let testPersonName =
@@ -411,7 +411,7 @@ module DomainTypes =
                             (x.ToString(), Set.empty<Tag>)
                             |> PersonName.TryParse
                         t = t2
-            ]
+        ]
 
     [<Tests>]
     let testNameAndAffixes =
@@ -432,7 +432,7 @@ module DomainTypes =
 
                                 t.Value = nameAndAffixes
                             )
-            ]
+        ]
 
     [<Tests>]
     let testZipCode5 =
@@ -455,14 +455,14 @@ module DomainTypes =
             testPropertyWithConfig config10k "TryParse" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 5
-                    let t = ZipCode5.TryParse <| validDigits digits 5
+                    let t = ZipCode5.TryParse validDigit
                     validDigit = t.Value.Value
 
             testPropertyWithConfig config10k "TryParse trims" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 5)
                         (fun (x : string) -> 
-                           let t = DigitString.TryParse x
+                           let t = ZipCode5.TryParse x
                            x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
@@ -471,7 +471,81 @@ module DomainTypes =
                     let t = ZipCode5.TryParse validDigit
                     let t2 = ZipCode5.TryParse t.Value.Value
                     t2 = t
-            ]
+        ]
+
+    [<Tests>]
+    let ZipCode5Plus4 =
+        let valid5Plus4 seed =
+            let validDigit = validDigits seed 9
+            ZipCode5Plus4.TryParse validDigit
+            
+        testList "DomainTypes.ZipCode5Plus4" [
+            testCase "TryParse None on empty string" <| fun () ->
+                Expect.isNone (ZipCode5Plus4.TryParse System.String.Empty) "Expected None"
+
+            testPropertyWithConfig config10k "TryParse None on non-digital string" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| nonDigitalString())
+                        (fun (x : string) -> 
+                           let t = ZipCode5Plus4.TryParse x
+                           t.IsNone)
+            testPropertyWithConfig config10k "TryParse None on wrong length digital string" <|
+                fun  (digits : NonNegativeInt) ->
+                    let t = ZipCode5Plus4.TryParse <| invalidDigits digits 9
+                    t.IsNone
+            
+            testPropertyWithConfig config10k "TryParse" <|
+                fun  (digits : NonNegativeInt) ->
+                    let validDigit = validDigits digits 9
+                    let t = ZipCode5Plus4.TryParse validDigit
+                    validDigit = t.Value.Value
+
+            testPropertyWithConfig config10k "TryParse trims" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| inputZip5Plus4())
+                        (fun (x : string) -> 
+                           let t = ZipCode5Plus4.TryParse x
+                           x.Trim() = t.Value.Value)
+
+            testPropertyWithConfig config10k "equality 1" <|
+                fun  (digits : NonNegativeInt) ->
+                    let t = valid5Plus4 digits
+                    let t2 = ZipCode5Plus4.TryParse t.Value.Value
+
+                    t2 = t
+
+            testPropertyWithConfig config10k "equality 2" <|
+                fun  (digits : NonNegativeInt) ->
+                    let t = valid5Plus4 digits
+                    
+                    let zip5 = t.Value.Value.Substring(0,5)
+                    let suffix = t.Value.Value.Substring(5)
+
+                    let t2 = ZipCode5Plus4.TryParse <| sprintf "%s-%s" zip5 suffix
+
+                    t2 = t
+            testPropertyWithConfig config10k "equality 3" <|
+                fun  (digits : NonNegativeInt) ->
+                    let t = valid5Plus4 digits
+                    
+                    let zip5 = t.Value.Value.Substring(0,5)
+                    let suffix = t.Value.Value.Substring(5)
+
+                    let t2 = ZipCode5Plus4.TryParse <| sprintf " %s - %s " zip5 suffix
+
+                    t2 = t
+
+            testPropertyWithConfig config10k "equality 4" <|
+                fun  (digits : NonNegativeInt) ->
+                    let t = valid5Plus4 digits
+                    
+                    let zip5 = t.Value.Value.Substring(0,5)
+                    let suffix = t.Value.Value.Substring(5)
+
+                    let t2 = ZipCode5Plus4.TryParse <| sprintf " %s   %s " zip5 suffix
+
+                    t2 = t
+        ]
 
     [<Tests>]
     let testNonUsPostalCode =
@@ -508,4 +582,4 @@ module DomainTypes =
                             x.ToString()
                             |> NonUsPostalCode.TryParse
                         t = t2
-            ]
+        ]

@@ -50,16 +50,16 @@ module DomainGeneratorsCode =
                     [TrimNonEmptyString.TryParse (nonEmptyString.ToString())]
                     |> List.choose id
                     |> Gen.elements
-            }
+        }
 
     let nonDigitalString() = 
         gen {  
                 let! a = Arb.generate<NonEmptyString> 
                 return! Gen.elements [a.ToString()] 
-            }
-            |> Gen.filter(fun x -> 
-                            let (isInt, _) =Int32.TryParse x 
-                            not isInt) 
+        }
+        |> Gen.filter(fun x -> 
+                        let (isInt, _) =Int32.TryParse x 
+                        not isInt) 
 
     let whitespaceString() =
         let length = 
@@ -122,7 +122,7 @@ module DomainGeneratorsCode =
                 let! digits = Arb.generate<NonNegativeInt>
                 let! endWhitespace = whitespaceString()
                 return sprintf "%s%s%s" frontWhitespace (digits.ToString()) endWhitespace
-            }
+        }
 
     let validDigits digits length =
         if digits.ToString().Length = length then
@@ -144,7 +144,13 @@ module DomainGeneratorsCode =
                 let! digits = Arb.generate<NonNegativeInt>
                 let! endWhitespace = whitespaceString()
                 return sprintf "%s%s%s" frontWhitespace (validDigits digits length) endWhitespace
-            }
+        }
+
+    let inputZip5Plus4() =
+        gen {
+            let! digits = Arb.generate<NonNegativeInt>
+            return validDigits digits 9
+        }
         
 type DomainGenerators =
         static member FullName() =

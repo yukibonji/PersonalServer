@@ -238,6 +238,7 @@ and NameAndAffixes (salutations, personName, suffixes) =
         | Some x -> 
             Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes))
         | None -> None
+
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -282,27 +283,24 @@ type ZipCode5Plus4 internal (zip : string) =
         |  :? ZipCode5Plus4 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse (zip : string) = 
-        let zipParts = zip.Split '-'
+    static member TryParse (zip : string) =
+        let parseFormatted (splitter : char []) =
+            let zipParts = zip.Split(splitter, StringSplitOptions.RemoveEmptyEntries)
 
-        if zipParts.Length = 2 then
-            match choose {
-                            do! 
-                                match verifyStringInt (zipParts.[0].Trim()) 5 id with
-                                | Some _ -> Success ()
-                                | _ -> Failure ""
-                            do! 
-                                match  verifyStringInt (zipParts.[1].Trim()) 4 id with
-                                | Some _ -> Success ()
-                                | _ -> Failure ""
-                            return ()
-                            } with
-            | Success _ -> ZipCode5Plus4 (sprintf "%s%s" (zipParts.[0].Trim()) (zipParts.[1].Trim())) |> Some
-            | _ -> None
-        else
-            match verifyStringInt (zip.Trim()) 9 id with
-            | Some x -> ZipCode5Plus4 x |> Some
-            | _ -> None
+            if zipParts.Length = 2 then
+                match ZipCode5.TryParse zipParts.[0] with
+                | Some zip5 -> 
+                    match  DigitString4.TryParse zipParts.[1] with
+                    | Some x -> 
+                        Some <| ZipCode5Plus4 (sprintf "%s%s" zip5.Value x.Value)
+                    | None -> None
+                | None -> None
+            else
+                None
+        match seq {yield verifyStringInt zip 9 ZipCode5Plus4; yield parseFormatted [|'-'|]; yield parseFormatted [|' '|];}
+                |> Seq.tryFind (fun x -> x.IsSome) with
+        | Some x -> x
+        | None -> None
 
     interface System.IComparable with
         member __.CompareTo yobj =

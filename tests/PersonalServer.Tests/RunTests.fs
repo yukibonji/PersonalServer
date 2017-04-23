@@ -17,6 +17,7 @@ module Tests =
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testPersonName |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testNameAndAffixes |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testZipCode5 |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.ZipCode5Plus4 |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testNonUsPostalCode |> ignore
 
         0
