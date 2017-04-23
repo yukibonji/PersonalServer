@@ -9,7 +9,7 @@ module DomainTypes =
 
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 ; arbitrary = [typeof<DomainGenerators>] }
 //    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
-    let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (92004194, 296293209) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
+    let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (172599043, 296293524) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
 
     [<Tests>]
     let testTag =
@@ -371,7 +371,7 @@ module DomainTypes =
                     let middle = fullName.Middle |> List.map (fun x -> x.ToString())
                     let family = fullName.Family |> Option.map (fun x -> x.Value)
 
-                    let t = FullName.TryParse (first, middle, family,  NameOrder.Western, Set.empty<Tag>)
+                    let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
  
                     t.Value = fullName
         ]
@@ -582,4 +582,27 @@ module DomainTypes =
                             x.ToString()
                             |> NonUsPostalCode.TryParse
                         t = t2
+        ]
+
+    [<Tests>]
+    let PhysicalAddress =
+        testList "DomainTypes.PhysicalAddress" [
+            testCase "TryParse None on all empty" <| fun () ->
+                Expect.isNone (PhysicalAddress.TryParse ([], (Some System.String.Empty), None, None, None, Set.empty<Tag>) ) "Expected None"
+
+            testPropertyWithConfig config10k "equality" <|
+                 fun  () ->
+                    Prop.forAll (Arb.fromGen <| genPhysicalAddress())
+                        (
+                            fun  (physicalAddress : PhysicalAddress) ->
+                                let streetAddress = physicalAddress.StreetAddress |> List.map (fun x -> x.ToString())
+                                let city = physicalAddress.City |> Option.map (fun x -> x.Value)
+                                let state = physicalAddress.State |> Option.map (fun x -> x.Value)
+                                let postalCode = physicalAddress.PostalCode |> Option.map (fun x -> x.ToString())
+                                let country = physicalAddress.Country |> Option.map (fun x -> x.Value)
+
+                                let t = PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty<Tag>)
+ 
+                                t.Value = physicalAddress
+                        )
         ]

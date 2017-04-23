@@ -128,14 +128,18 @@ type NameOfPerson =
       member Value : TrimNonEmptyString
       static member TryParse : postalCode: string -> NonUsPostalCode option
 
+[<CustomEquality;CustomComparison>]
  type ZipCode =
     | ZipCode5 of ZipCode5
     | ZipCode5Plus4 of ZipCode5Plus4
+    interface System.IComparable
     static member TryParse : postalCode: string -> ZipCode option
 
+[<CustomEquality;CustomComparison>]
 type PostalCode =
     | ZipCode of ZipCode
     | NonUsPostalCode of NonUsPostalCode
+    interface System.IComparable
     static member TryParse : postalCode: string -> PostalCode option
 
 [<Class>]

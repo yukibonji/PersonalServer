@@ -247,7 +247,6 @@ and NameAndAffixes (salutations, personName, suffixes) =
                 elif __.Value < y.Value then -1
                 else 0
             | _ -> invalidArg "NameAndAffixes" "cannot compare values of different types"
-        
 
 type NameOfPerson =
     | Name of PersonName
@@ -284,23 +283,26 @@ type ZipCode5Plus4 internal (zip : string) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse (zip : string) =
-        let parseFormatted (splitter : char []) =
-            let zipParts = zip.Split(splitter, StringSplitOptions.RemoveEmptyEntries)
+        if String.IsNullOrWhiteSpace zip then
+            None
+        else
+            let parseFormatted (splitter : char []) =
+                let zipParts = zip.Split(splitter, StringSplitOptions.RemoveEmptyEntries)
 
-            if zipParts.Length = 2 then
-                match ZipCode5.TryParse zipParts.[0] with
-                | Some zip5 -> 
-                    match  DigitString4.TryParse zipParts.[1] with
-                    | Some x -> 
-                        Some <| ZipCode5Plus4 (sprintf "%s%s" zip5.Value x.Value)
+                if zipParts.Length = 2 then
+                    match ZipCode5.TryParse zipParts.[0] with
+                    | Some zip5 -> 
+                        match  DigitString4.TryParse zipParts.[1] with
+                        | Some x -> 
+                            Some <| ZipCode5Plus4 (sprintf "%s%s" zip5.Value x.Value)
+                        | None -> None
                     | None -> None
-                | None -> None
-            else
-                None
-        match seq {yield verifyStringInt zip 9 ZipCode5Plus4; yield parseFormatted [|'-'|]; yield parseFormatted [|' '|];}
-                |> Seq.tryFind (fun x -> x.IsSome) with
-        | Some x -> x
-        | None -> None
+                else
+                    None
+            match seq {yield verifyStringInt zip 9 ZipCode5Plus4; yield parseFormatted [|'-'|]; yield parseFormatted [|' '|];}
+                    |> Seq.tryFind (fun x -> x.IsSome) with
+            | Some x -> x
+            | None -> None
 
     interface System.IComparable with
         member __.CompareTo yobj =
@@ -329,6 +331,7 @@ type NonUsPostalCode internal (postalCode) =
                 else 0
             | _ -> invalidArg "OtherPostalCode" "cannot compare values of different types"
 
+[<CustomEquality;CustomComparison>]
 type ZipCode =
     | ZipCode5 of ZipCode5
     | ZipCode5Plus4 of ZipCode5Plus4
@@ -339,7 +342,33 @@ type ZipCode =
             match ZipCode5.TryParse zipcode with
             | Some x -> Some <| ZipCode.ZipCode5 x
             | None -> None
+    override __.ToString() = 
+        match __ with
+        | ZipCode5 x -> x.ToString()
+        | ZipCode5Plus4 x ->  x.ToString()
+    override __.Equals(yobj) = 
+        yobj.GetType() = __.GetType() && yobj.ToString() = __.ToString()
+    override __.GetHashCode() = hash __
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            | :? ZipCode5 as y -> 
+                match __ with
+                | ZipCode5 x -> 
+                    if x > y then 1
+                    elif x < y then -1
+                    else 0
+                | _ -> 1
+            |  :? ZipCode5Plus4 as y ->
+                match __ with
+                | ZipCode5Plus4 x -> 
+                    if x > y then 1
+                    elif x < y then -1
+                    else 0
+                | _ -> -1
+            | _ -> invalidArg "ZipCode" "cannot compare values of different types"
 
+[<CustomEquality;CustomComparison>]
 type PostalCode =
     | ZipCode of ZipCode
     | NonUsPostalCode of NonUsPostalCode
@@ -350,6 +379,32 @@ type PostalCode =
             match NonUsPostalCode.TryParse postalCode with
             | Some x -> Some (PostalCode.NonUsPostalCode  x)
             | None -> None
+    override __.ToString() = 
+        match __ with
+        | ZipCode x -> x.ToString()
+        | NonUsPostalCode x ->  x.ToString()
+    override __.Equals(yobj) = 
+        yobj.GetType() = __.GetType() && yobj.ToString() = __.ToString()
+    override __.GetHashCode() = hash __
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            match yobj with
+            |  :? NonUsPostalCode as y ->
+                match __ with
+                | NonUsPostalCode x -> 
+                    if x > y then 1
+                    elif x < y then -1
+                    else 0
+                | _ -> -1
+            | :? ZipCode as y -> 
+                match __ with
+                | ZipCode x -> 
+                    if x > y then 1
+                    elif x < y then -1
+                    else 0
+                | _ -> 1
+            | _ -> invalidArg "PostalCode" "cannot compare values of different types"
+                
 
 type PhysicalAddress internal (streetAddress, city, state, postalCode, country, tags) =
     member __.StreetAddress : TrimNonEmptyString list = streetAddress 
@@ -361,11 +416,11 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
     override __.Equals(yobj) = 
         match yobj with
         |  :? PhysicalAddress as y -> 
-            __.Country > y.Country
-            && __.State < y.State
-            && __.City > y.City
-            && __.PostalCode < y.PostalCode
-            && __.StreetAddress > y.StreetAddress
+            __.Country = y.Country
+            && __.State = y.State
+            && __.City = y.City
+            && __.PostalCode = y.PostalCode
+            && __.StreetAddress = y.StreetAddress
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse ((streetAddress : string list), (city : string option), (state : string option), (postalCode : string option), (country : string option), tags) =

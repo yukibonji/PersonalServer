@@ -151,6 +151,25 @@ module DomainGeneratorsCode =
             let! digits = Arb.generate<NonNegativeInt>
             return validDigits digits 9
         }
+
+    let genPhysicalAddress() =
+        gen { 
+                let! streetAddress = Arb.generate<string list> 
+                let! city = Arb.generate<string option>
+                let! state = Arb.generate<string option>
+                let! postalCodeString = Arb.generate<string>
+                let! digits = Arb.generate<NonNegativeInt>
+                let postalCodeZip = validDigits digits 5
+                let! postalCodeZip5Plus4 = inputZip5Plus4()
+                let! country = Arb.generate<string option>
+
+                let! postalCode = Gen.elements [Some postalCodeString; Some postalCodeZip; Some postalCodeZip5Plus4; None]
+
+                return
+                    PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty<Tag>)
+        }
+        |> Gen.filter Option.isSome
+        |> Gen.map (fun x -> x.Value)
         
 type DomainGenerators =
         static member FullName() =
@@ -168,4 +187,10 @@ type DomainGenerators =
                 override __.Generator = 
                     DomainGeneratorsCode.genNonEmptyNonAllWhitespaceStringList()
                     }
+        static member PhysicalAddress() =
+            {new Arbitrary<PhysicalAddress>() with
+                override __.Generator = 
+                    DomainGeneratorsCode.genPhysicalAddress()
+                    }
+                    
 

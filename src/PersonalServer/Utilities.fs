@@ -29,16 +29,19 @@ module internal Utilities =
             Some (t <| value.Trim())
 
     let verifyStringInt (s : string) length t =
-        let s' = s.Trim()
-        if String.length(s') <> length then 
+        if String.IsNullOrWhiteSpace s then
             None
         else
-            let regex = new Regex("^[0-9]+$")
-
-            if regex.IsMatch s' then 
-                Some <| t s'
-            else 
+            let s' = s.Trim()
+            if String.length(s') <> length then 
                 None
+            else
+                let regex = new Regex("^[0-9]+$")
+
+                if regex.IsMatch s' then 
+                    Some <| t s'
+                else 
+                    None
 
     let port portNumber =
         let caller = "Port"
