@@ -2,6 +2,7 @@
 
 open FSharpx.Choice
 open System
+open System.Text.RegularExpressions
 open Utilities
 
 type Tag internal (tag: string) =
@@ -59,7 +60,17 @@ type DigitString internal (value) =
         |  :? DigitString as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse value = verifyStringInt value value.Length DigitString
+    static member TryParse (value : string) = 
+        let s' = value.Trim()
+        if String.length(s') = 0 then 
+            None
+        else
+            let regex = new Regex("^[0-9]+$")
+
+            if regex.IsMatch s' then 
+                Some <| DigitString s'
+            else 
+                None
     with
         interface System.IComparable with
             member __.CompareTo yobj =

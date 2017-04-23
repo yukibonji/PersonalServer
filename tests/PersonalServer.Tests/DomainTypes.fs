@@ -1,5 +1,6 @@
 ﻿namespace PersonalServer.Tests
 
+open DomainGeneratorsCode
 open Jackfoxy.PersonalServer
 open Expecto
 open FsCheck
@@ -7,21 +8,8 @@ open FsCheck
 module DomainTypes =
 
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 ; arbitrary = [typeof<DomainGenerators>] }
-    let configReplay = { FsCheckConfig.defaultConfig with replay = Some <| (1057044718,296287820) ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
-
-    let validDigits digits length =
-        if digits.ToString().Length = length then
-            digits.ToString()
-        elif digits.ToString().Length < length then
-            digits.ToString().PadLeft(length, '0')
-        else
-            digits.ToString().Substring(0, length)
-
-    let invalidDigits digits length =
-        if digits.ToString().Length = length then
-            sprintf "0%s" <| digits.ToString()
-        else
-            digits.ToString()
+//    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
+    let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (92004194, 296293209) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
 
     [<Tests>]
     let testTag =
@@ -51,14 +39,14 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.whitespaceString())
+                    Prop.forAll (Arb.fromGen <| whitespaceString())
                         (fun (x : string) -> 
                             let t = Tag.TryParse x
                             t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonEmptyNonAllWhitespaceString())
+                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
                             let t = Tag.TryParse x
                             x.Trim() = t.Value.Value)
@@ -85,7 +73,7 @@ module DomainTypes =
                     
             testPropertyWithConfig config10k "set creation" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.genNonEmptyNonAllWhitespaceStringList())
+                    Prop.forAll (Arb.fromGen <| genNonEmptyNonAllWhitespaceStringList())
                         (fun (xs : string list) -> 
                             let distinctList = distinctList xs  
                             let setOfTags = tagSet distinctList
@@ -108,7 +96,7 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "ordered" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.genNonEmptyNonAllWhitespaceStringList())
+                    Prop.forAll (Arb.fromGen <| genNonEmptyNonAllWhitespaceStringList())
                         (fun (xs : string list) -> 
                             let listOfTags = 
                                 xs  
@@ -139,14 +127,14 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.whitespaceString())
+                    Prop.forAll (Arb.fromGen <| whitespaceString())
                         (fun (x : string) -> 
                             let t = TrimNonEmptyString.TryParse x
                             t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonEmptyNonAllWhitespaceString())
+                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
                             let t = TrimNonEmptyString.TryParse x
                             x.Trim() = t.Value.Value)
@@ -183,7 +171,7 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse on Some x" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonEmptyNonAllWhitespaceString())
+                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
                             let t = TrimNonEmptyString.TryParse (Some x)
                             x.Trim() = t.Value.Value)
@@ -228,7 +216,7 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonDigitalString())
+                    Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
                            let t = DigitString.TryParse x
                            t.IsNone)
@@ -241,7 +229,7 @@ module DomainTypes =
                     //to do: digit strings wrapped in whitespace
             testPropertyWithConfig config10k "TryParse trims" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.genDigitsInWhiteSpace())
+                    Prop.forAll (Arb.fromGen <| genDigitsInWhiteSpace())
                         (fun (x : string) -> 
                            let t = DigitString.TryParse x
                            x.Trim() = t.Value.Value)
@@ -262,7 +250,7 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonDigitalString())
+                    Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
                            let t = DigitString2.TryParse x
                            t.IsNone)
@@ -277,6 +265,13 @@ module DomainTypes =
                     let validDigit = validDigits digits 2
                     let t = DigitString2.TryParse <| validDigits digits 2
                     validDigit = t.Value.Value
+
+            testPropertyWithConfig config10k "TryParse trims" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 2)
+                        (fun (x : string) -> 
+                           let t = DigitString.TryParse x
+                           x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
@@ -295,7 +290,7 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonDigitalString())
+                    Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
                            let t = DigitString3.TryParse x
                            t.IsNone)
@@ -309,6 +304,13 @@ module DomainTypes =
                     let validDigit = validDigits digits 3
                     let t = DigitString3.TryParse <| validDigits digits 3
                     validDigit = t.Value.Value
+
+            testPropertyWithConfig config10k "TryParse trims" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 3)
+                        (fun (x : string) -> 
+                           let t = DigitString.TryParse x
+                           x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
@@ -327,7 +329,7 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonDigitalString())
+                    Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
                            let t = DigitString4.TryParse x
                            t.IsNone)
@@ -342,6 +344,13 @@ module DomainTypes =
                     let t = DigitString4.TryParse <| validDigits digits 4
                     validDigit 4 = t.Value.Value
 
+            testPropertyWithConfig config10k "TryParse trims" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 4)
+                        (fun (x : string) -> 
+                           let t = DigitString.TryParse x
+                           x.Trim() = t.Value.Value)
+
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 4
@@ -349,7 +358,7 @@ module DomainTypes =
                     let t2 = DigitString4.TryParse t.Value.Value
                     t2 = t
             ]
-            //TO DO: test white space characters
+
     [<Tests>]
     let testFullName =
         testList "DomainTypes.FullName" [
@@ -376,14 +385,14 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.whitespaceString())
+                    Prop.forAll (Arb.fromGen <| whitespaceString())
                         (fun (x : string) -> 
                             let t = PersonName.TryParse (x, Set.empty<Tag>)
                             t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonEmptyNonAllWhitespaceString())
+                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
                             let t = PersonName.TryParse (x, Set.empty<Tag>)
                             x.Trim() = t.Value.Value.Value)
@@ -412,7 +421,7 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "equality" <|
                 fun  () ->
-                    Prop.forAll (DomainGenerators.NameAndAffixes()) // (Arb.fromGen <| DomainGeneratorsCode.genNameAndAffixes())
+                    Prop.forAll (DomainGenerators.NameAndAffixes()) // (Arb.fromGen <| genNameAndAffixes())
                         (fun (nameAndAffixes : NameAndAffixes) -> 
 
                                 let t =  
@@ -434,7 +443,7 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonDigitalString())
+                    Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
                            let t = ZipCode5.TryParse x
                            t.IsNone)
@@ -448,6 +457,13 @@ module DomainTypes =
                     let validDigit = validDigits digits 5
                     let t = ZipCode5.TryParse <| validDigits digits 5
                     validDigit = t.Value.Value
+
+            testPropertyWithConfig config10k "TryParse trims" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 5)
+                        (fun (x : string) -> 
+                           let t = DigitString.TryParse x
+                           x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
@@ -466,14 +482,14 @@ module DomainTypes =
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.whitespaceString())
+                    Prop.forAll (Arb.fromGen <| whitespaceString())
                         (fun (x : string) -> 
                             let t = NonUsPostalCode.TryParse x
                             t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| DomainGeneratorsCode.nonEmptyNonAllWhitespaceString())
+                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
                             let t = NonUsPostalCode.TryParse x
                             x.Trim() = t.Value.Value.Value)

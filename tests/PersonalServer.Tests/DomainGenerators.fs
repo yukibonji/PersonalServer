@@ -40,7 +40,7 @@ module DomainGeneratorsCode =
         '\u00A0'
     ]
 
-    let whiteSpace = //spaceSeparator
+    let whiteSpace = 
         List.concat [spaceSeparator; lineSeparator; paragraphSeparator; miscWhitespace]
 
     let personalServerNonEmptyString() =
@@ -116,16 +116,34 @@ module DomainGeneratorsCode =
         |> Gen.filter Option.isSome
         |> Gen.map (fun x -> x.Value)
 
-//    let genWhiteSpace =
-//        System.Globalization.UnicodeCategory.SpaceSeparator
-
     let genDigitsInWhiteSpace () =
         gen {
                 let! frontWhitespace = whitespaceString()
                 let! digits = Arb.generate<NonNegativeInt>
                 let! endWhitespace = whitespaceString()
-//                return sprintf "%s%s%s" frontWhitespace (digits.ToString()) endWhitespace
-                return frontWhitespace + (digits.ToString()) + endWhitespace
+                return sprintf "%s%s%s" frontWhitespace (digits.ToString()) endWhitespace
+            }
+
+    let validDigits digits length =
+        if digits.ToString().Length = length then
+            digits.ToString()
+        elif digits.ToString().Length < length then
+            digits.ToString().PadLeft(length, '0')
+        else
+            digits.ToString().Substring(0, length)
+
+    let invalidDigits digits length =
+        if digits.ToString().Length = length then
+            sprintf "0%s" <| digits.ToString()
+        else
+            digits.ToString()
+
+    let genDigitsOfLengthInWhiteSpace length =
+        gen {
+                let! frontWhitespace = whitespaceString()
+                let! digits = Arb.generate<NonNegativeInt>
+                let! endWhitespace = whitespaceString()
+                return sprintf "%s%s%s" frontWhitespace (validDigits digits length) endWhitespace
             }
         
 type DomainGenerators =
