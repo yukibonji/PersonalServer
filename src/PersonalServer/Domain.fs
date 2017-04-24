@@ -243,8 +243,12 @@ and NameAndAffixes (salutations, personName, suffixes) =
         member __.CompareTo yobj =
             match yobj with
             | :? NameAndAffixes as y -> 
-                if __.Value > y.Value then 1
-                elif __.Value < y.Value then -1
+                if __.PersonName > y.PersonName then 1
+                elif __.PersonName < y.PersonName then -1
+                elif __.Salutations > y.Salutations then 1
+                elif __.Salutations < y.Salutations then -1
+                elif __.Suffixes > y.Suffixes then 1
+                elif __.Suffixes < y.Suffixes then -1
                 else 0
             | _ -> invalidArg "NameAndAffixes" "cannot compare values of different types"
 
@@ -351,22 +355,12 @@ type ZipCode =
     override __.GetHashCode() = hash __
     interface System.IComparable with
         member __.CompareTo yobj =
-            match yobj with
-            | :? ZipCode5 as y -> 
-                match __ with
-                | ZipCode5 x -> 
-                    if x > y then 1
-                    elif x < y then -1
-                    else 0
-                | _ -> 1
-            |  :? ZipCode5Plus4 as y ->
-                match __ with
-                | ZipCode5Plus4 x -> 
-                    if x > y then 1
-                    elif x < y then -1
-                    else 0
-                | _ -> -1
-            | _ -> invalidArg "ZipCode" "cannot compare values of different types"
+            let yString = (unbox yobj).ToString()
+            let xString = __.ToString()
+
+            if xString > yString then 1
+            elif xString <yString then -1
+            else 0
 
 [<CustomEquality;CustomComparison>]
 type PostalCode =
@@ -388,23 +382,12 @@ type PostalCode =
     override __.GetHashCode() = hash __
     interface System.IComparable with
         member __.CompareTo yobj =
-            match yobj with
-            |  :? NonUsPostalCode as y ->
-                match __ with
-                | NonUsPostalCode x -> 
-                    if x > y then 1
-                    elif x < y then -1
-                    else 0
-                | _ -> -1
-            | :? ZipCode as y -> 
-                match __ with
-                | ZipCode x -> 
-                    if x > y then 1
-                    elif x < y then -1
-                    else 0
-                | _ -> 1
-            | _ -> invalidArg "PostalCode" "cannot compare values of different types"
-                
+            let yString = (unbox yobj).ToString()
+            let xString = __.ToString()
+
+            if xString > yString then 1
+            elif xString <yString then -1
+            else 0
 
 type PhysicalAddress internal (streetAddress, city, state, postalCode, country, tags) =
     member __.StreetAddress : TrimNonEmptyString list = streetAddress 
@@ -444,10 +427,15 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
             match yobj with
             | :? PhysicalAddress as y -> 
                 if __.Country > y.Country then 1
+                elif __.Country < y.Country then -1
+                elif __.State > y.State then 1
                 elif __.State < y.State then -1
                 elif __.City > y.City then 1
+                elif __.City < y.City then -1
+                elif __.PostalCode > y.PostalCode then 1
                 elif __.PostalCode < y.PostalCode then -1
                 elif __.StreetAddress > y.StreetAddress then 1
+                elif __.StreetAddress < y.StreetAddress then -1
                 else 0
             | _ -> invalidArg "PhysicalAddress" "cannot compare values of different types"
 

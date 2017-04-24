@@ -239,6 +239,13 @@ module DomainTypes =
                     let t = DigitString.TryParse <| digits.ToString()
                     let t2 = DigitString.TryParse t.Value.Value
                     t2 = t
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [DigitString.TryParse "555"; DigitString.TryParse "111"; DigitString.TryParse "33"; DigitString.TryParse "2"; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [DigitString.TryParse "111"; DigitString.TryParse "2"; DigitString.TryParse "33"; DigitString.TryParse "555"; ])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -279,6 +286,13 @@ module DomainTypes =
                     let t = DigitString2.TryParse validDigit
                     let t2 = DigitString2.TryParse t.Value.Value
                     t2 = t
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [DigitString2.TryParse "55"; DigitString2.TryParse "11"; DigitString2.TryParse "33"; DigitString2.TryParse "22"; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [DigitString2.TryParse "11"; DigitString2.TryParse "22"; DigitString2.TryParse "33"; DigitString2.TryParse "55"; ])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -318,6 +332,13 @@ module DomainTypes =
                     let t = DigitString3.TryParse validDigit
                     let t2 = DigitString3.TryParse t.Value.Value
                     t2 = t
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [DigitString3.TryParse "555"; DigitString3.TryParse "111"; DigitString3.TryParse "223"; DigitString3.TryParse "222"; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [DigitString3.TryParse "111"; DigitString3.TryParse "222"; DigitString3.TryParse "223"; DigitString3.TryParse "555"; ])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -357,6 +378,13 @@ module DomainTypes =
                     let t = DigitString4.TryParse validDigit 
                     let t2 = DigitString4.TryParse t.Value.Value
                     t2 = t
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [DigitString4.TryParse "5555"; DigitString4.TryParse "1111"; DigitString4.TryParse "2232"; DigitString4.TryParse "2222"; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [DigitString4.TryParse "1111"; DigitString4.TryParse "2222"; DigitString4.TryParse "2232"; DigitString4.TryParse "5555"; ])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -374,6 +402,45 @@ module DomainTypes =
                     let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
  
                     t.Value = fullName
+
+            testCase "ordered on first name" <| fun () ->
+                let ordered =
+                    [FullName.TryParse (Some "5555", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "1111", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "2232", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "2222", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [FullName.TryParse (Some "1111", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                                            FullName.TryParse (Some "2222", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                                            FullName.TryParse (Some "2232", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                                            FullName.TryParse (Some "5555", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); ])
+                    "expected equality"
+
+            testCase "ordered on middle names" <| fun () ->
+                let ordered =
+                    [FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "John", ["3 middle";], Some "SameLast", NameOrder.Western, Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [FullName.TryParse (Some "John", ["3 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                                            FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                                            FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); 
+                                            FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>); ])
+                    "expected equality"
+
+            testCase "ordered on family" <| fun () ->
+                let ordered =
+                    [FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "b", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "aaa", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "d", NameOrder.Western, Set.empty<Tag>); 
+                    FullName.TryParse (Some "John", ["3 middle";], Some "cc", NameOrder.Western, Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "aaa", NameOrder.Western, Set.empty<Tag>);
+                                            FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "b", NameOrder.Western, Set.empty<Tag>);
+                                            FullName.TryParse (Some "John", ["3 middle";], Some "cc", NameOrder.Western, Set.empty<Tag>); 
+                                            FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "d", NameOrder.Western, Set.empty<Tag>); ])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -411,6 +478,19 @@ module DomainTypes =
                             (x.ToString(), Set.empty<Tag>)
                             |> PersonName.TryParse
                         t = t2
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [PersonName.TryParse ("b", Set.empty<Tag>); 
+                    PersonName.TryParse ("aaa", Set.empty<Tag>); 
+                    PersonName.TryParse ("d", Set.empty<Tag>); 
+                    PersonName.TryParse ("cc", Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [PersonName.TryParse ("aaa", Set.empty<Tag>);
+                                            PersonName.TryParse ("b", Set.empty<Tag>);
+                                            PersonName.TryParse ("cc", Set.empty<Tag>); 
+                                            PersonName.TryParse ("d", Set.empty<Tag>); ])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -432,6 +512,21 @@ module DomainTypes =
 
                                 t.Value = nameAndAffixes
                             )
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [NameAndAffixes.TryParse ([], "bb", [], Set.empty<Tag>); 
+                    NameAndAffixes.TryParse ([], "b", ["IV"], Set.empty<Tag>); 
+                    NameAndAffixes.TryParse ([], "b", ["III"], Set.empty<Tag>);
+                    NameAndAffixes.TryParse (["Mr"], "b", [], Set.empty<Tag>); 
+                    NameAndAffixes.TryParse (["Mr"], "c", [], Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [NameAndAffixes.TryParse ([], "b", ["III"], Set.empty<Tag>);
+                                            NameAndAffixes.TryParse  ([], "b", ["IV"], Set.empty<Tag>);
+                                            NameAndAffixes.TryParse (["Mr"], "b", [], Set.empty<Tag>);
+                                            NameAndAffixes.TryParse ([], "bb", [], Set.empty<Tag>);
+                                            NameAndAffixes.TryParse (["Mr"], "c", [], Set.empty<Tag>);])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -471,7 +566,20 @@ module DomainTypes =
                     let t = ZipCode5.TryParse validDigit
                     let t2 = ZipCode5.TryParse t.Value.Value
                     t2 = t
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [ZipCode5.TryParse "55555"; ZipCode5.TryParse "11111"; ZipCode5.TryParse "22322"; ZipCode5.TryParse "22222"; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [ZipCode5.TryParse "11111"; ZipCode5.TryParse "22222"; ZipCode5.TryParse "22322"; ZipCode5.TryParse "55555"; ])
+                    "expected equality"
         ]
+
+    //used in zipcode tests, would not build properly below
+    let zip555559999 = (ZipCode5Plus4.TryParse "555559999").Value
+    let zip223221111 = (ZipCode5Plus4.TryParse "223221111").Value
+    let zip55555 = ZipCode.ZipCode5 (ZipCode5.TryParse "55555").Value
+    let zip22322 = ZipCode.ZipCode5 (ZipCode5.TryParse "22322").Value;
 
     [<Tests>]
     let ZipCode5Plus4 =
@@ -545,6 +653,13 @@ module DomainTypes =
                     let t2 = ZipCode5Plus4.TryParse <| sprintf " %s   %s " zip5 suffix
 
                     t2 = t
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [ZipCode5Plus4.TryParse "555559999"; ZipCode5Plus4.TryParse "111119999"; ZipCode5Plus4.TryParse "223229999"; ZipCode5Plus4.TryParse "222229999"; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [ZipCode5Plus4.TryParse "111119999"; ZipCode5Plus4.TryParse "222229999"; ZipCode5Plus4.TryParse "223229999"; ZipCode5Plus4.TryParse "555559999"; ])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -582,6 +697,45 @@ module DomainTypes =
                             x.ToString()
                             |> NonUsPostalCode.TryParse
                         t = t2
+
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [NonUsPostalCode.TryParse "a555559999"; NonUsPostalCode.TryParse "a111119999"; NonUsPostalCode.TryParse "a223229999"; NonUsPostalCode.TryParse "a222229999"; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [NonUsPostalCode.TryParse "a111119999"; NonUsPostalCode.TryParse "a222229999"; NonUsPostalCode.TryParse "a223229999"; NonUsPostalCode.TryParse "a555559999"; ])
+                    "expected equality"
+        ]
+
+    [<Tests>]
+    let ZipCode =
+        testList "DomainTypes.ZipCode" [
+            testCase "ordered" <| fun () ->
+                
+                let ordered =
+                    [ZipCode.ZipCode5 (ZipCode5.TryParse "55555").Value; 
+                    ZipCode.ZipCode5Plus4 zip555559999; 
+                    ZipCode.ZipCode5Plus4 zip223221111; 
+                    ZipCode.ZipCode5 (ZipCode5.TryParse "22322").Value; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [ZipCode.ZipCode5 (ZipCode5.TryParse "22322").Value; ZipCode.ZipCode5Plus4 zip223221111 ; ZipCode.ZipCode5 (ZipCode5.TryParse "55555").Value; ZipCode.ZipCode5Plus4 zip555559999; ])
+                    "expected equality"
+        ]
+
+    [<Tests>]
+    let PostalCode =
+        testList "DomainTypes.PostalCode" [
+            testCase "ordered" <| fun () ->
+                let ordered =
+                    [PostalCode.ZipCode zip55555; 
+                    PostalCode.NonUsPostalCode (NonUsPostalCode.TryParse "55555a").Value; 
+                    PostalCode.NonUsPostalCode (NonUsPostalCode.TryParse "22322a").Value;
+                    PostalCode.ZipCode zip22322; ]
+                    |> List.sort
+                Expect.isTrue (ordered = [PostalCode.ZipCode zip22322; 
+                                            PostalCode.NonUsPostalCode (NonUsPostalCode.TryParse "22322a").Value;  
+                                            PostalCode.ZipCode zip55555; 
+                                            PostalCode.NonUsPostalCode (NonUsPostalCode.TryParse "55555a").Value; ])
+                    "expected equality"
         ]
 
     [<Tests>]
@@ -605,4 +759,69 @@ module DomainTypes =
  
                                 t.Value = physicalAddress
                         )
+
+            testCase "ordered on country" <| fun () ->
+                let ordered =
+                    [PhysicalAddress.TryParse ([], None, None, None, Some "a", Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, None, None, Some "c", Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, None, None, Some "b", Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, None, None, Some "d", Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, None, None, Some "a",  Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], None, None, None, Some "b", Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], None, None, None, Some "c", Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], None, None, None, Some "d", Set.empty<Tag>); ])
+                    "expected equality"
+
+            testCase "ordered on postalcode" <| fun () ->
+                let ordered =
+                    [PhysicalAddress.TryParse ([], None, None, Some "55555", None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, None, Some "55555a", None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, None, Some "22322a", None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, None, Some "22322", None,  Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, None, Some "22322", None, Set.empty<Tag>);
+                                            PhysicalAddress.TryParse ([], None, None, Some "22322a", None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], None, None, Some "55555", None,  Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], None, None, Some "55555a", None, Set.empty<Tag>); ])
+                    "expected equality"
+
+            testCase "ordered on state" <| fun () ->
+                let ordered =
+                    [PhysicalAddress.TryParse ([], None, Some "a", None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, Some "c", None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, Some "b", None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], None, Some "d", None, None, Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, Some "a",  None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], None, Some "b", None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], None, Some "c", None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], None, Some "d", None, None, Set.empty<Tag>); ])
+                    "expected equality"
+
+            testCase "ordered on city" <| fun () ->
+                let ordered =
+                    [PhysicalAddress.TryParse ([], Some "a", None, None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], Some "c", None, None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], Some "b", None, None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse ([], Some "d", None, None, None, Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], Some "a",  None, None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], Some "b", None, None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], Some "c", None, None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse ([], Some "d", None, None, None, Set.empty<Tag>); ])
+                    "expected equality"
+
+            testCase "ordered on address" <| fun () ->
+                let ordered =
+                    [PhysicalAddress.TryParse (["5 address"; "5 address"], None, None, None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse (["1 address"; "1 address"], None, None, None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse (["5 address"], None, None, None, None, Set.empty<Tag>); 
+                    PhysicalAddress.TryParse (["1 address"; "2 address"], None, None, None, None, Set.empty<Tag>); ]
+                    |> List.sort
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse (["1 address"; "1 address"], None,  None, None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse (["1 address"; "2 address"], None, None, None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse (["5 address"], None, None, None, None, Set.empty<Tag>); 
+                                            PhysicalAddress.TryParse (["5 address"; "5 address"], None, None, None, None, Set.empty<Tag>); ])
+                    "expected equality"
         ]
