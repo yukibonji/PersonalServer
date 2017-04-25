@@ -825,3 +825,73 @@ module DomainTypes =
                                             PhysicalAddress.TryParse (["5 address"; "5 address"], None, None, None, None, Set.empty<Tag>); ])
                     "expected equality"
         ]
+
+    [<Tests>]
+    let testEmailAddress =
+
+        let makeList nonEmptyStrings = 
+            nonEmptyStrings
+            |> List.map (fun x -> EmailAddress.TryParse (x, Set.empty<Tag>))
+            |> List.choose id
+        
+        testList "DomainTypes.EmailAddress" [
+
+            testCase "TryParse None on empty string" <| fun () ->
+                Expect.isNone (EmailAddress.TryParse (System.String.Empty, Set.empty<Tag>)) "Expected None"
+
+            testPropertyWithConfig config10k "TryParse None on all white space string" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| whitespaceString())
+                        (fun (x : string) -> 
+                            let t = EmailAddress.TryParse (x, Set.empty<Tag>)
+                            t.IsNone)
+
+            testPropertyWithConfig config10k "TryParse" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
+                        (fun (x : string) -> 
+                            let t = EmailAddress.TryParse (x, Set.empty<Tag>)
+                            match t with
+                            | Some emailAddress ->
+                                x.Trim() = emailAddress.Value
+                            | None -> 
+                                x = x)
+
+            testPropertyWithConfig config10k "equality" <|
+                fun  (x : NonEmptyString) ->
+
+                    let t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>)
+                    match t with
+                    | Some emailAddress ->
+                        t = EmailAddress.TryParse (emailAddress.Value, Set.empty<Tag>)
+                    | None ->
+                        t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>)
+
+            testPropertyWithConfig config10k "is trim" <|
+                fun  (x : NonEmptyString) ->
+
+                    let t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>)
+                    match t with
+                    | Some emailAddress ->
+                        x.ToString().Trim() = emailAddress.Value
+                    | None ->
+                        t = t
+
+            testPropertyWithConfig config10k "ordered" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genNonEmptyNonAllWhitespaceStringList())
+                        (fun (xs : string list) -> 
+                            let listOfEmailAddresss = makeList xs
+
+                            let stringFromEmailAddresssOrdered =
+                                listOfEmailAddresss
+                                |> List.map (fun x -> x.Value )
+                                |> List.sort
+
+                            let orderedEmailAddresss = listOfEmailAddresss |> List.sort
+
+                            let emailAddresssFromOrderedList = makeList stringFromEmailAddresssOrdered
+                                
+                            emailAddresssFromOrderedList = orderedEmailAddresss
+                            )
+        ]

@@ -22,5 +22,6 @@ module Tests =
         Tests.runTestsWithArgs defaultConfig args DomainTypes.ZipCode |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.PostalCode |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.PhysicalAddress |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testEmailAddress |> ignore
 
         0
