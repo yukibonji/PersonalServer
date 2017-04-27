@@ -170,6 +170,40 @@ module DomainGeneratorsCode =
         }
         |> Gen.filter Option.isSome
         |> Gen.map (fun x -> x.Value)
+
+    let genUsPhone7() =
+        gen {
+                let! digitsExchange = Arb.generate<NonNegativeInt>
+                let exchange = validDigits digitsExchange 3
+                let! digitsSuffix = Arb.generate<NonNegativeInt>
+                let suffix = validDigits digitsSuffix 4
+                let! divide = Gen.elements["";"-";" -";"  -";"- ";"-  ";" ";" ";]
+                let! start = Gen.elements["";" ";]
+                let! after = Gen.elements["";" ";]
+
+                return sprintf "%s%s%s%s%s" start exchange divide suffix after
+        }
+
+    let genUsPhone10() =
+        gen {
+                let! digitsAreaCode = Arb.generate<NonNegativeInt>
+                let areaCode = validDigits digitsAreaCode 3
+                let! usPhone7 = genUsPhone7()
+                let! start = Gen.elements["";" ";"(";"( ";"(  ";" (";"  (";" ( ";]
+                let! divide = Gen.elements["";" ";")";" )";"  )";") ";")  ";" ) ";]
+
+                return sprintf "%s%s%s%s" start areaCode divide usPhone7
+        }
+
+    let genUsPhone() =
+        gen {
+            let! usPhone7 = genUsPhone7()
+            let! usPhone10 = genUsPhone10()
+            return! Gen.elements [usPhone7; usPhone10]
+        }
+
+    let genUsPhoneList() =
+        Gen.listOf <| genUsPhone()
         
 type DomainGenerators =
         static member FullName() =

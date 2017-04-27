@@ -9,7 +9,7 @@ module DomainTypes =
 
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 ; arbitrary = [typeof<DomainGenerators>] }
 //    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
-    let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (172599043, 296293524) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
+    let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (1797642578, 296295059) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
 
     [<Tests>]
     let testTag =
@@ -893,5 +893,75 @@ module DomainTypes =
                             let emailAddresssFromOrderedList = makeList stringFromEmailAddresssOrdered
                                 
                             emailAddresssFromOrderedList = orderedEmailAddresss
+                            )
+        ]
+
+    [<Tests>]
+    let testUsPhone =
+
+        testList "DomainTypes.UsPhone" [
+
+            testCase "TryParse None on empty string" <| fun () ->
+                Expect.isNone (UsPhone.TryParse System.String.Empty) "Expected None"
+
+            testPropertyWithConfig config10k "TryParse None on all white space string" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| whitespaceString())
+                        (fun (x : string) -> 
+                            let t = UsPhone.TryParse x
+                            t.IsNone)
+
+            testPropertyWithConfig config10k "TryParse" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genUsPhone())
+                        (fun (x : string) -> 
+                            let t = UsPhone.TryParse x 
+                            t.IsSome)
+                            
+            testPropertyWithConfig config10k "equality" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genUsPhone())
+                        (fun  (x : string) ->
+
+                            let t = UsPhone.TryParse x
+                            match t with
+                            | Some usPhone ->
+                                t = UsPhone.TryParse usPhone.Value.Value
+                            | None ->
+                                t = UsPhone.TryParse x
+                        )
+
+            testPropertyWithConfig config10k "ordered" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genUsPhoneList())
+                        (fun (xs : string list) -> 
+                            let listOfUsPhones =
+                                xs 
+                                |> List.map UsPhone.TryParse
+                                |> List.choose id
+
+                            let stringFromUsPhonesOrdered =
+                                let phone10s, phone7s =
+                                    listOfUsPhones
+                                    |> List.partition (fun x -> x.Value.Value.Length = 10)
+                                    
+                                let phone10Ordered =
+                                    phone10s
+                                    |> List.map (fun x -> x.Value.Value)
+                                    |> List.sort
+
+                                let phone7Ordered =
+                                    phone7s
+                                    |> List.map (fun x -> x.Value.Value)
+                                    |> List.sort
+
+                                phone10Ordered @ phone7Ordered
+
+                            let orderedUsPhones = 
+                                listOfUsPhones 
+                                |> List.sort 
+                                |> List.map (fun x -> x.Value.Value)
+                                
+                            stringFromUsPhonesOrdered = orderedUsPhones
                             )
         ]

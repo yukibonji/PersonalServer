@@ -23,5 +23,6 @@ module Tests =
         Tests.runTestsWithArgs defaultConfig args DomainTypes.PostalCode |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.PhysicalAddress |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testEmailAddress |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testUsPhone |> ignore
 
         0

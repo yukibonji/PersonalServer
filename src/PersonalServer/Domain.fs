@@ -499,7 +499,7 @@ type UsPhone internal (areaCode, exchange, suffix) =
             sprintf "(%s) %s-%s" x.Value exchange.Value suffix.Value
         | None ->
             sprintf "%s-%s" exchange.Value suffix.Value
-    override __.ToString() = __.Formatted
+    override __.ToString() = __.Value.ToString()
     override __.Equals(yobj) = 
         match yobj with
         |  :? UsPhone as y -> (__.Value = y.Value)
@@ -518,13 +518,13 @@ type UsPhone internal (areaCode, exchange, suffix) =
         | _, None -> None
         | Some ee, Some ss -> Some <| UsPhone (a, ee, ss)
     static member TryParse (phone : string) =
-        let digits = digitsFromString phone
+        let digits = digitsFromString <| phone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "")
 
         match digits.Length with
         | 10 ->
             let a = DigitString3 <| new string(Array.sub digits 0 3)
-            let e = DigitString3 <| new string(Array.sub digits 4 3)
-            let s = DigitString4 <| new string(Array.sub digits 7 4)
+            let e = DigitString3 <| new string(Array.sub digits 3 3)
+            let s = DigitString4 <| new string(Array.sub digits 6 4)
             Some <| UsPhone (Some a, e, s)
         | 7 ->
             let e = DigitString3 <| new string(Array.sub digits 0 3)
@@ -536,7 +536,9 @@ type UsPhone internal (areaCode, exchange, suffix) =
         member __.CompareTo yobj =
             match yobj with
             | :? UsPhone as y -> 
-                if __.AreaCode > y.AreaCode then 1
+                if __.AreaCode.IsSome && y.AreaCode.IsNone then -1
+                elif __.AreaCode.IsNone && y.AreaCode.IsSome then 1
+                elif __.AreaCode > y.AreaCode then 1
                 elif __.AreaCode < y.AreaCode then -1
                 elif __.Exchange > y.Exchange then 1
                 elif __.Exchange < y.Exchange then -1
