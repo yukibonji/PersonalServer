@@ -204,6 +204,14 @@ module DomainGeneratorsCode =
 
     let genUsPhoneList() =
         Gen.listOf <| genUsPhone()
+
+    let genOtherPhone() =
+        //other phone accespts any digit at least 4 long
+        //to do: fix to reject international prefixes
+        genDigitsOfLengthInWhiteSpace 4
+
+    let genOtherPhoneList() =
+        Gen.listOf <| genOtherPhone()
         
 type DomainGenerators =
         static member FullName() =

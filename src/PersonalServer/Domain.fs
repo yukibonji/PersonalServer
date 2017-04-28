@@ -506,6 +506,7 @@ type UsPhone internal (areaCode, exchange, suffix) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse (areaCode, exchange, suffix) = 
+        //to do: fix to reject international prefixes
         let a = 
             match areaCode with
             | Some x ->
@@ -518,6 +519,7 @@ type UsPhone internal (areaCode, exchange, suffix) =
         | _, None -> None
         | Some ee, Some ss -> Some <| UsPhone (a, ee, ss)
     static member TryParse (phone : string) =
+        //to do: fix to reject international prefixes
         let digits = digitsFromString <| phone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "")
 
         match digits.Length with
@@ -549,13 +551,15 @@ type UsPhone internal (areaCode, exchange, suffix) =
 and OtherPhone internal (phone) =
     member __.Value : DigitString =  phone
     member __.Formatted = phone.ToString()
-    override __.ToString() = __.Formatted
+    override __.ToString() = __.Value.ToString()
     override __.Equals(yobj) = 
         match yobj with
         |  :? OtherPhone as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse (phone : string) = 
+    //other phone accespts any digit at least 4 long
+        //to do: fix to reject international prefixes
         let digits = digitsFromString phone
 
         if digits.Length < 4 then

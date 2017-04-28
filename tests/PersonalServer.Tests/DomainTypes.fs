@@ -965,3 +965,73 @@ module DomainTypes =
                             stringFromUsPhonesOrdered = orderedUsPhones
                             )
         ]
+
+    [<Tests>]
+    let tesuOtherPhone =
+
+        testList "DomainTypes.OtherPhone" [
+
+            testCase "TryParse None on empty string" <| fun () ->
+                Expect.isNone (OtherPhone.TryParse System.String.Empty) "Expected None"
+
+            testPropertyWithConfig config10k "TryParse None on all white space string" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| whitespaceString())
+                        (fun (x : string) -> 
+                            let t = OtherPhone.TryParse x
+                            t.IsNone)
+
+            testPropertyWithConfig config10k "TryParse" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genOtherPhone())
+                        (fun (x : string) -> 
+                            let t = OtherPhone.TryParse x 
+                            t.IsSome)
+                            
+            testPropertyWithConfig config10k "equality" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genOtherPhone())
+                        (fun  (x : string) ->
+
+                            let t = OtherPhone.TryParse x
+                            match t with
+                            | Some usPhone ->
+                                t = OtherPhone.TryParse usPhone.Value.Value
+                            | None ->
+                                t = OtherPhone.TryParse x
+                        )
+
+            testPropertyWithConfig config10k "ordered" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genOtherPhoneList())
+                        (fun (xs : string list) -> 
+                            let listOfOtherPhones =
+                                xs 
+                                |> List.map OtherPhone.TryParse
+                                |> List.choose id
+
+                            let stringFromOtherPhonesOrdered =
+                                let phone10s, phone7s =
+                                    listOfOtherPhones
+                                    |> List.partition (fun x -> x.Value.Value.Length = 10)
+                                    
+                                let phone10Ordered =
+                                    phone10s
+                                    |> List.map (fun x -> x.Value.Value)
+                                    |> List.sort
+
+                                let phone7Ordered =
+                                    phone7s
+                                    |> List.map (fun x -> x.Value.Value)
+                                    |> List.sort
+
+                                phone10Ordered @ phone7Ordered
+
+                            let orderedOtherPhones = 
+                                listOfOtherPhones 
+                                |> List.sort 
+                                |> List.map (fun x -> x.Value.Value)
+                                
+                            stringFromOtherPhonesOrdered = orderedOtherPhones
+                            )
+        ]
