@@ -1035,3 +1035,29 @@ module DomainTypes =
                             stringFromOtherPhonesOrdered = orderedOtherPhones
                             )
         ]
+
+    [<Tests>]
+    let Phone =
+        testList "DomainTypes.Phone" [
+            testPropertyWithConfig config10k "ordered" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genPhoneList())
+                        (fun (xs : string list) -> 
+                            let listOfPhones =
+                                xs 
+                                |> List.map OtherPhone.TryParse
+                                |> List.choose id
+
+                            let stringPhonesOrdered =
+                                listOfPhones
+                                |> List.map (fun x -> x.Value.Value)
+                                |> List.sort
+
+                            let orderedPhones = 
+                                listOfPhones 
+                                |> List.sort 
+                                |> List.map (fun x -> x.Value.Value)
+                                
+                            stringPhonesOrdered = orderedPhones
+                            )
+        ]

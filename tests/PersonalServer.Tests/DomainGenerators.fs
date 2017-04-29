@@ -212,6 +212,16 @@ module DomainGeneratorsCode =
 
     let genOtherPhoneList() =
         Gen.listOf <| genOtherPhone()
+
+    let genPhoneList() =
+        gen {
+            let! usPhone = genUsPhoneList()
+            let! otherPhone = genOtherPhoneList()
+            return
+                usPhone
+                |> List.append otherPhone
+                |> List.sortDescending
+        }
         
 type DomainGenerators =
         static member FullName() =

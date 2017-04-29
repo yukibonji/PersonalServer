@@ -178,7 +178,9 @@ type UsPhone =
       member Value : DigitString
       static member TryParse : areaCode:string option * exchange:string * suffix:string -> UsPhone option
       static member TryParse : phone:string -> UsPhone option
-and [<Class>] OtherPhone =
+
+[<Class>] 
+type OtherPhone =
       interface System.IComparable
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
@@ -186,13 +188,17 @@ and [<Class>] OtherPhone =
       member Formatted : string
       member Value : DigitString
       static member TryParse : phone:string -> OtherPhone option
-and Phone =
+
+[<CustomEquality;CustomComparison>] 
+type Phone =
     | UsPhone of UsPhone
     | OtherPhone of OtherPhone
     with
       override ToString : unit -> string
       member Formatted : string
       member Value : DigitString
+      interface System.IComparable
+      static member TryParse : phone:string -> Phone option
 
 [<Class>]
 type PhoneNumber =

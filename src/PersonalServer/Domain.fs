@@ -1,6 +1,5 @@
 ﻿namespace Jackfoxy.PersonalServer
 
-open FSharpx.Choice
 open System
 open System.Text.RegularExpressions
 open Utilities
@@ -354,12 +353,12 @@ type ZipCode =
         yobj.GetType() = __.GetType() && yobj.ToString() = __.ToString()
     override __.GetHashCode() = hash __
     interface System.IComparable with
-        member __.CompareTo yobj =
+        member __.CompareTo yobj =       
             let yString = (unbox yobj).ToString()
             let xString = __.ToString()
 
             if xString > yString then 1
-            elif xString <yString then -1
+            elif xString < yString then -1
             else 0
 
 [<CustomEquality;CustomComparison>]
@@ -548,7 +547,8 @@ type UsPhone internal (areaCode, exchange, suffix) =
                 elif __.Suffix < y.Suffix then -1
                 else 0
             | _ -> invalidArg "UsPhone" "cannot compare values of different types"
-and OtherPhone internal (phone) =
+
+type OtherPhone internal (phone) =
     member __.Value : DigitString =  phone
     member __.Formatted = phone.ToString()
     override __.ToString() = __.Value.ToString()
@@ -577,18 +577,41 @@ and OtherPhone internal (phone) =
                 elif __.Value < y.Value then -1
                 else 0
             | _ -> invalidArg "OtherPhone" "cannot compare values of different types"
-and Phone =
+
+[<CustomEquality;CustomComparison>] 
+type Phone =
     | UsPhone of UsPhone
     | OtherPhone of OtherPhone
     member __.Value = 
         match __ with
         | UsPhone x -> x.Value
         | OtherPhone x -> x.Value
-    override __.ToString() = __.Formatted  
     member __.Formatted = 
         match __ with
         | UsPhone x -> x.Formatted
         | OtherPhone x -> x.Formatted
+    static member TryParse zipcode =
+        match UsPhone.TryParse zipcode with
+        | Some x -> Some <| Phone.UsPhone x
+        | None ->
+            match OtherPhone.TryParse zipcode with
+            | Some x -> Some <| Phone.OtherPhone x
+            | None -> None
+    override __.ToString() = 
+        match __ with
+        | UsPhone x -> x.ToString()
+        | OtherPhone x ->  x.ToString()
+    override __.Equals(yobj) = 
+        yobj.GetType() = __.GetType() && yobj.ToString() = __.ToString()
+    override __.GetHashCode() = hash __
+    interface System.IComparable with
+        member __.CompareTo yobj =
+            let yString = (unbox yobj).ToString()
+            let xString = __.ToString()
+
+            if xString > yString then 1
+            elif xString < yString then -1
+            else 0
        
 type PhoneNumber internal (countryCode : string option, phone : Phone, extension : int option, tags : Tag Set) = 
     member __.CountryCode = Option.map DigitString2 <| countryCode       
