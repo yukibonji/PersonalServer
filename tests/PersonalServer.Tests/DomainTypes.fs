@@ -7,7 +7,7 @@ open FsCheck
 
 module DomainTypes =
 
-    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 ; arbitrary = [typeof<DomainGenerators>] }
+    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000; arbitrary = [typeof<DomainGenerators>] }
 //    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
     let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (1797642578, 296295059) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
 
@@ -1005,27 +1005,17 @@ module DomainTypes =
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genOtherPhoneList())
                         (fun (xs : string list) -> 
-                            let listOfOtherPhones =
+                            
+                            let listOfOtherPhones : OtherPhone list =
                                 xs 
                                 |> List.map OtherPhone.TryParse
                                 |> List.choose id
 
                             let stringFromOtherPhonesOrdered =
-                                let phone10s, phone7s =
-                                    listOfOtherPhones
-                                    |> List.partition (fun x -> x.Value.Value.Length = 10)
-                                    
-                                let phone10Ordered =
-                                    phone10s
-                                    |> List.map (fun x -> x.Value.Value)
-                                    |> List.sort
 
-                                let phone7Ordered =
-                                    phone7s
-                                    |> List.map (fun x -> x.Value.Value)
-                                    |> List.sort
-
-                                phone10Ordered @ phone7Ordered
+                                listOfOtherPhones
+                                |> List.map (fun x -> x.Value.Value)
+                                |> List.sort
 
                             let orderedOtherPhones = 
                                 listOfOtherPhones 

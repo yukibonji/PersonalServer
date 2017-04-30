@@ -201,18 +201,46 @@ type Phone =
       static member TryParse : phone:string -> Phone option
 
 [<Class>]
+type UpperLatin2 =
+    interface IComparable
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Value : string
+    static member TryParse : value:string -> UpperLatin2 option
+
+[<Class>]
+type UpperLatin3 =
+    interface IComparable
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Value : string
+    static member TryParse : value:string -> UpperLatin3 option
+
+type Country =
+    {
+    Name        : string
+    ISO         : UpperLatin2
+    UnAlpha     : UpperLatin3
+    UnNum       : System.UInt16
+    CallingCodes  : Set<UInt16>
+    }
+
+[<Class>]
 type PhoneNumber =
       interface System.IComparable
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
-      member CountryCode : DigitString2 option
-      member Extension : int option
+      member CallingCode : UInt16 option
+      member Extension : DigitString option
       member Formatted : string
       member Phone : Phone
       member Tags : Set<Tag>
       member Value : DigitString
-      static member TryParse : countryCode:string option -> phone:Phone -> extension:int option -> PhoneNumber option
+      static member TryParse : callingCode : string option * phone:Phone * extension:string option * tags:Set<Tag>-> PhoneNumber option
+      static member TryParse : phone:string * tags:Set<Tag> -> PhoneNumber option
 
 type Handle =
     {Address: string

@@ -43,6 +43,32 @@ module internal Utilities =
                 else 
                     None
 
+    let verifyUpperLatinString (s : string) length t =
+        if String.IsNullOrWhiteSpace s then
+            None
+        else
+            let s' = s.Trim()
+            if String.length(s') <> length then 
+                None
+            else
+                let regex = new Regex("^[A-Z]+$")
+
+                if regex.IsMatch s' then 
+                    Some <| t s'
+                else 
+                    None
+
+    let tryParseWith tryParseFunc = tryParseFunc >> function
+        | true, v    -> Some v
+        | false, _   -> None
+
+
+//    let tryParseDate   = tryParseWith DateTime.TryParse
+//    let tryParseInt    = tryParseWith Int32.TryParse
+    let tryParseUInt16 = tryParseWith UInt16.TryParse
+//    let tryParseSingle = tryParseWith Single.TryParse
+//    let tryParseDouble = tryParseWith Double.TryParse
+
     let port portNumber =
         let caller = "Port"
 
