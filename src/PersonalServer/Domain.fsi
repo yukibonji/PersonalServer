@@ -23,40 +23,40 @@ type TrimNonEmptyString =
     static member Parse : value:string list -> TrimNonEmptyString list
 
 [<Class>]
-type DigitString =
+type Digits =
     interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
-    static member TryParse : value:string -> DigitString option
+    static member TryParse : value:string -> Digits option
 
 [<Class>]
-type DigitString2 =
+type Digits2 =
     interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
-    static member TryParse : value:string -> DigitString2 option
+    static member TryParse : value:string -> Digits2 option
 
 [<Class>]
-type DigitString3 =
+type Digits3 =
     interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
-    static member TryParse : value:string -> DigitString3 option
+    static member TryParse : value:string -> Digits3 option
 
 [<Class>]
-type DigitString4 =
+type Digits4 =
     interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
-    static member TryParse : value:string -> DigitString4 option
+    static member TryParse : value:string -> Digits4 option
 
 
 //to do: name with affixes
@@ -171,11 +171,11 @@ type UsPhone =
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
-      member AreaCode : DigitString3 option
-      member Exchange : DigitString3
+      member AreaCode : Digits3 option
+      member Exchange : Digits3
       member Formatted : string
-      member Suffix : DigitString4
-      member Value : DigitString
+      member Suffix : Digits4
+      member Value : Digits
       static member TryParse : areaCode:string option * exchange:string * suffix:string -> UsPhone option
       static member TryParse : phone:string -> UsPhone option
 
@@ -186,7 +186,7 @@ type OtherPhone =
       override GetHashCode : unit -> int
       override ToString : unit -> string
       member Formatted : string
-      member Value : DigitString
+      member Value : Digits
       static member TryParse : phone:string -> OtherPhone option
 
 [<CustomEquality;CustomComparison>] 
@@ -196,7 +196,7 @@ type Phone =
     with
       override ToString : unit -> string
       member Formatted : string
-      member Value : DigitString
+      member Value : Digits
       interface System.IComparable
       static member TryParse : phone:string -> Phone option
 
@@ -234,11 +234,11 @@ type PhoneNumber =
       override GetHashCode : unit -> int
       override ToString : unit -> string
       member CallingCode : UInt16 option
-      member Extension : DigitString option
+      member Extension : Digits option
       member Formatted : string
       member Phone : Phone
       member Tags : Set<Tag>
-      member Value : DigitString
+      member Value : Digits
       static member TryParse : callingCode : string option * phone:Phone * extension:string option * tags:Set<Tag>-> PhoneNumber option
       static member TryParse : phone:string * tags:Set<Tag> -> PhoneNumber option
 

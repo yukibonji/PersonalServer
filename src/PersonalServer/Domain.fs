@@ -51,12 +51,12 @@ type TrimNonEmptyString internal (value : string) =
                     else 0
                 | _ -> invalidArg "TrimNonEmptyString" "cannot compare values of different types"
 
-type DigitString internal (value) =
+type Digits internal (value) =
     member __.Value = value
     override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
-        |  :? DigitString as y -> (__.Value = y.Value)
+        |  :? Digits as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
     static member TryParse (value : string) = 
@@ -67,75 +67,75 @@ type DigitString internal (value) =
             let regex = new Regex("^[0-9]+$")
 
             if regex.IsMatch s' then 
-                Some <| DigitString s'
+                Some <| Digits s'
             else 
                 None
     with
         interface System.IComparable with
             member __.CompareTo yobj =
                 match yobj with
-                | :? DigitString as y -> 
+                | :? Digits as y -> 
                     if __.Value > y.Value then 1
                     elif __.Value < y.Value then -1
                     else 0
-                | _ -> invalidArg "DigitString" "cannot compare values of different types"
+                | _ -> invalidArg "Digits" "cannot compare values of different types"
 
-type DigitString2 internal (value) =
+type Digits2 internal (value) =
     member __.Value = value
     override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
-        |  :? DigitString2 as y -> (__.Value = y.Value)
+        |  :? Digits2 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse value = verifyStringInt value 2 DigitString2
+    static member TryParse value = verifyStringInt value 2 Digits2
     with
         interface System.IComparable with
             member __.CompareTo yobj =
                 match yobj with
-                | :? DigitString2 as y -> 
+                | :? Digits2 as y -> 
                     if __.Value > y.Value then 1
                     elif __.Value < y.Value then -1
                     else 0
-                | _ -> invalidArg "DigitString2" "cannot compare values of different types"
+                | _ -> invalidArg "Digits2" "cannot compare values of different types"
 
-type DigitString3 internal (value) =
+type Digits3 internal (value) =
     member __.Value = value
     override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
-        |  :? DigitString3 as y -> (__.Value = y.Value)
+        |  :? Digits3 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse value = verifyStringInt value 3 DigitString3
+    static member TryParse value = verifyStringInt value 3 Digits3
     with
         interface System.IComparable with
             member __.CompareTo yobj =
                 match yobj with
-                | :? DigitString3 as y -> 
+                | :? Digits3 as y -> 
                     if __.Value > y.Value then 1
                     elif __.Value < y.Value then -1
                     else 0
-                | _ -> invalidArg "DigitString3" "cannot compare values of different types"
+                | _ -> invalidArg "Digits3" "cannot compare values of different types"
 
-type DigitString4 internal (value) =
+type Digits4 internal (value) =
     member __.Value = value
     override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
-        |  :? DigitString4 as y -> (__.Value = y.Value)
+        |  :? Digits4 as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash value
-    static member TryParse value = verifyStringInt value 4 DigitString4
+    static member TryParse value = verifyStringInt value 4 Digits4
     with
         interface System.IComparable with
             member __.CompareTo yobj =
                 match yobj with
-                | :? DigitString4 as y -> 
+                | :? Digits4 as y -> 
                     if __.Value > y.Value then 1
                     elif __.Value < y.Value then -1
                     else 0
-                | _ -> invalidArg "DigitString4" "cannot compare values of different types"
+                | _ -> invalidArg "Digits4" "cannot compare values of different types"
 
 type FullName internal (first, middle, family, nameOrder, tags) =
     member __.First : TrimNonEmptyString option = first 
@@ -295,7 +295,7 @@ type ZipCode5Plus4 internal (zip : string) =
                 if zipParts.Length = 2 then
                     match ZipCode5.TryParse zipParts.[0] with
                     | Some zip5 -> 
-                        match  DigitString4.TryParse zipParts.[1] with
+                        match  Digits4.TryParse zipParts.[1] with
                         | Some x -> 
                             Some <| ZipCode5Plus4 (sprintf "%s%s" zip5.Value x.Value)
                         | None -> None
@@ -816,13 +816,13 @@ module Countries =
         |> dict
 
 type UsPhone internal (areaCode, exchange, suffix) =
-    member __.AreaCode : DigitString3 option = areaCode
-    member __.Exchange : DigitString3 =  exchange
-    member __.Suffix : DigitString4 = suffix
+    member __.AreaCode : Digits3 option = areaCode
+    member __.Exchange : Digits3 =  exchange
+    member __.Suffix : Digits4 = suffix
     member __.Value =
         match areaCode with
-        | Some x -> DigitString <| sprintf "%s%s%s" x.Value exchange.Value suffix.Value
-        | None -> DigitString <| sprintf "%s%s" exchange.Value suffix.Value
+        | Some x -> Digits <| sprintf "%s%s%s" x.Value exchange.Value suffix.Value
+        | None -> Digits <| sprintf "%s%s" exchange.Value suffix.Value
     member __.Formatted =
         match areaCode with
         | Some x ->
@@ -840,10 +840,10 @@ type UsPhone internal (areaCode, exchange, suffix) =
         let a = 
             match areaCode with
             | Some x ->
-                DigitString3.TryParse x
+                Digits3.TryParse x
             | None -> None
-        let e = DigitString3.TryParse exchange
-        let s = DigitString4.TryParse suffix
+        let e = Digits3.TryParse exchange
+        let s = Digits4.TryParse suffix
         match e, s with
         | None, _ -> None
         | _, None -> None
@@ -854,13 +854,13 @@ type UsPhone internal (areaCode, exchange, suffix) =
 
         match digits.Length with
         | 10 ->
-            let a = DigitString3 <| new string(Array.sub digits 0 3)
-            let e = DigitString3 <| new string(Array.sub digits 3 3)
-            let s = DigitString4 <| new string(Array.sub digits 6 4)
+            let a = Digits3 <| new string(Array.sub digits 0 3)
+            let e = Digits3 <| new string(Array.sub digits 3 3)
+            let s = Digits4 <| new string(Array.sub digits 6 4)
             Some <| UsPhone (Some a, e, s)
         | 7 ->
-            let e = DigitString3 <| new string(Array.sub digits 0 3)
-            let s = DigitString4 <| new string(Array.sub digits 3 4)
+            let e = Digits3 <| new string(Array.sub digits 0 3)
+            let s = Digits4 <| new string(Array.sub digits 3 4)
             Some <| UsPhone (None, e, s)
         | _ ->
             None
@@ -880,7 +880,7 @@ type UsPhone internal (areaCode, exchange, suffix) =
             | _ -> invalidArg "UsPhone" "cannot compare values of different types"
 
 type OtherPhone internal (phone) =
-    member __.Value : DigitString =  phone
+    member __.Value : Digits =  phone
     member __.Formatted = phone.ToString()
     override __.ToString() = __.Value.ToString()
     override __.Equals(yobj) = 
@@ -897,7 +897,7 @@ type OtherPhone internal (phone) =
             None
         else 
             new string(digits)
-            |> DigitString
+            |> Digits
             |> OtherPhone
             |> Some
     interface System.IComparable with
@@ -944,7 +944,7 @@ type Phone =
             elif xString < yString then -1
             else 0
        
-type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension : DigitString option, tags : Tag Set) = 
+type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension : Digits option, tags : Tag Set) = 
     member __.CallingCode = callingCode    
     member __.Phone = phone
     member __.Extension = extension
@@ -958,7 +958,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
             (match extension with
                  | Some x -> x.ToString()
                  | None -> "")
-        |> DigitString
+        |> Digits
 
     member __.Tags = tags
 
@@ -987,7 +987,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
         let code =
             match callingCode with
             | Some cc ->
-                match DigitString.TryParse cc with
+                match Digits.TryParse cc with
                 | Some x -> 
                     match tryParseUInt16 x.Value with
                     | Some y ->
@@ -1000,13 +1000,13 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
             | None -> 
                 None
         
-        PhoneNumber (code, phone, (Option.map DigitString extension), tags) |> Some 
+        PhoneNumber (code, phone, (Option.map Digits extension), tags) |> Some 
     static member TryParse (phone : string, tags) : PhoneNumber option = 
         let txt = phone.ToUpper().Split([|'X'|], 2)
 
         let extension =
             if txt.Length = 2 then
-                DigitString.TryParse txt.[1]
+                Digits.TryParse txt.[1]
             else
                 None
 
@@ -1021,7 +1021,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
             | None ->
                 None
 
-        match DigitString.TryParse number with
+        match Digits.TryParse number with
         | Some digits ->
             let callingCode, numberDigits =
                 if number.Length > 5 && number.StartsWith("+") then

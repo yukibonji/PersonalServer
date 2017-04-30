@@ -226,6 +226,60 @@ module DomainGeneratorsCode =
                 |> List.append otherPhone
                 |> List.sortDescending
         }
+
+    let genCallingCode() =
+        let callingCode digits length = 
+            let x = validDigits digits length
+            if x.StartsWith("0") then
+                x.Replace("0", "1")
+            else x
+            |> UInt16.Parse
+        
+        gen {
+            let! digits = Arb.generate<NonNegativeInt>
+            let! callingCode = Gen.elements [callingCode digits 4 |> Some; callingCode digits 3 |> Some; callingCode digits 2 |> Some; callingCode digits 1 |> Some; None]
+
+            return callingCode
+        }
+
+    let genPhoneNumber() =
+        gen {
+            let! callingCodeRaw = genCallingCode()
+            let callingCode = callingCodeRaw |> Option.map (fun x -> x.ToString())
+
+            let! usPhone = genUsPhone()
+            let! otherPhone = genOtherPhone()
+            let! phone = Gen.elements[usPhone; otherPhone]
+            let! extensionRaw = Arb.generate<NonNegativeInt>
+
+            let! extension = Gen.elements [extensionRaw.ToString() |> Some; None]
+
+            let! whiteSpace1Raw = whitespaceString()
+            let! whiteSpace2Raw = whitespaceString()
+            let! whiteSpace3Raw = whitespaceString()
+            let! whiteSpace4Raw = whitespaceString()
+            let! whiteSpace5Raw = whitespaceString()
+
+            let! whiteSpace1 = Gen.elements [whiteSpace1Raw |> Some; None]
+            let! whiteSpace2 = Gen.elements [whiteSpace2Raw |> Some; None]
+            let! whiteSpace3 = Gen.elements [whiteSpace3Raw |> Some; None]
+            let! whiteSpace4 = Gen.elements [whiteSpace4Raw |> Some; None]
+            let! whiteSpace5 = Gen.elements [whiteSpace5Raw |> Some; None]
+
+            let symbolValueWhitespace symbol value whiteSpace =
+                 sprintf "%s%s%s%s" symbol (defaultArg whiteSpace String.Empty) value (defaultArg whiteSpace String.Empty)
+
+            let phoneNumber = 
+                sprintf "%s%s%s%s%s%s" 
+                    (defaultArg whiteSpace1 String.Empty)
+                    (match callingCode with | Some x -> symbolValueWhitespace "+" x whiteSpace2 | None -> String.Empty)
+                    phone
+                    (defaultArg whiteSpace3 String.Empty)
+                    (match extension with | Some x -> symbolValueWhitespace "X" x whiteSpace4 | None -> String.Empty)
+                    (defaultArg whiteSpace5 String.Empty)
+             
+            return (callingCode, phone, extension, phoneNumber)  
+        }
         
 type DomainGenerators =
         static member FullName() =

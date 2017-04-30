@@ -208,22 +208,22 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testDigitString =
-        testList "DomainTypes.DigitString" [
+    let testDigits =
+        testList "DomainTypes.Digits" [
 
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (DigitString.TryParse System.String.Empty) "Expected None"
+                Expect.isNone (Digits.TryParse System.String.Empty) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
-                           let t = DigitString.TryParse x
+                           let t = Digits.TryParse x
                            t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  (digits : NonNegativeInt) ->
-                    let t = DigitString.TryParse <| digits.ToString()
+                    let t = Digits.TryParse <| digits.ToString()
                     (digits.ToString()) = t.Value.Value
 
                     //to do: digit strings wrapped in whitespace
@@ -231,159 +231,159 @@ module DomainTypes =
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genDigitsInWhiteSpace())
                         (fun (x : string) -> 
-                           let t = DigitString.TryParse x
+                           let t = Digits.TryParse x
                            x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
-                    let t = DigitString.TryParse <| digits.ToString()
-                    let t2 = DigitString.TryParse t.Value.Value
+                    let t = Digits.TryParse <| digits.ToString()
+                    let t2 = Digits.TryParse t.Value.Value
                     t2 = t
 
             testCase "ordered" <| fun () ->
                 let ordered =
-                    [DigitString.TryParse "555"; DigitString.TryParse "111"; DigitString.TryParse "33"; DigitString.TryParse "2"; ]
+                    [Digits.TryParse "555"; Digits.TryParse "111"; Digits.TryParse "33"; Digits.TryParse "2"; ]
                     |> List.sort
-                Expect.isTrue (ordered = [DigitString.TryParse "111"; DigitString.TryParse "2"; DigitString.TryParse "33"; DigitString.TryParse "555"; ])
+                Expect.isTrue (ordered = [Digits.TryParse "111"; Digits.TryParse "2"; Digits.TryParse "33"; Digits.TryParse "555"; ])
                     "expected equality"
         ]
 
     [<Tests>]
-    let testDigitString2 =
-        testList "DomainTypes.DigitString2" [
+    let testDigits2 =
+        testList "DomainTypes.Digits2" [
 
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (DigitString2.TryParse System.String.Empty) "Expected None"
+                Expect.isNone (Digits2.TryParse System.String.Empty) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
-                           let t = DigitString2.TryParse x
+                           let t = Digits2.TryParse x
                            t.IsNone)
 
             testPropertyWithConfig config10k "TryParse None on wrong length digital string" <|
                 fun  (digits : NonNegativeInt) ->
-                    let t = DigitString2.TryParse <| invalidDigits digits 2
+                    let t = Digits2.TryParse <| invalidDigits digits 2
                     t.IsNone
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 2
-                    let t = DigitString2.TryParse validDigit
+                    let t = Digits2.TryParse validDigit
                     validDigit = t.Value.Value
 
             testPropertyWithConfig config10k "TryParse trims" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 2)
                         (fun (x : string) -> 
-                           let t = DigitString2.TryParse x
+                           let t = Digits2.TryParse x
                            x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 2
-                    let t = DigitString2.TryParse validDigit
-                    let t2 = DigitString2.TryParse t.Value.Value
+                    let t = Digits2.TryParse validDigit
+                    let t2 = Digits2.TryParse t.Value.Value
                     t2 = t
 
             testCase "ordered" <| fun () ->
                 let ordered =
-                    [DigitString2.TryParse "55"; DigitString2.TryParse "11"; DigitString2.TryParse "33"; DigitString2.TryParse "22"; ]
+                    [Digits2.TryParse "55"; Digits2.TryParse "11"; Digits2.TryParse "33"; Digits2.TryParse "22"; ]
                     |> List.sort
-                Expect.isTrue (ordered = [DigitString2.TryParse "11"; DigitString2.TryParse "22"; DigitString2.TryParse "33"; DigitString2.TryParse "55"; ])
+                Expect.isTrue (ordered = [Digits2.TryParse "11"; Digits2.TryParse "22"; Digits2.TryParse "33"; Digits2.TryParse "55"; ])
                     "expected equality"
         ]
 
     [<Tests>]
-    let testDigitString3 =
-        testList "DomainTypes.DigitString3" [
+    let testDigits3 =
+        testList "DomainTypes.Digits3" [
 
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (DigitString3.TryParse System.String.Empty) "Expected None"
+                Expect.isNone (Digits3.TryParse System.String.Empty) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
-                           let t = DigitString3.TryParse x
+                           let t = Digits3.TryParse x
                            t.IsNone)
             testPropertyWithConfig config10k "TryParse None on wrong length digital string" <|
                 fun  (digits : NonNegativeInt) ->
-                    let t = DigitString3.TryParse <| invalidDigits digits 3
+                    let t = Digits3.TryParse <| invalidDigits digits 3
                     t.IsNone
             
             testPropertyWithConfig config10k "TryParse" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 3
-                    let t = DigitString3.TryParse validDigit
+                    let t = Digits3.TryParse validDigit
                     validDigit = t.Value.Value
 
             testPropertyWithConfig config10k "TryParse trims" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 3)
                         (fun (x : string) -> 
-                           let t = DigitString3.TryParse x
+                           let t = Digits3.TryParse x
                            x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 3
-                    let t = DigitString3.TryParse validDigit
-                    let t2 = DigitString3.TryParse t.Value.Value
+                    let t = Digits3.TryParse validDigit
+                    let t2 = Digits3.TryParse t.Value.Value
                     t2 = t
 
             testCase "ordered" <| fun () ->
                 let ordered =
-                    [DigitString3.TryParse "555"; DigitString3.TryParse "111"; DigitString3.TryParse "223"; DigitString3.TryParse "222"; ]
+                    [Digits3.TryParse "555"; Digits3.TryParse "111"; Digits3.TryParse "223"; Digits3.TryParse "222"; ]
                     |> List.sort
-                Expect.isTrue (ordered = [DigitString3.TryParse "111"; DigitString3.TryParse "222"; DigitString3.TryParse "223"; DigitString3.TryParse "555"; ])
+                Expect.isTrue (ordered = [Digits3.TryParse "111"; Digits3.TryParse "222"; Digits3.TryParse "223"; Digits3.TryParse "555"; ])
                     "expected equality"
         ]
 
     [<Tests>]
-    let testDigitString4 =
-        testList "DomainTypes.DigitString4" [
+    let testDigits4 =
+        testList "DomainTypes.Digits4" [
 
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (DigitString4.TryParse System.String.Empty) "Expected None"
+                Expect.isNone (Digits4.TryParse System.String.Empty) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonDigitalString())
                         (fun (x : string) -> 
-                           let t = DigitString4.TryParse x
+                           let t = Digits4.TryParse x
                            t.IsNone)
             testPropertyWithConfig config10k "TryParse None on wrong length digital string" <|
                 fun  (digits : NonNegativeInt) ->
-                    let t = DigitString4.TryParse <| invalidDigits digits 4
+                    let t = Digits4.TryParse <| invalidDigits digits 4
                     t.IsNone
             
             testPropertyWithConfig config10k "TryParse" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 4
-                    let t = DigitString4.TryParse validDigit
+                    let t = Digits4.TryParse validDigit
                     validDigit = t.Value.Value
 
             testPropertyWithConfig config10k "TryParse trims" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genDigitsOfLengthInWhiteSpace 4)
                         (fun (x : string) -> 
-                           let t = DigitString4.TryParse x
+                           let t = Digits4.TryParse x
                            x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (digits : NonNegativeInt) ->
                     let validDigit = validDigits digits 4
-                    let t = DigitString4.TryParse validDigit 
-                    let t2 = DigitString4.TryParse t.Value.Value
+                    let t = Digits4.TryParse validDigit 
+                    let t2 = Digits4.TryParse t.Value.Value
                     t2 = t
 
             testCase "ordered" <| fun () ->
                 let ordered =
-                    [DigitString4.TryParse "5555"; DigitString4.TryParse "1111"; DigitString4.TryParse "2232"; DigitString4.TryParse "2222"; ]
+                    [Digits4.TryParse "5555"; Digits4.TryParse "1111"; Digits4.TryParse "2232"; Digits4.TryParse "2222"; ]
                     |> List.sort
-                Expect.isTrue (ordered = [DigitString4.TryParse "1111"; DigitString4.TryParse "2222"; DigitString4.TryParse "2232"; DigitString4.TryParse "5555"; ])
+                Expect.isTrue (ordered = [Digits4.TryParse "1111"; Digits4.TryParse "2222"; Digits4.TryParse "2232"; Digits4.TryParse "5555"; ])
                     "expected equality"
         ]
 
@@ -582,7 +582,7 @@ module DomainTypes =
     let zip22322 = ZipCode.ZipCode5 (ZipCode5.TryParse "22322").Value;
 
     [<Tests>]
-    let ZipCode5Plus4 =
+    let testZipCode5Plus4 =
         let valid5Plus4 seed =
             let validDigit = validDigits seed 9
             ZipCode5Plus4.TryParse validDigit
@@ -707,7 +707,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let ZipCode =
+    let testZipCode =
         testList "DomainTypes.ZipCode" [
             testCase "ordered" <| fun () ->
                 
@@ -722,7 +722,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let PostalCode =
+    let testPostalCode =
         testList "DomainTypes.PostalCode" [
             testCase "ordered" <| fun () ->
                 let ordered =
@@ -739,7 +739,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let PhysicalAddress =
+    let testPhysicalAddress =
         testList "DomainTypes.PhysicalAddress" [
             testCase "TryParse None on all empty" <| fun () ->
                 Expect.isNone (PhysicalAddress.TryParse ([], (Some System.String.Empty), None, None, None, Set.empty<Tag>) ) "Expected None"
@@ -1027,7 +1027,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let Phone =
+    let testPhone =
         testList "DomainTypes.Phone" [
             testPropertyWithConfig config10k "ordered" <|
                 fun  () ->
@@ -1035,7 +1035,7 @@ module DomainTypes =
                         (fun (xs : string list) -> 
                             let listOfPhones =
                                 xs 
-                                |> List.map OtherPhone.TryParse
+                                |> List.map Phone.TryParse
                                 |> List.choose id
 
                             let stringPhonesOrdered =
@@ -1050,4 +1050,20 @@ module DomainTypes =
                                 
                             stringPhonesOrdered = orderedPhones
                             )
+        ]
+
+    [<Tests>]
+    let testPhoneNumber =
+        testList "DomainTypes.PhoneNumber" [
+             testPropertyWithConfig config10k "equality" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genPhoneNumber())
+                        (fun  (callingCode, phoneRaw, extension, phoneNumber) ->
+
+                            let phone = Phone.TryParse phoneRaw
+                            let t1 = PhoneNumber.TryParse (callingCode, phone.Value, extension, Set.empty<Tag>)
+                            let t2 = PhoneNumber.TryParse (phoneNumber, Set.empty<Tag>)
+
+                            t1 = t2
+                        )
         ]
