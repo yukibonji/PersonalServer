@@ -9,7 +9,7 @@ module DomainTypes =
 
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000; arbitrary = [typeof<DomainGenerators>] }
 //    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
-    let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (1797642578, 296295059) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
+    let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (1940624926, 296296394) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
 
     [<Tests>]
     let testTag =
@@ -575,12 +575,6 @@ module DomainTypes =
                     "expected equality"
         ]
 
-    //used in zipcode tests, would not build properly below
-    let zip555559999 = (ZipCode5Plus4.TryParse "555559999").Value
-    let zip223221111 = (ZipCode5Plus4.TryParse "223221111").Value
-    let zip55555 = ZipCode.ZipCode5 (ZipCode5.TryParse "55555").Value
-    let zip22322 = ZipCode.ZipCode5 (ZipCode5.TryParse "22322").Value;
-
     [<Tests>]
     let testZipCode5Plus4 =
         let valid5Plus4 seed =
@@ -705,6 +699,11 @@ module DomainTypes =
                 Expect.isTrue (ordered = [NonUsPostalCode.TryParse "a111119999"; NonUsPostalCode.TryParse "a222229999"; NonUsPostalCode.TryParse "a223229999"; NonUsPostalCode.TryParse "a555559999"; ])
                     "expected equality"
         ]
+
+    let zip555559999 = (ZipCode5Plus4.TryParse "555559999").Value
+    let zip223221111 = (ZipCode5Plus4.TryParse "223221111").Value
+    let zip55555 = ZipCode.ZipCode5 (ZipCode5.TryParse "55555").Value
+    let zip22322 = ZipCode.ZipCode5 (ZipCode5.TryParse "22322").Value
 
     [<Tests>]
     let testZipCode =

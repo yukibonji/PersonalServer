@@ -269,10 +269,17 @@ module DomainGeneratorsCode =
             let symbolValueWhitespace symbol value whiteSpace =
                  sprintf "%s%s%s%s" symbol (defaultArg whiteSpace String.Empty) value (defaultArg whiteSpace String.Empty)
 
+            let acceptedCallingCode = 
+                match callingCodeRaw with
+                | Some uint16 ->
+                    Countries.byCallingCodes.ContainsKey uint16
+                | None ->
+                    false
+
             let phoneNumber = 
                 sprintf "%s%s%s%s%s%s" 
                     (defaultArg whiteSpace1 String.Empty)
-                    (match callingCode with | Some x -> symbolValueWhitespace "+" x whiteSpace2 | None -> String.Empty)
+                    (if acceptedCallingCode then (match callingCode with | Some x -> symbolValueWhitespace "+" x whiteSpace2 | None -> String.Empty) else String.Empty)
                     phone
                     (defaultArg whiteSpace3 String.Empty)
                     (match extension with | Some x -> symbolValueWhitespace "X" x whiteSpace4 | None -> String.Empty)

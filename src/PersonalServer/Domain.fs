@@ -541,6 +541,10 @@ type Country =
         CallingCodes  = callingCodes
         }
 
+module CallingCodes =
+    [<Literal>]
+    let NorthAmerica = 1us
+
 module Countries =
     //to do: load raw from resource file and build set with Create
     // also Wikipedia calling code page has a few "country" calling codes not covered here
@@ -991,7 +995,14 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
                 | Some x -> 
                     match tryParseUInt16 x.Value with
                     | Some y ->
-                        if Countries.byCallingCodes.ContainsKey y then Some y
+                        if Countries.byCallingCodes.ContainsKey y then
+                            if y = CallingCodes.NorthAmerica then
+                                if phone.ToString().Length = 10 then
+                                    Some y
+                                else
+                                    None
+                            else
+                                Some y
                         else None
                     | None ->
                         None
@@ -1021,34 +1032,45 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
             | None ->
                 None
 
-        match Digits.TryParse number with
-        | Some digits ->
+        let digitsRaw = digitsFromString number
+
+        if digitsRaw.Length > 4 then
+            let digits = new String(digitsRaw)
             let callingCode, numberDigits =
                 if number.Length > 5 && number.StartsWith("+") then
                     if number.StartsWith("+") then
-                        let digitString = digits.Value
-                        match seq {yield tryRawCallingCode <| digitString.Substring(0, 4); 
-                                    yield tryRawCallingCode <| digitString.Substring(0, 3);
-                                    yield tryRawCallingCode <| digitString.Substring(0, 2);
-                                    yield tryRawCallingCode <| digitString.Substring(0, 1);
+                        match seq {yield tryRawCallingCode <| digits.Substring(0, 4); 
+                                    yield tryRawCallingCode <| digits.Substring(0, 3);
+                                    yield tryRawCallingCode <| digits.Substring(0, 2);
+                                    yield tryRawCallingCode <| digits.Substring(0, 1);
                                     }
                                     |> Seq.tryFind (fun x -> x.IsSome) with
                         | Some x -> 
                             let uint16, rawCC = x.Value
-                            (Some uint16), digitString.Substring rawCC.Length
-                        | None -> None, digits.Value
+                            match Countries.byCallingCodes.TryGetValue uint16 with
+                            | true, _ -> 
+                                if uint16 = CallingCodes.NorthAmerica then
+                                    if digits.Length = 11 then
+                                        (Some uint16), digits.Substring rawCC.Length
+                                    else
+                                        None, digits.Substring rawCC.Length
+                                else
+                                    (Some uint16), digits.Substring rawCC.Length
+                            | _ -> None, digits
+                        | None -> None, digits
                     else
-                        None, digits.Value
+                        None, digits
                 else
-                    None, digits.Value
+                    None, digits
 
             match Phone.TryParse numberDigits with
             | Some phone ->
                 PhoneNumber (callingCode, phone, extension, tags) |> Some 
             | None ->
                 None
-        | None ->
+        else
             None
+
     interface System.IComparable with
         member __.CompareTo yobj =
             match yobj with

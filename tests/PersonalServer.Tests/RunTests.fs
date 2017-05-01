@@ -26,5 +26,6 @@ module Tests =
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testUsPhone |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.tesuOtherPhone |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testPhone |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testPhoneNumber |> ignore
 
         0

@@ -1,6 +1,7 @@
 ﻿namespace Jackfoxy.PersonalServer
 
 open System 
+open System.Collections.Generic
 
 [<Class>]
 type Tag =  //to do: equals performance testing -- http://stackoverflow.com/questions/28142655/iequatable-in-f-operator-performance-and-structural-equality
@@ -58,9 +59,6 @@ type Digits4 =
     member Value : string
     static member TryParse : value:string -> Digits4 option
 
-
-//to do: name with affixes
-//type NameAndAffixes
 [<Class>]  
 type FullName =
     interface System.IComparable
@@ -311,3 +309,7 @@ type EmailAccount =
      SignatureRule: string
      SMTP: string
      Imap: IMAP}
+
+module Countries =
+    val countries : Set<Country>
+    val byCallingCodes : IDictionary<uint16, Country list>
