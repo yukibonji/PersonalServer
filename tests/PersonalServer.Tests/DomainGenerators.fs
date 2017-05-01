@@ -235,7 +235,7 @@ module DomainGeneratorsCode =
             else x
             |> UInt16.Parse
         
-        gen {
+        gen { 
             let! digits = Arb.generate<NonNegativeInt>
             let! callingCode = Gen.elements [callingCode digits 4 |> Some; callingCode digits 3 |> Some; callingCode digits 2 |> Some; callingCode digits 1 |> Some; None]
 
@@ -286,6 +286,13 @@ module DomainGeneratorsCode =
                     (defaultArg whiteSpace5 String.Empty)
              
             return (callingCode, phone, extension, phoneNumber)  
+        }
+
+    let genUri() =
+        gen {
+            let! uriRaw = nonEmptyNonAllWhitespaceString()
+            let! uri = Gen.elements [" http://" + uriRaw; " https://" + uriRaw; " ftp://" + uriRaw; " ftps://" + uriRaw;]
+            return uri
         }
         
 type DomainGenerators =

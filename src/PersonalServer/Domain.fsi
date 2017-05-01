@@ -241,24 +241,27 @@ type PhoneNumber =
       static member TryParse : phone:string * tags:Set<Tag> -> PhoneNumber option
 
 type Handle =
-    {Address: string
+    {Address: TrimNonEmptyString
      Tags: Set<Tag>}
 
+[<Class>]
 type Uri =
       interface System.IComparable
-      new : uri:string -> Uri
-      new : uri:string * uriKind:System.UriKind -> Uri
-      val Uri: System.Uri
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
+      member Uri: System.Uri
+      member Tags : Set<Tag>
+      static member Create : uri : System.Uri * tags:Set<Tag>-> Uri
+      static member TryParse : uri : string * tags:Set<Tag>-> Uri option
+      static member TryParse : uri : string * uriKind:System.UriKind * tags:Set<Tag>-> Uri option
 
 type Address =
     | PhysicalAddress of PhysicalAddress
     | EmailAddress of EmailAddress
     | PhoneNumber of PhoneNumber
     | Url of Uri
-    | OtherHandle of Handle
+    | Handle of Handle
 
 type Person =
     {Names: Set<NameOfPerson>
@@ -312,4 +315,4 @@ type EmailAccount =
 
 module Countries =
     val countries : Set<Country>
-    val byCallingCodes : IDictionary<uint16, Country list>
+    val byCallingCodes : IDictionary<uint16, Country Set>

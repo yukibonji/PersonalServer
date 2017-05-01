@@ -1066,3 +1066,22 @@ module DomainTypes =
                             t1 = t2
                         )
         ]
+
+    [<Tests>]
+    let testPUri =
+        testList "DomainTypes.PhoneNumber" [
+             testPropertyWithConfig config10k "equality" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genUri())
+                        (fun  (uri) ->
+
+                            let t1 = Uri.TryParse (uri, Set.empty<Tag>)
+
+                            match t1 with
+                            | Some x -> 
+                                let t2 = Uri.TryParse (x.ToString(), Set.empty<Tag>)
+                                t1.Value.Uri = x.Uri
+                            | None ->
+                                true
+                        )
+        ]

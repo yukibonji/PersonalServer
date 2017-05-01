@@ -816,6 +816,7 @@ module Countries =
                         let xs' =
                             xs
                             |> List.map (fun (_, country) -> country)
+                            |> Set.ofList
                         callingCode, xs')
         |> dict
 
@@ -1088,24 +1089,31 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
 
 type Handle = 
     {
-    Address : string
+    Address : TrimNonEmptyString
     Tags : Tag Set
     }
 
-type Uri =    
-    val Uri : System.Uri
-    new (uri) =
-        { Uri = new System.Uri(uri);}
-    new (uri, (uriKind : System.UriKind)) =
-        { Uri = new System.Uri(uri, uriKind);}
-
+type Uri internal (uri, tags) = 
+    member __.Uri : System.Uri = uri
+    member __.Tags : Set<Tag> = tags
     override __.ToString() = __.Uri.ToString()
     override __.Equals(yobj) = 
         match yobj with
         |  :? Uri as y -> (__.Uri.AbsolutePath = y.Uri.AbsolutePath)
         | _ -> false
     override __.GetHashCode() = __.Uri.GetHashCode()
-
+    static member Create (uri, tags) = 
+        Uri (uri, tags)
+    static member TryParse ((uri : string), tags) = 
+        let x = Uri.EscapeUriString <| uri.Trim()
+        match Uri.IsWellFormedUriString(x, UriKind.Absolute) with
+        | true -> Uri ((System.Uri(x, UriKind.Absolute)), tags) |> Some
+        | false -> None
+    static member TryParse ((uri : string), uriKind, tags) =
+        let x = Uri.EscapeUriString <| uri.Trim()
+        match Uri.IsWellFormedUriString(x, uriKind) with
+        | true -> Uri ((System.Uri(x, uriKind)), tags) |> Some
+        | false -> None
     with
         interface System.IComparable with
             member __.CompareTo yobj =
@@ -1121,7 +1129,7 @@ type Address =
     | EmailAddress of EmailAddress
     | PhoneNumber of PhoneNumber
     | Url of Uri
-    | OtherHandle of Handle
+    | Handle of Handle
 
 type Person =
     {
