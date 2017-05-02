@@ -1,6 +1,7 @@
 source https://nuget.org/api/v2
 
-nuget FSharp.Core ~> 4.0 redirects: force
+nuget FSharp.Core 
+nuget FSharp.Data
 nuget Fsharpx.Extras
 nuget FsVerbalExpressions
 
