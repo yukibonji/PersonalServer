@@ -994,7 +994,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
             | Some cc ->
                 match Digits.TryParse cc with
                 | Some x -> 
-                    match tryParseUInt16 x.Value with
+                    match UInt16.TryParse x.Value |> toOption with
                     | Some y ->
                         if Countries.byCallingCodes.ContainsKey y then
                             if y = CallingCodes.NorthAmerica then
@@ -1025,7 +1025,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
         let number = txt.[0].Trim()
 
         let tryRawCallingCode rawCC =
-            match tryParseUInt16 rawCC with
+            match UInt16.TryParse rawCC |> toOption with
             | Some x ->
                 match Countries.byCallingCodes.TryGetValue x with
                 | true, _ -> Some (x, rawCC)

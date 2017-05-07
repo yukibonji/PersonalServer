@@ -58,14 +58,15 @@ module internal Utilities =
                 else 
                     None
 
-    let tryParseWith tryParseFunc = tryParseFunc >> function
+    let inline toOption x  = 
+        match x with
         | true, v    -> Some v
-        | false, _   -> None
+        | _   -> None
 
 
 //    let tryParseDate   = tryParseWith DateTime.TryParse
 //    let tryParseInt    = tryParseWith Int32.TryParse
-    let tryParseUInt16 = tryParseWith UInt16.TryParse
+   // let tryParseUInt16 = toOption UInt16.TryParse
 //    let tryParseSingle = tryParseWith Single.TryParse
 //    let tryParseDouble = tryParseWith Double.TryParse
 
