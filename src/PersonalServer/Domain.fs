@@ -168,6 +168,7 @@ type FullName internal (first, middle, family, nameOrder, tags) =
         |  :? FullName as y -> (__.PersonName = y.PersonName)
         | _ -> false
     override __.GetHashCode() = hash __
+    override __.ToString() = __.PersonName.ToString()
     static member TryParse ((first : string option), middle, (family : string option), nameOrder, tags) =
         let fi = TrimNonEmptyString.TryParse first
         let m = TrimNonEmptyString.Parse middle
@@ -405,6 +406,8 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
             && __.StreetAddress = y.StreetAddress
         | _ -> false
     override __.GetHashCode() = hash __
+    override __.ToString() = 
+        sprintf "%A %A %A %A %A" __.StreetAddress __.City __.State __.PostalCode __.Country
     static member TryParse ((streetAddress : string list), (city : string option), (state : string option), (postalCode : string option), (country : string option), tags) =
         let sa = TrimNonEmptyString.Parse streetAddress
         let cy = TrimNonEmptyString.TryParse city
@@ -1119,8 +1122,10 @@ type Uri internal (uri, tags) =
             member __.CompareTo yobj =
                 match yobj with
                 | :? Uri as y -> 
-                    if __.Uri.AbsolutePath > y.Uri.AbsolutePath then 1
-                    elif __.Uri.AbsolutePath < y.Uri.AbsolutePath then -1
+                    if (__.Uri.IsAbsoluteUri && y.Uri.IsAbsoluteUri) && (__.Uri.AbsolutePath > y.Uri.AbsolutePath) then 1
+                    elif (__.Uri.IsAbsoluteUri && y.Uri.IsAbsoluteUri) && (__.Uri.AbsolutePath < y.Uri.AbsolutePath) then -1
+                    elif __.Uri.OriginalString > y.Uri.OriginalString then 1
+                    elif __.Uri.OriginalString < y.Uri.OriginalString then -1
                     else 0
                 | _ -> invalidArg "Uri" "cannot compare values of different types"
 

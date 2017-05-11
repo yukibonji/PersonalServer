@@ -14,9 +14,6 @@ module AgentImport =
 
     let personNameSynonyms = [|"display name"; "nickname"; "screen name";|]
 
-    let fullNameFirstNameSynonyms = [|"First Name"|]
-    let fullNameLastNameSynonyms = [|"Last Name"|]
-
     let valueFromIndexOpt (columns : string []) indexOpt = 
         match indexOpt with
         | Some i -> 
@@ -30,14 +27,22 @@ module AgentImport =
     let sourceHeaderTags source (headers : string []) (contentIndices : int seq) =
         contentIndices
         |> Seq.map (fun index -> 
-            Tag.TryParse <| sprintf "%s::%s" source headers.[index])
+            match Tag.TryParse headers.[index] with
+            | Some _ ->
+                Tag.TryParse <| sprintf "%s::%s" source headers.[index]
+            | None ->
+                None )
         |> Seq.choose id
         |> Set.ofSeq
 
     let sourceTags source (headers : string []) (columns : string []) (contentIndices : int seq) =
         contentIndices
         |> Seq.map (fun index -> 
-            Tag.TryParse <| sprintf "%s::%s::%s" source headers.[index] columns.[index])
+            match Tag.TryParse columns.[index] with
+            | Some _ ->
+                Tag.TryParse <| sprintf "%s::%s::%s" source headers.[index] columns.[index]
+            | None ->
+                None )
         |> Seq.choose id
         |> Set.ofSeq
 
@@ -141,78 +146,160 @@ module AgentImport =
         | (Some x), tags -> (Some <| transform x), tags
         | None, tags -> None, tags
 
-    let entityBuilders indices source headers tryParse entityCstr =
-        indices
-        |> Array.fold (fun s i -> 
-            (simpleEntityBuilder tryParse i source headers >> rawToFinalResult entityCstr)::s ) []
+    let entityBuilders source headers coveredHeaderColumns tryParse entityCstr =
+        let builders =
+            coveredHeaderColumns
+            |> Array.fold (fun s i -> 
+                (simpleEntityBuilder tryParse i source headers >> rawToFinalResult entityCstr)::s ) []
+
+        builders, coveredHeaderColumns
+
+        //to do: complete first/last name coverage (i.e. potential multiples)
+        //to do: eventually resource file
+    let fullNameFirstNameSynonyms = [|"first name"|]
+    let fullNameLastNameSynonyms = [|"last name"|]
+
+    let fullNameBuilderParms headers =
+        { 
+        FirstIndex =
+            match headerOffsets headers fullNameFirstNameSynonyms |> Array.toList with
+            | hd::_ -> Some hd
+            | [] -> None
+        MiddleIndex = []
+        FamilyIndex =
+            match headerOffsets headers fullNameLastNameSynonyms |> Array.toList with
+            | hd::_ -> Some hd
+            | [] -> None
+        NameOrder = NameOrder.Western
+        }
+
+    let fullNameBuilders fullNameBuilderParms source headers =
+        [fullNameBuilder fullNameBuilderParms source headers >> rawToFinalResult NameOfPerson.FullName]
+
+    //to do: eventually resource file
+    let physicalAddressAddressSynonyms = [|"address"|]
+    let physicalAddressCitySynonyms = [|"city"|]
+    let physicalAddressStateSynonyms = [|"state"|]
+    let physicalAddressPostalCodeSynonyms = [|"zip"; "zipcode"|]
+    let physicalAddressCountrySynonyms = [|"country"|]
+
+    //to do: complete address coverage (i.e. potential multiples)
+    let physicalAddressBuilderParms headers =
+        {
+        AddressIndex = headerOffsets headers physicalAddressAddressSynonyms |> Array.toList
+        CityIndex =
+            match headerOffsets headers physicalAddressCitySynonyms |> Array.toList with
+            | hd::_ -> Some hd
+            | [] -> None
+        StateIndex =
+            match headerOffsets headers physicalAddressStateSynonyms |> Array.toList with
+            | hd::_ -> Some hd
+            | [] -> None
+        PostalCodeIndex =
+            match headerOffsets headers physicalAddressPostalCodeSynonyms |> Array.toList with
+            | hd::_ -> Some hd
+            | [] -> None
+        CountryIndex =
+            match headerOffsets headers physicalAddressCountrySynonyms |> Array.toList with
+            | hd::_ -> Some hd
+            | [] -> None
+        }
+
+    let physicalAddressBuilders physicalAddressBuilderParms source headers =
+        [physicalAddressBuilder physicalAddressBuilderParms source headers >> rawToFinalResult Address.PhysicalAddress]
+
+    let getAddressBuilders source headers =
+        let physicalAddressBuilderParms = physicalAddressBuilderParms headers
+
+        let usedPhysicalAddressHeaderColumns = 
+            [physicalAddressBuilderParms.CityIndex;
+                physicalAddressBuilderParms.StateIndex;
+                physicalAddressBuilderParms.PostalCodeIndex;
+                physicalAddressBuilderParms.CountryIndex]
+            |> List.choose id
+            |> List.append physicalAddressBuilderParms.AddressIndex
+            |> List.toArray
+
+        let builders, usedHeaderColumns = 
+            [|entityBuilders source headers (headerOffsets headers phoneNumberSynonyms) PhoneNumber.TryParse Address.PhoneNumber;
+            entityBuilders source headers (headerOffsets headers emailSynonyms) EmailAddress.TryParse Address.EmailAddress; 
+            entityBuilders source headers (headerOffsets headers uriSynonyms) Uri.TryParse Address.Url; 
+            (physicalAddressBuilders physicalAddressBuilderParms source headers), usedPhysicalAddressHeaderColumns;|]
+            |> Array.unzip
+
+        (builders |> List.concat), (usedHeaderColumns |> Array.concat)
+        
+    let getNameBuilders source headers =
+        let fullNameBuilderParms = fullNameBuilderParms headers
+
+        let usedNameHeaderColumns = 
+            [fullNameBuilderParms.FirstIndex;
+                fullNameBuilderParms.FamilyIndex;]
+            |> List.choose id
+            |> List.append fullNameBuilderParms.MiddleIndex
+            |> List.toArray
+
+        let builders, usedHeaderColumns = 
+            [|entityBuilders source headers (headerOffsets headers personNameSynonyms) PersonName.TryParse NameOfPerson.Name; 
+            (fullNameBuilders fullNameBuilderParms source headers), usedNameHeaderColumns|]
+            |> Array.unzip
+
+        (builders |> List.concat), (usedHeaderColumns |> Array.concat)
+
+    let agentImport sources sourceBuilder nameBuilders addressBuilders =
+        sources
+        |> Seq.map (fun source ->
+            let columns = sourceBuilder source
+            let names =
+                ([], nameBuilders)
+                ||> Seq.fold (fun s f -> (f columns)::s )
+            let addresses =
+                ([], addressBuilders)
+                ||> Seq.fold (fun s f -> (f columns)::s )
+
+            let nameOfPersons, nameTags =
+                names
+                |> List.unzip
+
+            let addressesOpts, addressTags =
+                addresses
+                |> List.unzip
+
+            let tagSet = 
+                [nameTags; addressTags]
+                |> List.concat
+                |> List.collect Set.toList 
+                |> Set.ofList
+   
+            {Names = nameOfPersons |> List.choose id |> Set.ofList
+             Addresses = addressesOpts |> List.choose id |> Set.ofList
+             Tags = tagSet
+             }
+            )
         
     let importCsv source (path : string) =
         let importFile = CsvFile.Load(path).Cache()
         let headers = importFile.Headers.Value
 
-        let phoneNumberBuilders =
-            entityBuilders (headerOffsets headers phoneNumberSynonyms) 
-                source headers PhoneNumber.TryParse Address.PhoneNumber
+        let csvRowSequenceBuilder (row : CsvRow) =
+            row.Columns
+            
+        let addressBuilders, usedAddressColumns = getAddressBuilders source headers
+        let nameBuilders, usedNameColumns = getNameBuilders source headers
 
-        let emailAddressBuilders =
-            entityBuilders (headerOffsets headers emailSynonyms) 
-                source headers EmailAddress.TryParse Address.EmailAddress
+        let usedColumns =
+            Array.concat [|usedAddressColumns; usedNameColumns|]
+            |> Array.distinct
+            
+        let unUsedColumns = 
+            headers
+            |> Array.mapi (fun i _ ->
+                if Array.exists (fun t -> i = t) usedColumns then
+                    None
+                else Some i)
+            |> Array.choose id
 
-        let uriBuilders =
-            entityBuilders (headerOffsets headers uriSynonyms) 
-                source headers Uri.TryParse Address.Url
+        //default to looking for odd urls
+        let defaultBuilders, _ = entityBuilders source headers unUsedColumns Uri.TryParse Address.Url
 
-        let personNameBuilders =
-            entityBuilders (headerOffsets headers personNameSynonyms) 
-                source headers PersonName.TryParse NameOfPerson.Name
-
-        //to do: complete first/last name coverage (i.e. potential multiples)
-        let fullNameBuilderParms =
-            { 
-            FirstIndex =
-                match headerOffsets headers fullNameFirstNameSynonyms |> Array.toList with
-                | hd::tl -> Some hd
-                | [] -> None
-            MiddleIndex = []
-            FamilyIndex =
-                match headerOffsets headers fullNameLastNameSynonyms |> Array.toList with
-                | hd::tl -> Some hd
-                | [] -> None
-            NameOrder = NameOrder.Western
-            }
-
-        let fullNameBuilders =
-            [fullNameBuilder fullNameBuilderParms source headers >> rawToFinalResult NameOfPerson.FullName]
-
-        //to do: eventually resource file
-        let physicalAddressAddressSynonyms = [|"address"|]
-        let physicalAddressCitySynonyms = [|"city"|]
-        let physicalAddressStateSynonyms = [|"state"|]
-        let physicalAddressPostalCodeSynonyms = [|"zip"; "zipcode"|]
-        let physicalAddressCountrySynonyms = [|"country"|]
-
-        //to do: complete address coverage (i.e. potential multiples)
-        let physicalAddressBuilderParms =
-            {
-            AddressIndex = headerOffsets headers physicalAddressAddressSynonyms |> Array.toList
-            CityIndex =
-                match headerOffsets headers physicalAddressCitySynonyms |> Array.toList with
-                | hd::tl -> Some hd
-                | [] -> None
-            StateIndex =
-                match headerOffsets headers physicalAddressStateSynonyms |> Array.toList with
-                | hd::tl -> Some hd
-                | [] -> None
-            PostalCodeIndex =
-                match headerOffsets headers physicalAddressPostalCodeSynonyms |> Array.toList with
-                | hd::tl -> Some hd
-                | [] -> None
-            CountryIndex =
-                match headerOffsets headers physicalAddressCountrySynonyms |> Array.toList with
-                | hd::tl -> Some hd
-                | [] -> None
-            }
-
-        let physicalAddressBuilders =
-            [physicalAddressBuilder physicalAddressBuilderParms source headers >> rawToFinalResult Address.PhysicalAddress]
-        ()
+        agentImport importFile.Rows csvRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)

@@ -64,6 +64,7 @@ type FullName =
     interface System.IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
+    override ToString : unit -> string
     member First: TrimNonEmptyString option
     member Middle: TrimNonEmptyString list
     member Family: TrimNonEmptyString option
@@ -145,6 +146,7 @@ type PhysicalAddress =
     interface System.IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
+    override ToString : unit -> string
     member StreetAddress: TrimNonEmptyString list
     member City: TrimNonEmptyString option
     member State: TrimNonEmptyString option
