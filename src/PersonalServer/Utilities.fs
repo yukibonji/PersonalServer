@@ -63,12 +63,12 @@ module internal Utilities =
         | true, v    -> Some v
         | _   -> None
 
+    let unixMillisecondToDateTime (timestamp:int64) =
+      let start = DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+      start.AddSeconds(float (timestamp / 1000L)).ToLocalTime()
 
-//    let tryParseDate   = tryParseWith DateTime.TryParse
-//    let tryParseInt    = tryParseWith Int32.TryParse
-   // let tryParseUInt16 = toOption UInt16.TryParse
-//    let tryParseSingle = tryParseWith Single.TryParse
-//    let tryParseDouble = tryParseWith Double.TryParse
+    let defaultArgRev x y =
+        defaultArg y x
 
     let port portNumber =
         let caller = "Port"

@@ -1,7 +1,6 @@
 ﻿namespace Jackfoxy.PersonalServer
 
 open System
-open FSharp.Data
 
 module AgentImport =
 
@@ -12,7 +11,7 @@ module AgentImport =
 
     let uriSynonyms = [|"web";|]
 
-    let personNameSynonyms = [|"display name"; "nickname"; "screen name";|]
+    let personNameSynonyms = [|"display name"; "nickname"; "screen name"; "name";|]
 
     let valueFromIndexOpt (columns : string []) indexOpt = 
         match indexOpt with
@@ -133,7 +132,7 @@ module AgentImport =
         headers
         |> Array.mapi (fun i header ->
             if  targets
-                |> Array.exists (fun x -> header.ToLower().Contains (x) )
+                |> Array.exists (fun x -> header.ToLower().Contains(x.ToLower()) )
             then
                 Some i
             else
@@ -223,7 +222,7 @@ module AgentImport =
         let builders, usedHeaderColumns = 
             [|entityBuilders source headers (headerOffsets headers phoneNumberSynonyms) PhoneNumber.TryParse Address.PhoneNumber;
             entityBuilders source headers (headerOffsets headers emailSynonyms) EmailAddress.TryParse Address.EmailAddress; 
-            entityBuilders source headers (headerOffsets headers uriSynonyms) Uri.TryParse Address.Url; 
+            entityBuilders source headers (headerOffsets headers uriSynonyms) UriTagged.TryParse Address.Url; 
             (physicalAddressBuilders physicalAddressBuilderParms source headers), usedPhysicalAddressHeaderColumns;|]
             |> Array.unzip
 
@@ -271,19 +270,20 @@ module AgentImport =
                 |> List.collect Set.toList 
                 |> Set.ofList
    
-            {Names = nameOfPersons |> List.choose id |> Set.ofList
-             Addresses = addressesOpts |> List.choose id |> Set.ofList
-             Tags = tagSet
-             }
-            )
-        
-    let importCsv source (path : string) =
-        let importFile = CsvFile.Load(path).Cache()
-        let headers = importFile.Headers.Value
+            let names = nameOfPersons |> List.choose id
+            let addresses = addressesOpts |> List.choose id
+            match names, addresses, tagSet with
+            | [], [], s when s.IsEmpty -> None
+            | _ ->
 
-        let csvRowSequenceBuilder (row : CsvRow) =
-            row.Columns
-            
+                {Names = names |> Set.ofList
+                 Addresses = addresses |> Set.ofList
+                 Tags = tagSet
+                 } |> Some
+            )
+        |> Seq.choose id
+
+    let commonBuilders source headers =
         let addressBuilders, usedAddressColumns = getAddressBuilders source headers
         let nameBuilders, usedNameColumns = getNameBuilders source headers
 
@@ -299,7 +299,4 @@ module AgentImport =
                 else Some i)
             |> Array.choose id
 
-        //default to looking for odd urls
-        let defaultBuilders, _ = entityBuilders source headers unUsedColumns Uri.TryParse Address.Url
-
-        agentImport importFile.Rows csvRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
+        nameBuilders, addressBuilders, unUsedColumns

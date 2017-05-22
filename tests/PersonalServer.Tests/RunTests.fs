@@ -27,7 +27,7 @@ module Tests =
         Tests.runTestsWithArgs defaultConfig args DomainTypes.tesuOtherPhone |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testPhone |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.testPhoneNumber |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testPUri |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.testUriTagged |> ignore
 
         Tests.runTestsWithArgs defaultConfig args AgentImport.testSimpleEntityBuilder |> ignore
 

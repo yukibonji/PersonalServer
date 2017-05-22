@@ -5,8 +5,8 @@ open Jackfoxy.PersonalServer
 open Expecto
 open FsCheck
 
-module AgentImport =
 
+module AgentImport =
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000}
 
     [<Tests>]
@@ -40,11 +40,11 @@ module AgentImport =
                         (fun  (emailAddress) ->
                             testSimpleEntity emailAddress EmailAddress.TryParse )
 
-            testPropertyWithConfig config10k "Uri equality" <|
+            testPropertyWithConfig config10k "UriTagged equality" <|
                 fun  () ->
-                    Prop.forAll (Arb.fromGen <| genUri())
+                    Prop.forAll (Arb.fromGen <| genUriTagged())
                         (fun  (uri) ->
-                            testSimpleEntity uri Uri.TryParse )
+                            testSimpleEntity uri UriTagged.TryParse )
 
             testPropertyWithConfig config10k "PersonName equality" <|
                 fun  () ->

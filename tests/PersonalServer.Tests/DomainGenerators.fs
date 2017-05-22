@@ -288,7 +288,7 @@ module DomainGeneratorsCode =
             return (callingCode, phone, extension, phoneNumber)  
         }
 
-    let genUri() =
+    let genUriTagged() =
         gen {
             let! uriRaw = nonEmptyNonAllWhitespaceString()
             let! uri = Gen.elements [" http://" + uriRaw; " https://" + uriRaw; " ftp://" + uriRaw; " ftps://" + uriRaw;]

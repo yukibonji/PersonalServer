@@ -61,7 +61,7 @@ type Digits4 =
 
 [<Class>]  
 type FullName =
-    interface System.IComparable
+    interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
@@ -79,14 +79,14 @@ and NameOrder =
     | FamilyFirst
     | Custom of (FullName -> PersonName)
 and [<Class>] PersonName =
-    interface System.IComparable
+    interface IComparable
     override ToString : unit -> string
     member Tags : Set<Tag>
     member Value : TrimNonEmptyString
     static member TryParse : name:string * tags:Set<Tag> -> PersonName option
 and NameAndAffixes =
     new : salutation: TrimNonEmptyString list * personName : PersonName * suffix: TrimNonEmptyString list -> NameAndAffixes
-    interface System.IComparable
+    interface IComparable
     override ToString : unit -> string
     member Salutations: TrimNonEmptyString list
     member PersonName : PersonName
@@ -131,19 +131,19 @@ type NameOfPerson =
  type ZipCode =
     | ZipCode5 of ZipCode5
     | ZipCode5Plus4 of ZipCode5Plus4
-    interface System.IComparable
+    interface IComparable
     static member TryParse : postalCode: string -> ZipCode option
 
 [<CustomEquality;CustomComparison>]
 type PostalCode =
     | ZipCode of ZipCode
     | NonUsPostalCode of NonUsPostalCode
-    interface System.IComparable
+    interface IComparable
     static member TryParse : postalCode: string -> PostalCode option
 
 [<Class>]
 type PhysicalAddress =
-    interface System.IComparable
+    interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
@@ -157,7 +157,7 @@ type PhysicalAddress =
 
 [<Class>]
 type EmailAddress =
-      interface System.IComparable
+      interface IComparable
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
@@ -167,7 +167,7 @@ type EmailAddress =
 
 [<Class>]
 type UsPhone =
-      interface System.IComparable
+      interface IComparable
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
@@ -181,7 +181,7 @@ type UsPhone =
 
 [<Class>] 
 type OtherPhone =
-      interface System.IComparable
+      interface IComparable
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
@@ -197,7 +197,7 @@ type Phone =
       override ToString : unit -> string
       member Formatted : string
       member Value : Digits
-      interface System.IComparable
+      interface IComparable
       static member TryParse : phone:string -> Phone option
 
 [<Class>]
@@ -223,13 +223,13 @@ type Country =
     Name        : string
     ISO         : UpperLatin2
     UnAlpha     : UpperLatin3
-    UnNum       : System.UInt16
+    UnNum       : UInt16
     CallingCodes  : Set<UInt16>
     }
 
 [<Class>]
 type PhoneNumber =
-      interface System.IComparable
+      interface IComparable
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
@@ -247,22 +247,22 @@ type Handle =
      Tags: Set<Tag>}
 
 [<Class>]
-type Uri =
-      interface System.IComparable
+type UriTagged =
+      interface IComparable
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
-      member Uri: System.Uri
+      member Uri: Uri
       member Tags : Set<Tag>
-      static member Create : uri : System.Uri * tags:Set<Tag>-> Uri
-      static member TryParse : uri : string * tags:Set<Tag>-> Uri option
-      static member TryParse : uri : string * uriKind:System.UriKind * tags:Set<Tag>-> Uri option
+      static member Create : uri : Uri * tags:Set<Tag>-> UriTagged
+      static member TryParse : uri : string * tags:Set<Tag>-> UriTagged option
+      static member TryParse : uri : string * uriKind:UriKind * tags:Set<Tag>-> UriTagged option
 
 type Address =
     | PhysicalAddress of PhysicalAddress
     | EmailAddress of EmailAddress
     | PhoneNumber of PhoneNumber
-    | Url of Uri
+    | Url of UriTagged
     | Handle of Handle
 
 type Person =
@@ -272,7 +272,7 @@ type Person =
 
 type Agent =
     | Person of Person
-    | Uri of Uri
+    | Uri of UriTagged
 
 type Port =
       new : portNumber:int -> Port

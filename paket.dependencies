@@ -1,9 +1,10 @@
 source https://nuget.org/api/v2
 
+nuget ExcelDataReader
 nuget FSharp.Core 
 nuget FSharp.Data
 nuget Fsharpx.Extras
-nuget FsVerbalExpressions
+nuget FsRegEx
 
 group Build
   source https://nuget.org/api/v2

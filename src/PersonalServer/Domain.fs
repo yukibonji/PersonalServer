@@ -14,7 +14,7 @@ type Tag internal (tag: string) =
     override __.GetHashCode() = hash tag
     static member TryParse (tag : string) = verifyTrimNonEmptyString tag Tag
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
                 | :? Tag as y -> 
@@ -42,7 +42,7 @@ type TrimNonEmptyString internal (value : string) =
         |> List.map TrimNonEmptyString.TryParse 
         |> List.choose id
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
                 | :? TrimNonEmptyString as y -> 
@@ -71,7 +71,7 @@ type Digits internal (value) =
             else 
                 None
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
                 | :? Digits as y -> 
@@ -90,7 +90,7 @@ type Digits2 internal (value) =
     override __.GetHashCode() = hash value
     static member TryParse value = verifyStringInt value 2 Digits2
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
                 | :? Digits2 as y -> 
@@ -109,7 +109,7 @@ type Digits3 internal (value) =
     override __.GetHashCode() = hash value
     static member TryParse value = verifyStringInt value 3 Digits3
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
                 | :? Digits3 as y -> 
@@ -128,7 +128,7 @@ type Digits4 internal (value) =
     override __.GetHashCode() = hash value
     static member TryParse value = verifyStringInt value 4 Digits4
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
                 | :? Digits4 as y -> 
@@ -178,7 +178,7 @@ type FullName internal (first, middle, family, nameOrder, tags) =
         | _, x, _ when x.Length > 0 -> FullName (fi, m, fa, nameOrder, tags) |> Some 
         | _, _, Some _ -> FullName (fi, m, fa, nameOrder, tags) |> Some 
         | _ -> None
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? FullName as y -> 
@@ -208,7 +208,7 @@ and PersonName internal (name: string, tags : Tag Set) =
             None        
         else 
             Some <| PersonName ((name.Trim()), tags)
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? PersonName as y -> 
@@ -239,7 +239,7 @@ and NameAndAffixes (salutations, personName, suffixes) =
             Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes))
         | None -> None
 
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? NameAndAffixes as y -> 
@@ -266,7 +266,7 @@ type ZipCode5 internal (zip) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse zip = verifyStringInt zip 5 ZipCode5
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? ZipCode5 as y -> 
@@ -308,7 +308,7 @@ type ZipCode5Plus4 internal (zip : string) =
             | Some x -> x
             | None -> None
 
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? ZipCode5Plus4 as y -> 
@@ -326,7 +326,7 @@ type NonUsPostalCode internal (postalCode) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse postalCode = verifyTrimNonEmptyString postalCode NonUsPostalCode
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? NonUsPostalCode as y -> 
@@ -353,7 +353,7 @@ type ZipCode =
     override __.Equals(yobj) = 
         yobj.GetType() = __.GetType() && yobj.ToString() = __.ToString()
     override __.GetHashCode() = hash __
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =       
             let yString = (unbox yobj).ToString()
             let xString = __.ToString()
@@ -380,7 +380,7 @@ type PostalCode =
     override __.Equals(yobj) = 
         yobj.GetType() = __.GetType() && yobj.ToString() = __.ToString()
     override __.GetHashCode() = hash __
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             let yString = (unbox yobj).ToString()
             let xString = __.ToString()
@@ -424,7 +424,7 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
         | _, _, _, Some _, _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
         | _, _, _, _, Some _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
         | _ -> None
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? PhysicalAddress as y -> 
@@ -478,7 +478,7 @@ type EmailAddress internal (email : string, tags : Tag Set) =
         | None ->
             None
 
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? EmailAddress as y -> 
@@ -498,7 +498,7 @@ type UpperLatin2 internal (value) =
     static member TryParse value = 
         verifyUpperLatinString value 2 UpperLatin2
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
                 | :? UpperLatin2 as y -> 
@@ -518,7 +518,7 @@ type UpperLatin3 internal (value) =
     static member TryParse value = 
         verifyUpperLatinString value 3 UpperLatin3
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
                 | :? UpperLatin3 as y -> 
@@ -532,8 +532,8 @@ type Country =
     Name        : string
     ISO         : UpperLatin2
     UnAlpha     : UpperLatin3
-    UnNum       : System.UInt16
-    CallingCodes  : Set<System.UInt16>
+    UnNum       : UInt16
+    CallingCodes  : Set<UInt16>
     }
     static member private Create (name, iso, unAlpha, unNum, callingCodes) =
         {
@@ -872,7 +872,7 @@ type UsPhone internal (areaCode, exchange, suffix) =
             Some <| UsPhone (None, e, s)
         | _ ->
             None
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? UsPhone as y -> 
@@ -908,7 +908,7 @@ type OtherPhone internal (phone) =
             |> Digits
             |> OtherPhone
             |> Some
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? OtherPhone as y -> 
@@ -943,7 +943,7 @@ type Phone =
     override __.Equals(yobj) = 
         yobj.GetType() = __.GetType() && yobj.ToString() = __.ToString()
     override __.GetHashCode() = hash __
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             let yString = (unbox yobj).ToString()
             let xString = __.ToString()
@@ -1075,7 +1075,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
         else
             None
 
-    interface System.IComparable with
+    interface IComparable with
         member __.CompareTo yobj =
             match yobj with
             | :? PhoneNumber as y -> 
@@ -1096,44 +1096,44 @@ type Handle =
     Tags : Tag Set
     }
 
-type Uri internal (uri, tags) = 
-    member __.Uri : System.Uri = uri
+type UriTagged internal (uri, tags) = 
+    member __.Uri : Uri = uri
     member __.Tags : Set<Tag> = tags
     override __.ToString() = __.Uri.ToString()
     override __.Equals(yobj) = 
         match yobj with
-        |  :? Uri as y -> (__.Uri.AbsolutePath = y.Uri.AbsolutePath)
+        |  :? UriTagged as y -> (__.Uri.AbsolutePath = y.Uri.AbsolutePath)
         | _ -> false
     override __.GetHashCode() = __.Uri.GetHashCode()
     static member Create (uri, tags) = 
-        Uri (uri, tags)
+        UriTagged (uri, tags)
     static member TryParse ((uri : string), tags) = 
         let x = Uri.EscapeUriString <| uri.Trim()
         match Uri.IsWellFormedUriString(x, UriKind.Absolute) with
-        | true -> Uri ((System.Uri(x, UriKind.Absolute)), tags) |> Some
+        | true -> UriTagged ((Uri(x, UriKind.Absolute)), tags) |> Some
         | false -> None
     static member TryParse ((uri : string), uriKind, tags) =
         let x = Uri.EscapeUriString <| uri.Trim()
         match Uri.IsWellFormedUriString(x, uriKind) with
-        | true -> Uri ((System.Uri(x, uriKind)), tags) |> Some
+        | true -> UriTagged ((Uri(x, uriKind)), tags) |> Some
         | false -> None
     with
-        interface System.IComparable with
+        interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
-                | :? Uri as y -> 
+                | :? UriTagged as y -> 
                     if (__.Uri.IsAbsoluteUri && y.Uri.IsAbsoluteUri) && (__.Uri.AbsolutePath > y.Uri.AbsolutePath) then 1
                     elif (__.Uri.IsAbsoluteUri && y.Uri.IsAbsoluteUri) && (__.Uri.AbsolutePath < y.Uri.AbsolutePath) then -1
                     elif __.Uri.OriginalString > y.Uri.OriginalString then 1
                     elif __.Uri.OriginalString < y.Uri.OriginalString then -1
                     else 0
-                | _ -> invalidArg "Uri" "cannot compare values of different types"
+                | _ -> invalidArg "UriTagged" "cannot compare values of different types"
 
 type Address =
     | PhysicalAddress of PhysicalAddress
     | EmailAddress of EmailAddress
     | PhoneNumber of PhoneNumber
-    | Url of Uri
+    | Url of UriTagged
     | Handle of Handle
 
 type Person =
@@ -1145,7 +1145,7 @@ type Person =
 
 type Agent =
     | Person of Person
-    | Uri of Uri
+    | Uri of UriTagged
 
 type Port (portNumber : int) =
     member __.Value = portNumber
