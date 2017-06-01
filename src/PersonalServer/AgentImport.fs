@@ -155,8 +155,8 @@ module AgentImport =
 
         //to do: complete first/last name coverage (i.e. potential multiples)
         //to do: eventually resource file
-    let fullNameFirstNameSynonyms = [|"first name"|]
-    let fullNameLastNameSynonyms = [|"last name"|]
+    let fullNameFirstNameSynonyms = [|"first name"; "given name"|]
+    let fullNameLastNameSynonyms = [|"last name"; "family name"|]
 
     let fullNameBuilderParms headers =
         { 
@@ -179,29 +179,52 @@ module AgentImport =
     let physicalAddressAddressSynonyms = [|"address"|]
     let physicalAddressCitySynonyms = [|"city"|]
     let physicalAddressStateSynonyms = [|"state"|]
-    let physicalAddressPostalCodeSynonyms = [|"zip"; "zipcode"|]
+    let physicalAddressPostalCodeSynonyms = [|"zip"; "zipcode"; "postal code"|]
     let physicalAddressCountrySynonyms = [|"country"|]
 
     //to do: complete address coverage (i.e. potential multiples)
+    let headersNotExluded excludes headers =
+        headers
+        |> List.filter (fun n -> (List.exists (fun x -> x = n) excludes) |> not)
+
     let physicalAddressBuilderParms headers =
+        let cityList = headerOffsets headers physicalAddressCitySynonyms |> Array.toList
+        let stateList = headerOffsets headers physicalAddressStateSynonyms |> Array.toList
+        let postalCodeList = headerOffsets headers physicalAddressPostalCodeSynonyms |> Array.toList
+        let countryList = headerOffsets headers physicalAddressCountrySynonyms |> Array.toList
+
+        let cityIndex =
+            match cityList with
+            | hd::_ -> Some hd
+            | [] -> None
+        let stateIndex =
+            match stateList with
+            | hd::_ -> Some hd
+            | [] -> None
+        let postalCodeIndex =
+            match postalCodeList with
+            | hd::_ -> Some hd
+            | [] -> None
+        let countryIndex = 
+            match countryList with
+            | hd::_ -> Some hd
+            | [] -> None
+
+        let excludes =
+            [cityList; stateList; postalCodeList; countryList]
+            |> List.concat
+            |> List.distinct
+
+        let addressIndex = 
+            headerOffsets headers physicalAddressAddressSynonyms |> Array.toList
+            |> headersNotExluded excludes
+
         {
-        AddressIndex = headerOffsets headers physicalAddressAddressSynonyms |> Array.toList
-        CityIndex =
-            match headerOffsets headers physicalAddressCitySynonyms |> Array.toList with
-            | hd::_ -> Some hd
-            | [] -> None
-        StateIndex =
-            match headerOffsets headers physicalAddressStateSynonyms |> Array.toList with
-            | hd::_ -> Some hd
-            | [] -> None
-        PostalCodeIndex =
-            match headerOffsets headers physicalAddressPostalCodeSynonyms |> Array.toList with
-            | hd::_ -> Some hd
-            | [] -> None
-        CountryIndex =
-            match headerOffsets headers physicalAddressCountrySynonyms |> Array.toList with
-            | hd::_ -> Some hd
-            | [] -> None
+        AddressIndex = addressIndex
+        CityIndex = cityIndex
+        StateIndex = stateIndex
+        PostalCodeIndex = postalCodeIndex
+        CountryIndex = countryIndex
         }
 
     let physicalAddressBuilders physicalAddressBuilderParms source headers =
@@ -238,8 +261,14 @@ module AgentImport =
             |> List.append fullNameBuilderParms.MiddleIndex
             |> List.toArray
 
+        let namesOtherThanFullName = 
+            (headerOffsets headers personNameSynonyms)
+            |> List.ofArray
+            |> headersNotExluded (usedNameHeaderColumns |> List.ofArray)
+            |> Array.ofList
+
         let builders, usedHeaderColumns = 
-            [|entityBuilders source headers (headerOffsets headers personNameSynonyms) PersonName.TryParse NameOfPerson.Name; 
+            [|entityBuilders source headers namesOtherThanFullName PersonName.TryParse NameOfPerson.Name; 
             (fullNameBuilders fullNameBuilderParms source headers), usedNameHeaderColumns|]
             |> Array.unzip
 
