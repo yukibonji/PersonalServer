@@ -25,24 +25,22 @@ module AgentImport =
 
     let sourceHeaderTags source (headers : string []) (contentIndices : int seq) =
         contentIndices
-        |> Seq.map (fun index -> 
+        |> Seq.choose (fun index -> 
             match Tag.TryParse headers.[index] with
             | Some _ ->
                 Tag.TryParse <| sprintf "%s::%s" source headers.[index]
             | None ->
                 None )
-        |> Seq.choose id
         |> Set.ofSeq
 
     let sourceTags source (headers : string []) (columns : string []) (contentIndices : int seq) =
         contentIndices
-        |> Seq.map (fun index -> 
+        |> Seq.choose (fun index -> 
             match Tag.TryParse columns.[index] with
             | Some _ ->
                 Tag.TryParse <| sprintf "%s::%s::%s" source headers.[index] columns.[index]
             | None ->
                 None )
-        |> Seq.choose id
         |> Set.ofSeq
 
     //email, phone, uri, person name
@@ -81,8 +79,7 @@ module AgentImport =
 
             let streetAddress: string list =
                 physicalAddressBuilderParms.AddressIndex
-                |> List.map (fun i -> valueFromIndexOpt columns <| Some i)
-                |> List.choose id
+                |> List.choose (fun i -> valueFromIndexOpt columns <| Some i)
                 
             let city = valueFromIndexOpt columns physicalAddressBuilderParms.CityIndex
             let state = valueFromIndexOpt columns physicalAddressBuilderParms.StateIndex
@@ -115,8 +112,7 @@ module AgentImport =
 
             let middle: string list =
                 fullNameBuilderParms.MiddleIndex
-                |> List.map (fun i -> valueFromIndexOpt columns <| Some i)
-                |> List.choose id
+                |> List.choose (fun i -> valueFromIndexOpt columns <| Some i)
                 
             let first = valueFromIndexOpt columns fullNameBuilderParms.FirstIndex
             let family = valueFromIndexOpt columns fullNameBuilderParms.FamilyIndex
@@ -276,7 +272,7 @@ module AgentImport =
 
     let agentImport sources sourceBuilder nameBuilders addressBuilders =
         sources
-        |> Seq.map (fun source ->
+        |> Seq.choose (fun source ->
             let columns = sourceBuilder source
             let names =
                 ([], nameBuilders)
@@ -310,7 +306,6 @@ module AgentImport =
                  Tags = tagSet
                  } |> Some
             )
-        |> Seq.choose id
 
     let commonBuilders source headers =
         let addressBuilders, usedAddressColumns = getAddressBuilders source headers

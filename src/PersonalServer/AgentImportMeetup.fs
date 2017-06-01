@@ -153,8 +153,7 @@ module AgentImportMeetup =
         match JsonValue.Parse groupsRaw with
         | JsonValue.Array _ as array -> 
             array.AsArray()
-            |> Array.map parseMeetup
-            |> Array.choose id
+            |> Array.choose parseMeetup
             //|> Array.map (fullGroup apiKey) 
             |> Some
         | _ -> None
@@ -214,8 +213,7 @@ module AgentImportMeetup =
         match JsonValue.Parse membersRaw with
         | JsonValue.Array _ as array -> 
             array.AsArray()
-            |> Array.map parseMember //to do: individual member retrieval for more info
-            |> Array.choose id
+            |> Array.choose parseMember //to do: individual member retrieval for more info
             |> Some
         | _ -> None
 

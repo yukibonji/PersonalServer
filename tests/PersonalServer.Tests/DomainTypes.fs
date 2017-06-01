@@ -22,8 +22,7 @@ module DomainTypes =
 
         let tagSet distinctList =
             distinctList
-            |> List.map (fun x -> Tag.TryParse <| x.ToString())
-            |> List.choose id
+            |> List.choose (fun x -> Tag.TryParse <| x.ToString())
             |> Set.ofList
 
         let listFromSetOftags setOfTags = 
@@ -100,8 +99,7 @@ module DomainTypes =
                         (fun (xs : string list) -> 
                             let listOfTags = 
                                 xs  
-                                |> List.map Tag.TryParse
-                                |> List.choose id
+                                |> List.choose Tag.TryParse
 
                             let stringFromTagsOrdered =
                                 listOfTags
@@ -112,8 +110,7 @@ module DomainTypes =
 
                             let tagsFromOrderedList =
                                 stringFromTagsOrdered
-                                |> List.map Tag.TryParse
-                                |> List.choose id
+                                |> List.choose Tag.TryParse
                                 
                             tagsFromOrderedList = orderedTags)
         ]
@@ -830,8 +827,7 @@ module DomainTypes =
 
         let makeList nonEmptyStrings = 
             nonEmptyStrings
-            |> List.map (fun x -> EmailAddress.TryParse (x, Set.empty<Tag>))
-            |> List.choose id
+            |> List.choose (fun x -> EmailAddress.TryParse (x, Set.empty<Tag>))
         
         testList "DomainTypes.EmailAddress" [
 
@@ -936,8 +932,7 @@ module DomainTypes =
                         (fun (xs : string list) -> 
                             let listOfUsPhones =
                                 xs 
-                                |> List.map UsPhone.TryParse
-                                |> List.choose id
+                                |> List.choose UsPhone.TryParse
 
                             let stringFromUsPhonesOrdered =
                                 let phone10s, phone7s =
@@ -1007,8 +1002,7 @@ module DomainTypes =
                             
                             let listOfOtherPhones : OtherPhone list =
                                 xs 
-                                |> List.map OtherPhone.TryParse
-                                |> List.choose id
+                                |> List.choose OtherPhone.TryParse
 
                             let stringFromOtherPhonesOrdered =
 
@@ -1034,8 +1028,7 @@ module DomainTypes =
                         (fun (xs : string list) -> 
                             let listOfPhones =
                                 xs 
-                                |> List.map Phone.TryParse
-                                |> List.choose id
+                                |> List.choose Phone.TryParse
 
                             let stringPhonesOrdered =
                                 listOfPhones

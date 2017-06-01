@@ -39,8 +39,7 @@ type TrimNonEmptyString internal (value : string) =
     static member TryParse (value : string) = verifyTrimNonEmptyString value TrimNonEmptyString
     static member Parse (xs : string list) =
         xs
-        |> List.map TrimNonEmptyString.TryParse 
-        |> List.choose id
+        |> List.choose TrimNonEmptyString.TryParse 
     with
         interface IComparable with
             member __.CompareTo yobj =
