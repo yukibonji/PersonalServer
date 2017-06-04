@@ -227,6 +227,12 @@ type Country =
     CallingCodes  : Set<UInt16>
     }
 
+type State =
+    {
+    Name : string
+    Abbreviation : string
+    }
+
 [<Class>]
 type PhoneNumber =
       interface IComparable
@@ -318,3 +324,6 @@ type EmailAccount =
 module Countries =
     val countries : Set<Country>
     val byCallingCodes : IDictionary<uint16, Country Set>
+    val byName : IDictionary<string, Country>
+    val stateByAbbreviation : IDictionary<string, State>
+    val stateByName : IDictionary<string, State>

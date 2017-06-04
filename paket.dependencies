@@ -5,6 +5,7 @@ nuget FSharp.Core
 nuget FSharp.Data
 nuget Fsharpx.Extras
 nuget FsRegEx
+nuget TweetinviAPI
 
 group Build
   source https://nuget.org/api/v2
