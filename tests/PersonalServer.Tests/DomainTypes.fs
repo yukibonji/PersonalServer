@@ -36,6 +36,9 @@ module DomainTypes =
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (Tag.TryParse System.String.Empty) "Expected None"
 
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (Tag.TryParse null) "Expected None"
+
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| whitespaceString())
@@ -121,6 +124,9 @@ module DomainTypes =
 
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (TrimNonEmptyString.TryParse System.String.Empty) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (TrimNonEmptyString.TryParse null) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
@@ -211,6 +217,9 @@ module DomainTypes =
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (Digits.TryParse System.String.Empty) "Expected None"
 
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (Digits.TryParse null) "Expected None"
+
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonDigitalString())
@@ -251,6 +260,9 @@ module DomainTypes =
 
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (Digits2.TryParse System.String.Empty) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (Digits2.TryParse null) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
@@ -299,6 +311,9 @@ module DomainTypes =
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (Digits3.TryParse System.String.Empty) "Expected None"
 
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (Digits3.TryParse null) "Expected None"
+
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonDigitalString())
@@ -345,6 +360,9 @@ module DomainTypes =
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (Digits4.TryParse System.String.Empty) "Expected None"
 
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (Digits4.TryParse null) "Expected None"
+
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonDigitalString())
@@ -389,6 +407,9 @@ module DomainTypes =
         testList "DomainTypes.FullName" [
             testCase "TryParse None on all empty" <| fun () ->
                 Expect.isNone (FullName.TryParse (None, [], (Some System.String.Empty), NameOrder.Western, Set.empty<Tag>) ) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (FullName.TryParse (None, [], (Some null), NameOrder.Western, Set.empty<Tag>) ) "Expected None"
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (fullName : FullName) ->
@@ -447,6 +468,9 @@ module DomainTypes =
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (PersonName.TryParse (System.String.Empty, Set.empty<Tag>)) "Expected None"
 
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (PersonName.TryParse (null, Set.empty<Tag>)) "Expected None"
+
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| whitespaceString())
@@ -494,7 +518,10 @@ module DomainTypes =
     let testNameAndAffixes =
         testList "DomainTypes.NameAndAffixes" [
             testCase "TryParse None on all empty" <| fun () ->
-                Expect.isNone (NameAndAffixes.TryParse ([], System.String.Empty,[], Set.empty<Tag>) ) "Expected None"
+                Expect.isNone (NameAndAffixes.TryParse ([], System.String.Empty, [], Set.empty<Tag>) ) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (NameAndAffixes.TryParse ([], null, [], Set.empty<Tag>) ) "Expected None"
 
             testPropertyWithConfig config10k "equality" <|
                 fun  () ->
@@ -532,6 +559,9 @@ module DomainTypes =
 
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (ZipCode5.TryParse System.String.Empty) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (ZipCode5.TryParse null) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
@@ -581,6 +611,9 @@ module DomainTypes =
         testList "DomainTypes.ZipCode5Plus4" [
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (ZipCode5Plus4.TryParse System.String.Empty) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (ZipCode5Plus4.TryParse null) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on non-digital string" <|
                 fun  () ->
@@ -659,6 +692,9 @@ module DomainTypes =
 
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (NonUsPostalCode.TryParse System.String.Empty) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (NonUsPostalCode.TryParse null) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
@@ -739,6 +775,9 @@ module DomainTypes =
         testList "DomainTypes.PhysicalAddress" [
             testCase "TryParse None on all empty" <| fun () ->
                 Expect.isNone (PhysicalAddress.TryParse ([], (Some System.String.Empty), None, None, None, Set.empty<Tag>) ) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (PhysicalAddress.TryParse ([], (Some null), None, None, None, Set.empty<Tag>) ) "Expected None"
 
             testPropertyWithConfig config10k "equality" <|
                  fun  () ->
@@ -834,6 +873,9 @@ module DomainTypes =
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (EmailAddress.TryParse (System.String.Empty, Set.empty<Tag>)) "Expected None"
 
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (EmailAddress.TryParse (null, Set.empty<Tag>)) "Expected None"
+
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| whitespaceString())
@@ -898,6 +940,9 @@ module DomainTypes =
 
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (UsPhone.TryParse System.String.Empty) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (UsPhone.TryParse null) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
@@ -967,6 +1012,9 @@ module DomainTypes =
 
             testCase "TryParse None on empty string" <| fun () ->
                 Expect.isNone (OtherPhone.TryParse System.String.Empty) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (OtherPhone.TryParse null) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
@@ -1062,8 +1110,15 @@ module DomainTypes =
 
     [<Tests>]
     let testUriTagged =
-        testList "DomainTypes.PhoneNumber" [
-             testPropertyWithConfig config10k "equality" <|
+
+        testList "DomainTypes.UriTagged" [
+            testCase "TryParse None on empty string" <| fun () ->
+                Expect.isNone (UriTagged.TryParse (System.String.Empty, Set.empty<Tag>)) "Expected None"
+
+            testCase "TryParse None on null string" <| fun () ->
+                Expect.isNone (UriTagged.TryParse (null, Set.empty<Tag>)) "Expected None"
+
+            testPropertyWithConfig config10k "equality" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genUriTagged())
                         (fun  (uri) ->

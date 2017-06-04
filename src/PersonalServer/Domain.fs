@@ -59,16 +59,19 @@ type Digits internal (value) =
         | _ -> false
     override __.GetHashCode() = hash value
     static member TryParse (value : string) = 
-        let s' = value.Trim()
-        if String.length(s') = 0 then 
+        if String.IsNullOrWhiteSpace value then
             None
         else
-            let regex = new Regex("^[0-9]+$")
-
-            if regex.IsMatch s' then 
-                Some <| Digits s'
-            else 
+            let s' = value.Trim()
+            if String.length(s') = 0 then 
                 None
+            else
+                let regex = new Regex("^[0-9]+$")
+
+                if regex.IsMatch s' then 
+                    Some <| Digits s'
+                else 
+                    None
     with
         interface IComparable with
             member __.CompareTo yobj =
@@ -450,21 +453,6 @@ type EmailAddress internal (email : string, tags : Tag Set) =
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse (email, tags) = 
-        //to do:  no illegal characters
-        // https://tools.ietf.org/html/rfc2822
-        // https://tools.ietf.org/html/rfc2822#section-3.2.4
-        // https://tools.ietf.org/html/rfc2822#section-3.4.1
-        // http://www.ex-parrot.com/pdw/Mail-RFC822-Address.html
-        //
-        let rfc822Regex = """(?:(?:\r\n)?[ \t])*(?:(?:(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*))*@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*|(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)*\<(?:(?:\r\n)?[ \t])*(?:@(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*(?:,@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*)*:(?:(?:\r\n)?[ \t])*)?(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*))*@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*\>(?:(?:\r\n)?[ \t])*)|(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)*:(?:(?:\r\n)?[ \t])*(?:(?:(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*))*@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*|(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)*\<(?:(?:\r\n)?[ \t])*(?:@(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*(?:,@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*)*:(?:(?:\r\n)?[ \t])*)?(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*))*@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*\>(?:(?:\r\n)?[ \t])*)(?:,\s*(?:(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*))*@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*|(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)*\<(?:(?:\r\n)?[ \t])*(?:@(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*(?:,@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*)*:(?:(?:\r\n)?[ \t])*)?(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:\r\n)?[ \t])*))*@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|\[([^\[\]\r\\]|\\.)*\](?:(?:\r\n)?[ \t])*))*\>(?:(?:\r\n)?[ \t])*))*)?;\s*)"""
-        //
-        // http://emailregex.com/
-        // ( see also RFC 5322 )
-        //  [a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?
-        //
-        // http://stackoverflow.com/questions/297420/list-of-email-addresses-that-can-be-used-to-test-a-javascript-validation-script
-        // http://code.iamcal.com/php/rfc822/tests/
-
         match verifyTrimNonEmptyString email id with
         | Some x ->
             if x.StartsWith("@") || x.EndsWith("@") || x.EndsWith(".") then
@@ -542,6 +530,12 @@ type Country =
         UnNum       = unNum
         CallingCodes  = callingCodes
         }
+
+type State =
+    {
+    Name : string
+    Abbreviation : string
+    }
 
 module CallingCodes =
     [<Literal>]
@@ -821,6 +815,84 @@ module Countries =
                             |> Set.ofList
                         callingCode, xs')
         |> dict
+    let byName =
+        countries
+        |> Set.toList
+        |> List.map (fun x -> x.Name, x)
+        |> dict
+
+    let states = 
+        [
+        {Name = "Alabama"; Abbreviation = "AL"}
+        {Name = "Alaska"; Abbreviation = "AK"}
+        {Name = "Arizona"; Abbreviation = "AZ"}
+        {Name = "Arkansas"; Abbreviation = "AR"}
+        {Name = "California"; Abbreviation = "CA"}
+        {Name = "Colorado"; Abbreviation = "CO"}
+        {Name = "Connecticut"; Abbreviation = "CT"}
+        {Name = "Delaware"; Abbreviation = "DE"}
+        {Name = "Florida"; Abbreviation = "FL"}
+        {Name = "Georgia"; Abbreviation = "GA"}
+        {Name = "Hawaii"; Abbreviation = "HI"}
+        {Name = "Idaho"; Abbreviation = "ID"}
+        {Name = "Illinois"; Abbreviation = "IL"}
+        {Name = "Indiana"; Abbreviation = "IN"}
+        {Name = "Iowa"; Abbreviation = "IA"}
+        {Name = "Kansas"; Abbreviation = "KS"}
+        {Name = "Kentucky"; Abbreviation = "KY"}
+        {Name = "Louisiana"; Abbreviation = "LA"}
+        {Name = "Maine"; Abbreviation = "ME"}
+        {Name = "Maryland"; Abbreviation = "MD"}
+        {Name = "Massachusetts"; Abbreviation = "MA"}
+        {Name = "Michigan"; Abbreviation = "MI"}
+        {Name = "Minnesota"; Abbreviation = "MN"}
+        {Name = "Mississippi"; Abbreviation = "MS"}
+        {Name = "Missouri"; Abbreviation = "MO"}
+        {Name = "Montana"; Abbreviation = "MT"}
+        {Name = "Nebraska"; Abbreviation = "NE"}
+        {Name = "Nevada"; Abbreviation = "NV"}
+        {Name = "New Hampshire"; Abbreviation = "NH"}
+        {Name = "New Jersey"; Abbreviation = "NJ"}
+        {Name = "New Mexico"; Abbreviation = "NM"}
+        {Name = "New York"; Abbreviation = "NY"}
+        {Name = "North Carolina"; Abbreviation = "NC"}
+        {Name = "North Dakota"; Abbreviation = "ND"}
+        {Name = "Ohio"; Abbreviation = "OH"}
+        {Name = "Oklahoma"; Abbreviation = "OK"}
+        {Name = "Oregon"; Abbreviation = "OR"}
+        {Name = "Pennsylvania"; Abbreviation = "PA"}
+        {Name = "Rhode Island"; Abbreviation = "RI"}
+        {Name = "South Carolina"; Abbreviation = "SC"}
+        {Name = "South Dakota"; Abbreviation = "SD"}
+        {Name = "Tennessee"; Abbreviation = "TN"}
+        {Name = "Texas"; Abbreviation = "TX"}
+        {Name = "Utah"; Abbreviation = "UT"}
+        {Name = "Vermont"; Abbreviation = "VT"}
+        {Name = "Virginia"; Abbreviation = "VA"}
+        {Name = "Washington"; Abbreviation = "WA"}
+        {Name = "West Virginia"; Abbreviation = "WV"}
+        {Name = "Wisconsin"; Abbreviation = "WI"}
+        {Name = "Wyoming"; Abbreviation = "WY"}
+        {Name = "American Samoa"; Abbreviation = "AS"}
+        {Name = "District of Columbia"; Abbreviation = "DC"}
+        {Name = "Federated States of Micronesia"; Abbreviation = "FM"}
+        {Name = "Guam"; Abbreviation = "GU"}
+        {Name = "Marshall Islands"; Abbreviation = "MH"}
+        {Name = "Northern Mariana Islands"; Abbreviation = "MP"}
+        {Name = "Palau"; Abbreviation = "PW"}
+        {Name = "Puerto Rico"; Abbreviation = "PR"}
+        {Name = "Virgin Islands"; Abbreviation = "VI"}
+        ]
+
+    let stateByAbbreviation =
+        states
+        |> List.map (fun x -> x.Abbreviation, x)
+        |> dict
+
+    let stateByName =
+        states
+        |> List.map (fun x -> x.Name, x)
+        |> dict
 
 type UsPhone internal (areaCode, exchange, suffix) =
     member __.AreaCode : Digits3 option = areaCode
@@ -857,20 +929,23 @@ type UsPhone internal (areaCode, exchange, suffix) =
         | Some ee, Some ss -> Some <| UsPhone (a, ee, ss)
     static member TryParse (phone : string) =
         //to do: fix to reject international prefixes
-        let digits = digitsFromString <| phone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "")
-
-        match digits.Length with
-        | 10 ->
-            let a = Digits3 <| new string(Array.sub digits 0 3)
-            let e = Digits3 <| new string(Array.sub digits 3 3)
-            let s = Digits4 <| new string(Array.sub digits 6 4)
-            Some <| UsPhone (Some a, e, s)
-        | 7 ->
-            let e = Digits3 <| new string(Array.sub digits 0 3)
-            let s = Digits4 <| new string(Array.sub digits 3 4)
-            Some <| UsPhone (None, e, s)
-        | _ ->
+        if String.IsNullOrWhiteSpace phone then
             None
+        else
+            let digits = digitsFromString <| phone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "")
+
+            match digits.Length with
+            | 10 ->
+                let a = Digits3 <| new string(Array.sub digits 0 3)
+                let e = Digits3 <| new string(Array.sub digits 3 3)
+                let s = Digits4 <| new string(Array.sub digits 6 4)
+                Some <| UsPhone (Some a, e, s)
+            | 7 ->
+                let e = Digits3 <| new string(Array.sub digits 0 3)
+                let s = Digits4 <| new string(Array.sub digits 3 4)
+                Some <| UsPhone (None, e, s)
+            | _ ->
+                None
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -898,15 +973,18 @@ type OtherPhone internal (phone) =
     static member TryParse (phone : string) = 
     //other phone accespts any digit at least 4 long
         //to do: fix to reject international prefixes
-        let digits = digitsFromString phone
-
-        if digits.Length < 5 || digits.Length > 14 then
+        if String.IsNullOrWhiteSpace phone then
             None
-        else 
-            new string(digits)
-            |> Digits
-            |> OtherPhone
-            |> Some
+        else
+            let digits = digitsFromString phone
+
+            if digits.Length < 5 || digits.Length > 14 then
+                None
+            else 
+                new string(digits)
+                |> Digits
+                |> OtherPhone
+                |> Some
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -1016,63 +1094,66 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
         
         PhoneNumber (code, phone, (Option.map Digits extension), tags) |> Some 
     static member TryParse (phone : string, tags) : PhoneNumber option = 
-        let txt = phone.ToUpper().Split([|'X'|], 2)
+        if String.IsNullOrWhiteSpace phone then
+            None
+        else
+            let txt = phone.ToUpper().Split([|'X'|], 2)
 
-        let extension =
-            if txt.Length = 2 then
-                Digits.TryParse txt.[1]
-            else
-                None
+            let extension =
+                if txt.Length = 2 then
+                    Digits.TryParse txt.[1]
+                else
+                    None
 
-        let number = txt.[0].Trim()
+            let number = txt.[0].Trim()
 
-        let tryRawCallingCode rawCC =
-            match UInt16.TryParse rawCC |> toOption with
-            | Some x ->
-                match Countries.byCallingCodes.TryGetValue x with
-                | true, _ -> Some (x, rawCC)
-                | _ -> None
-            | None ->
-                None
+            let tryRawCallingCode rawCC =
+                match UInt16.TryParse rawCC |> toOption with
+                | Some x ->
+                    match Countries.byCallingCodes.TryGetValue x with
+                    | true, _ -> Some (x, rawCC)
+                    | _ -> None
+                | None ->
+                    None
 
-        let digitsRaw = digitsFromString number
+            let digitsRaw = digitsFromString number
 
-        if digitsRaw.Length > 4 then
-            let digits = new String(digitsRaw)
-            let callingCode, numberDigits =
-                if number.Length > 5 && number.StartsWith("+") then
-                    if number.StartsWith("+") then
-                        match seq {yield tryRawCallingCode <| digits.Substring(0, 4); 
-                                    yield tryRawCallingCode <| digits.Substring(0, 3);
-                                    yield tryRawCallingCode <| digits.Substring(0, 2);
-                                    yield tryRawCallingCode <| digits.Substring(0, 1);
-                                    }
-                                    |> Seq.tryFind (fun x -> x.IsSome) with
-                        | Some x -> 
-                            let uint16, rawCC = x.Value
-                            match Countries.byCallingCodes.TryGetValue uint16 with
-                            | true, _ -> 
-                                if uint16 = CallingCodes.NorthAmerica then
-                                    if digits.Length = 11 then
-                                        (Some uint16), digits.Substring rawCC.Length
+            if digitsRaw.Length > 4 then
+                let digits = new String(digitsRaw)
+                let callingCode, numberDigits =
+                    if number.Length > 5 && number.StartsWith("+") then
+                        if number.StartsWith("+") then
+                            match seq {yield tryRawCallingCode <| digits.Substring(0, 4); 
+                                        yield tryRawCallingCode <| digits.Substring(0, 3);
+                                        yield tryRawCallingCode <| digits.Substring(0, 2);
+                                        yield tryRawCallingCode <| digits.Substring(0, 1);
+                                        }
+                                        |> Seq.tryFind (fun x -> x.IsSome) with
+                            | Some x -> 
+                                let uint16, rawCC = x.Value
+                                match Countries.byCallingCodes.TryGetValue uint16 with
+                                | true, _ -> 
+                                    if uint16 = CallingCodes.NorthAmerica then
+                                        if digits.Length = 11 then
+                                            (Some uint16), digits.Substring rawCC.Length
+                                        else
+                                            None, digits.Substring rawCC.Length
                                     else
-                                        None, digits.Substring rawCC.Length
-                                else
-                                    (Some uint16), digits.Substring rawCC.Length
-                            | _ -> None, digits
-                        | None -> None, digits
+                                        (Some uint16), digits.Substring rawCC.Length
+                                | _ -> None, digits
+                            | None -> None, digits
+                        else
+                            None, digits
                     else
                         None, digits
-                else
-                    None, digits
 
-            match Phone.TryParse numberDigits with
-            | Some phone ->
-                PhoneNumber (callingCode, phone, extension, tags) |> Some 
-            | None ->
+                match Phone.TryParse numberDigits with
+                | Some phone ->
+                    PhoneNumber (callingCode, phone, extension, tags) |> Some 
+                | None ->
+                    None
+            else
                 None
-        else
-            None
 
     interface IComparable with
         member __.CompareTo yobj =
@@ -1107,10 +1188,13 @@ type UriTagged internal (uri, tags) =
     static member Create (uri, tags) = 
         UriTagged (uri, tags)
     static member TryParse ((uri : string), tags) = 
-        let x = Uri.EscapeUriString <| uri.Trim()
-        match Uri.IsWellFormedUriString(x, UriKind.Absolute) with
-        | true -> UriTagged ((Uri(x, UriKind.Absolute)), tags) |> Some
-        | false -> None
+        if String.IsNullOrWhiteSpace uri then
+            None
+        else
+            let x = Uri.EscapeUriString <| uri.Trim()
+            match Uri.IsWellFormedUriString(x, UriKind.Absolute) with
+            | true -> UriTagged ((Uri(x, UriKind.Absolute)), tags) |> Some
+            | false -> None
     static member TryParse ((uri : string), uriKind, tags) =
         let x = Uri.EscapeUriString <| uri.Trim()
         match Uri.IsWellFormedUriString(x, uriKind) with
