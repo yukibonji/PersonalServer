@@ -65,7 +65,7 @@ module AgentImportTwitter =
             }
 
         let name =
-            PersonName.TryParse (follower.Name, Set.add (Tag.TryParse "Twitter::Name").Value Set.empty)
+            SimpleName.TryParse (follower.Name, Set.add (Tag.TryParse "Twitter::Name").Value Set.empty)
 
         let uriTagged =
             UriTagged.TryParse (follower.Url, Set.add (Tag.TryParse "Twitter::Url").Value Set.empty)
@@ -117,7 +117,7 @@ module AgentImportTwitter =
 
         match name with
         | Some x ->
-            {Names = Set.add (NameOfPerson.Name x) Set.empty
+            {Names = Set.add (ContactName.SimpleName x) Set.empty
              Addresses = addresses
              Tags = Set.empty}
         | None ->

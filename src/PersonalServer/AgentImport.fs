@@ -11,7 +11,7 @@ module AgentImport =
 
     let uriSynonyms = [|"web";|]
 
-    let personNameSynonyms = [|"display name"; "nickname"; "screen name"; "name";|]
+    let simpleNameSynonyms = [|"display name"; "nickname"; "screen name"; "name";|]
 
     let valueFromIndexOpt (columns : string []) indexOpt = 
         match indexOpt with
@@ -169,7 +169,7 @@ module AgentImport =
         }
 
     let fullNameBuilders fullNameBuilderParms source headers =
-        [fullNameBuilder fullNameBuilderParms source headers >> rawToFinalResult NameOfPerson.FullName]
+        [fullNameBuilder fullNameBuilderParms source headers >> rawToFinalResult ContactName.FullName]
 
     //to do: eventually resource file
     let physicalAddressAddressSynonyms = [|"address"|]
@@ -258,13 +258,13 @@ module AgentImport =
             |> List.toArray
 
         let namesOtherThanFullName = 
-            (headerOffsets headers personNameSynonyms)
+            (headerOffsets headers simpleNameSynonyms)
             |> List.ofArray
             |> headersNotExluded (usedNameHeaderColumns |> List.ofArray)
             |> Array.ofList
 
         let builders, usedHeaderColumns = 
-            [|entityBuilders source headers namesOtherThanFullName PersonName.TryParse NameOfPerson.Name; 
+            [|entityBuilders source headers namesOtherThanFullName SimpleName.TryParse ContactName.SimpleName; 
             (fullNameBuilders fullNameBuilderParms source headers), usedNameHeaderColumns|]
             |> Array.unzip
 

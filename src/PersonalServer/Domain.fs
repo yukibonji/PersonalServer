@@ -145,13 +145,13 @@ type FullName internal (first, middle, family, nameOrder, tags) =
     member __.Family : TrimNonEmptyString option = family 
     member __.NameOrder : NameOrder = nameOrder
     member __.Tags : Tag Set = tags
-    member __.PersonName =
+    member __.SimpleName =
         let combineName nameParts =
             let name =
                 nameParts
                 |> List.concat
                 |> String.concat " "
-            PersonName(name, __.Tags)
+            SimpleName(name, __.Tags)
 
         match __.NameOrder with
         | Western -> 
@@ -167,10 +167,10 @@ type FullName internal (first, middle, family, nameOrder, tags) =
         | Custom f -> f __
     override __.Equals(yobj) = 
         match yobj with
-        |  :? FullName as y -> (__.PersonName = y.PersonName)
+        |  :? FullName as y -> (__.SimpleName = y.SimpleName)
         | _ -> false
     override __.GetHashCode() = hash __
-    override __.ToString() = __.PersonName.ToString()
+    override __.ToString() = __.SimpleName.ToString()
     static member TryParse ((first : string option), middle, (family : string option), nameOrder, tags) =
         let fi = TrimNonEmptyString.TryParse first
         let m = TrimNonEmptyString.Parse middle
@@ -195,38 +195,38 @@ type FullName internal (first, middle, family, nameOrder, tags) =
 and NameOrder =
     | Western
     | FamilyFirst
-    | Custom of (FullName -> PersonName)
-and PersonName internal (name: string, tags : Tag Set) = 
+    | Custom of (FullName -> SimpleName)
+and SimpleName internal (name: string, tags : Tag Set) = 
     member __.Value = TrimNonEmptyString name
     member __.Tags = tags
     override __.ToString() = name
     override __.Equals(yobj) = 
         match yobj with
-        |  :? PersonName as y -> (__.Value = y.Value)
+        |  :? SimpleName as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
     static member TryParse (name, tags) =
         if String.IsNullOrWhiteSpace name then
             None        
         else 
-            Some <| PersonName ((name.Trim()), tags)
+            Some <| SimpleName ((name.Trim()), tags)
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
-            | :? PersonName as y -> 
+            | :? SimpleName as y -> 
                 if __.Value > y.Value then 1
                 elif __.Value < y.Value then -1
                 else 0
-            | _ -> invalidArg "PersonName" "cannot compare values of different types"
-and NameAndAffixes (salutations, personName, suffixes) =
+            | _ -> invalidArg "SimpleName" "cannot compare values of different types"
+and NameAndAffixes (salutations, simpleName, suffixes) =
     member __.Salutations = salutations 
-    member __.PersonName : PersonName = personName
+    member __.SimpleName : SimpleName = simpleName
     member __.Suffixes = suffixes
     member __.Value =
         TrimNonEmptyString <| __.ToString()
     override __.ToString() = 
         [salutations |> List.map (fun (x : TrimNonEmptyString) -> x.Value);
-        [personName.ToString()];
+        [simpleName.ToString()];
         suffixes |> List.map (fun (x : TrimNonEmptyString) -> x.Value)]
         |> List.concat
         |> String.concat " "
@@ -235,8 +235,8 @@ and NameAndAffixes (salutations, personName, suffixes) =
         |  :? NameAndAffixes as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse ((salutations : string list), (personName : string), (suffixes : string list), tags) =
-        match PersonName.TryParse (personName, tags) with
+    static member TryParse ((salutations : string list), (simpleName : string), (suffixes : string list), tags) =
+        match SimpleName.TryParse (simpleName, tags) with
         | Some x -> 
             Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes))
         | None -> None
@@ -245,8 +245,8 @@ and NameAndAffixes (salutations, personName, suffixes) =
         member __.CompareTo yobj =
             match yobj with
             | :? NameAndAffixes as y -> 
-                if __.PersonName > y.PersonName then 1
-                elif __.PersonName < y.PersonName then -1
+                if __.SimpleName > y.SimpleName then 1
+                elif __.SimpleName < y.SimpleName then -1
                 elif __.Salutations > y.Salutations then 1
                 elif __.Salutations < y.Salutations then -1
                 elif __.Suffixes > y.Suffixes then 1
@@ -254,8 +254,8 @@ and NameAndAffixes (salutations, personName, suffixes) =
                 else 0
             | _ -> invalidArg "NameAndAffixes" "cannot compare values of different types"
 
-type NameOfPerson =
-    | Name of PersonName
+type ContactName =
+    | SimpleName of SimpleName
     | FullName of FullName
     | NameAndAffixes of NameAndAffixes
 
@@ -1219,15 +1219,15 @@ type Address =
     | Url of UriTagged
     | Handle of Handle
 
-type Person =
+type Contact =
     {
-    Names : NameOfPerson Set
+    Names : ContactName Set
     Addresses : Address Set
     Tags : Tag Set
     }
 
 type Agent =
-    | Person of Person
+    | Person of Contact
     | Uri of UriTagged
 
 type Port (portNumber : int) =
@@ -1266,7 +1266,7 @@ type EmailAccount =
     Name : EmailAccountName
     EmailAddress : EmailAddress
     ReplyToAddress : EmailAddress option
-    PersonName : PersonName
+    SimpleName : SimpleName
     Signature : string
     SignatureRule : string
     SMTP : string

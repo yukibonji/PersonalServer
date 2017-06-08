@@ -46,11 +46,11 @@ module AgentImport =
                         (fun  (uri) ->
                             testSimpleEntity uri UriTagged.TryParse )
 
-            testPropertyWithConfig config10k "PersonName equality" <|
+            testPropertyWithConfig config10k "SimpleName equality" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
-                        (fun  (personName) ->
-                            testSimpleEntity personName PersonName.TryParse )
+                        (fun  (simpleName) ->
+                            testSimpleEntity simpleName SimpleName.TryParse )
 
         ]
 
@@ -60,8 +60,8 @@ module AgentImport =
 //            testPropertyWithConfig config10k "equality" <|
 //                fun  () ->
 //                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
-//                        (fun  (personName) ->
-//                            testSimpleEntity personName PersonName.TryParse )
+//                        (fun  (simpleName) ->
+//                            testSimpleEntity simpleName PersonName.TryParse )
         ]
 
 //        let fullNameBuilders =

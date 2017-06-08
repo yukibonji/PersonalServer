@@ -70,32 +70,32 @@ type FullName =
     member Family: TrimNonEmptyString option
     member NameOrder: NameOrder
     member Tags: Set<Tag>
-    member PersonName : PersonName
+    member SimpleName : SimpleName
     static member TryParse : first: string option * middle: string list * family: string option * nameOrder: NameOrder * tags:Set<Tag> -> FullName option
 and NameOrder =
     /// Salutation, First, Middle, Family, Suffix
     | Western
     /// Salutation Family, First, Middle, Suffix
     | FamilyFirst
-    | Custom of (FullName -> PersonName)
-and [<Class>] PersonName =
+    | Custom of (FullName -> SimpleName)
+and [<Class>] SimpleName =
     interface IComparable
     override ToString : unit -> string
     member Tags : Set<Tag>
     member Value : TrimNonEmptyString
-    static member TryParse : name:string * tags:Set<Tag> -> PersonName option
+    static member TryParse : name:string * tags:Set<Tag> -> SimpleName option
 and NameAndAffixes =
-    new : salutation: TrimNonEmptyString list * personName : PersonName * suffix: TrimNonEmptyString list -> NameAndAffixes
+    new : salutation: TrimNonEmptyString list * simpleName : SimpleName * suffix: TrimNonEmptyString list -> NameAndAffixes
     interface IComparable
     override ToString : unit -> string
     member Salutations: TrimNonEmptyString list
-    member PersonName : PersonName
+    member SimpleName : SimpleName
     member Suffixes: TrimNonEmptyString list
     member Value : TrimNonEmptyString
-    static member TryParse : salutations: string list * personName : string * suffixes: string list * tags:Set<Tag> -> NameAndAffixes option
+    static member TryParse : salutations: string list * simpleName : string * suffixes: string list * tags:Set<Tag> -> NameAndAffixes option
 
-type NameOfPerson =
-    | Name of PersonName
+type ContactName =
+    | SimpleName of SimpleName
     | FullName of FullName
     | NameAndAffixes of NameAndAffixes
 
@@ -271,13 +271,13 @@ type Address =
     | Url of UriTagged
     | Handle of Handle
 
-type Person =
-    {Names: Set<NameOfPerson>
+type Contact =
+    {Names: Set<ContactName>
      Addresses: Set<Address>
      Tags: Set<Tag>}
 
 type Agent =
-    | Person of Person
+    | Person of Contact
     | Uri of UriTagged
 
 type Port =
@@ -315,7 +315,7 @@ type EmailAccount =
     {Name: EmailAccountName
      EmailAddress: EmailAddress
      ReplyToAddress: EmailAddress option
-     PersonName: PersonName
+     SimpleName: SimpleName
      Signature: string
      SignatureRule: string
      SMTP: string

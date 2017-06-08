@@ -462,27 +462,27 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testPersonName =
-        testList "DomainTypes.PersonName" [
+    let testSimpleName =
+        testList "DomainTypes.SimpleName" [
 
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (PersonName.TryParse (System.String.Empty, Set.empty<Tag>)) "Expected None"
+                Expect.isNone (SimpleName.TryParse (System.String.Empty, Set.empty<Tag>)) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (PersonName.TryParse (null, Set.empty<Tag>)) "Expected None"
+                Expect.isNone (SimpleName.TryParse (null, Set.empty<Tag>)) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| whitespaceString())
                         (fun (x : string) -> 
-                            let t = PersonName.TryParse (x, Set.empty<Tag>)
+                            let t = SimpleName.TryParse (x, Set.empty<Tag>)
                             t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
-                            let t = PersonName.TryParse (x, Set.empty<Tag>)
+                            let t = SimpleName.TryParse (x, Set.empty<Tag>)
                             x.Trim() = t.Value.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
@@ -490,27 +490,27 @@ module DomainTypes =
 
                     let t = 
                         (x.ToString(), Set.empty<Tag>)
-                        |> PersonName.TryParse 
+                        |> SimpleName.TryParse 
                     match t with
                     | Some s ->
-                        t = PersonName.TryParse (s.Value.Value, Set.empty<Tag>)
+                        t = SimpleName.TryParse (s.Value.Value, Set.empty<Tag>)
                     | None ->
                         let t2 = 
                             (x.ToString(), Set.empty<Tag>)
-                            |> PersonName.TryParse
+                            |> SimpleName.TryParse
                         t = t2
 
             testCase "ordered" <| fun () ->
                 let ordered =
-                    [PersonName.TryParse ("b", Set.empty<Tag>); 
-                    PersonName.TryParse ("aaa", Set.empty<Tag>); 
-                    PersonName.TryParse ("d", Set.empty<Tag>); 
-                    PersonName.TryParse ("cc", Set.empty<Tag>); ]
+                    [SimpleName.TryParse ("b", Set.empty<Tag>); 
+                    SimpleName.TryParse ("aaa", Set.empty<Tag>); 
+                    SimpleName.TryParse ("d", Set.empty<Tag>); 
+                    SimpleName.TryParse ("cc", Set.empty<Tag>); ]
                     |> List.sort
-                Expect.isTrue (ordered = [PersonName.TryParse ("aaa", Set.empty<Tag>);
-                                            PersonName.TryParse ("b", Set.empty<Tag>);
-                                            PersonName.TryParse ("cc", Set.empty<Tag>); 
-                                            PersonName.TryParse ("d", Set.empty<Tag>); ])
+                Expect.isTrue (ordered = [SimpleName.TryParse ("aaa", Set.empty<Tag>);
+                                            SimpleName.TryParse ("b", Set.empty<Tag>);
+                                            SimpleName.TryParse ("cc", Set.empty<Tag>); 
+                                            SimpleName.TryParse ("d", Set.empty<Tag>); ])
                     "expected equality"
         ]
 
@@ -530,9 +530,9 @@ module DomainTypes =
 
                                 let t =  
                                     let salutations = nameAndAffixes.Salutations |> List.map (fun x -> x.Value)
-                                    let personName = nameAndAffixes.PersonName.Value.Value
+                                    let simpleName = nameAndAffixes.SimpleName.Value.Value
                                     let suffixes = nameAndAffixes.Suffixes |> List.map (fun x -> x.Value)
-                                    NameAndAffixes.TryParse (salutations, personName, suffixes, Set.empty<Tag>)
+                                    NameAndAffixes.TryParse (salutations, simpleName, suffixes, Set.empty<Tag>)
 
                                 t.Value = nameAndAffixes
                             )

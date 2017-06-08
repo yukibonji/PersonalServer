@@ -107,11 +107,11 @@ module DomainGeneratorsCode =
     let genNameAndAffixes() =
         gen { 
                 let! salutations = Arb.generate<string list>
-                let! personName = Arb.generate<NonEmptyString>
+                let! simpleName = Arb.generate<NonEmptyString>
                 let! suffixes = Arb.generate<string list>
 
                 return
-                    NameAndAffixes.TryParse (salutations, personName.ToString(), suffixes, Set.empty<Tag>)
+                    NameAndAffixes.TryParse (salutations, simpleName.ToString(), suffixes, Set.empty<Tag>)
         }
         |> Gen.filter Option.isSome
         |> Gen.map (fun x -> x.Value)
