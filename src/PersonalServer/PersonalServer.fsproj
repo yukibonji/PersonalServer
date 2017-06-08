@@ -62,11 +62,11 @@
     <Compile Include="Furl.fs" />
     <Compile Include="Domain.fsi" />
     <Compile Include="Domain.fs" />
-    <Compile Include="AgentImport.fs" />
-    <Compile Include="AgentImportCsv.fs" />
-    <Compile Include="AgentImportExcel.fs" />
-    <Compile Include="AgentImportMeetup.fs" />
-    <Compile Include="AgentImportTwitter.fs" />
+    <Compile Include="ContactImport.fs" />
+    <Compile Include="ContactImportCsv.fs" />
+    <Compile Include="ContactImportExcel.fs" />
+    <Compile Include="ContactImportMeetup.fs" />
+    <Compile Include="ContactImportTwitter.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
     <None Include="Scripts\load-references-debug.fsx" />
