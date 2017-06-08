@@ -4,7 +4,7 @@ open System
 open Tweetinvi
 open Utilities
 
-module AgentImportTwitter =
+module ContactImportTwitter =
 
     let headers =
         [||]

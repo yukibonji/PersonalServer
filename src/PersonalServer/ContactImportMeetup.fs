@@ -1,13 +1,13 @@
 ﻿namespace Jackfoxy.PersonalServer
 
-open AgentImport
+open ContactImport
 open FSharp.Data
 open FSharp.Data.JsonExtensions
 open System
 open System.Net.Http
 open Utilities
 
-module AgentImportMeetup =
+module ContactImportMeetup =
 
     type Meetup =
         {
@@ -296,6 +296,6 @@ module AgentImportMeetup =
             let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
             let defaultBuilders, _ = entityBuilders source headers unUsedColumns UriTagged.TryParse Address.Url
 
-            agentImport rows meetupMemberRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
+            contactImport rows meetupMemberRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
 
         | None -> Seq.empty

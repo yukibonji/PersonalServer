@@ -3,9 +3,9 @@
 open System
 open System.Data
 open System.IO
-open AgentImport
+open ContactImport
 
-module AgentImportExcel =
+module ContactImportExcel =
 
     type ExcelSheet =
         {
@@ -44,7 +44,7 @@ module AgentImportExcel =
 
         let rows = workSheet.Rows |> Seq.cast |> Seq.skip headerRows.[headerRows.Length - 1]
 
-        agentImport rows excelRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
+        contactImport rows excelRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
 
     let import source (path : string) (excelSheets : ExcelSheet list) =
 

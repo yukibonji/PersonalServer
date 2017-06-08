@@ -1,9 +1,9 @@
 ﻿namespace Jackfoxy.PersonalServer
 
 open FSharp.Data
-open AgentImport
+open ContactImport
 
-module AgentImportCsv =
+module ContactImportCsv =
 
     let import source (path : string) =
         let importFile = CsvFile.Load(path).Cache()
@@ -17,5 +17,5 @@ module AgentImportCsv =
         let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
         let defaultBuilders, _ = entityBuilders source headers unUsedColumns UriTagged.TryParse Address.Url
 
-        agentImport importFile.Rows csvRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
+        contactImport importFile.Rows csvRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
 

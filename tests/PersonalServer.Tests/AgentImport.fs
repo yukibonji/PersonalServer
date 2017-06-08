@@ -5,8 +5,7 @@ open Jackfoxy.PersonalServer
 open Expecto
 open FsCheck
 
-
-module AgentImport =
+module ContactImport =
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000}
 
     [<Tests>]
@@ -18,7 +17,7 @@ module AgentImport =
             let headers = [|"doodle"; "web"; "doodle2";|]
             let columns = [|"a"; input; ""|]
 
-            let result = Jackfoxy.PersonalServer.AgentImport.simpleEntityBuilder tryParse 1 "test" headers columns
+            let result = Jackfoxy.PersonalServer.ContactImport.simpleEntityBuilder tryParse 1 "test" headers columns
 
             match t1 with 
             | Some _ -> 
@@ -27,7 +26,7 @@ module AgentImport =
             | None ->                        
                 (snd result) = Set.add (Tag.TryParse <| sprintf "test::web::%s" input).Value Set.empty
             
-        testList "AgentImport.SimpleEntityBuilder" [
+        testList "ContactImport.SimpleEntityBuilder" [
             testPropertyWithConfig config10k "PhoneNumber equality" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genPhoneNumber())
@@ -56,7 +55,7 @@ module AgentImport =
 
     [<Tests>]
     let testFullNameBuilder =
-        testList "AgentImport.FullNameBuilder" [
+        testList "ContactImport.FullNameBuilder" [
 //            testPropertyWithConfig config10k "equality" <|
 //                fun  () ->
 //                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
@@ -69,7 +68,7 @@ module AgentImport =
 
     [<Tests>]
     let testPhysicalAddressBuilder =
-        testList "AgentImport.PhysicalAddressBuilder" [
+        testList "ContactImport.PhysicalAddressBuilder" [
         ]
 //        let physicalAddressBuilders =
 //            [physicalAddressBuilder physicalAddressBuilderParms source headers >> rawToFinalResult Address.PhysicalAddress]

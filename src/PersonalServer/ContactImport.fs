@@ -2,7 +2,7 @@
 
 open System
 
-module AgentImport =
+module ContactImport =
 
     //to do: eventually resource file
     let phoneNumberSynonyms = [|"phone"; "fax"; "pager"; "mobile"; "cell"; "telephone";|]
@@ -270,7 +270,7 @@ module AgentImport =
 
         (builders |> List.concat), (usedHeaderColumns |> Array.concat)
 
-    let agentImport sources sourceBuilder nameBuilders addressBuilders =
+    let contactImport sources sourceBuilder nameBuilders addressBuilders =
         sources
         |> Seq.choose (fun source ->
             let columns = sourceBuilder source
