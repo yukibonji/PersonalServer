@@ -7,7 +7,7 @@ module ContactImport =
     //to do: eventually resource file
     let phoneNumberSynonyms = [|"phone"; "fax"; "pager"; "mobile"; "cell"; "telephone";|]
 
-    let emailSynonyms = [|"email"; "e-mail";|]
+    let emailSynonyms = [|"email"; "e-mail"; "emailaddress"|]
 
     let uriSynonyms = [|"web";|]
 
@@ -151,8 +151,8 @@ module ContactImport =
 
         //to do: complete first/last name coverage (i.e. potential multiples)
         //to do: eventually resource file
-    let fullNameFirstNameSynonyms = [|"first name"; "given name"|]
-    let fullNameLastNameSynonyms = [|"last name"; "family name"|]
+    let fullNameFirstNameSynonyms = [|"first name"; "given name"; "firstname"|]
+    let fullNameLastNameSynonyms = [|"last name"; "family name"; "lastname"|]
 
     let fullNameBuilderParms headers =
         { 
@@ -207,12 +207,18 @@ module ContactImport =
             | [] -> None
 
         let excludes =
-            [cityList; stateList; postalCodeList; countryList]
-            |> List.concat
+            (headerOffsets headers emailSynonyms)
+            |> Array.toList
+            |> List.append ([cityList; stateList; postalCodeList; countryList] |> List.concat )
             |> List.distinct
 
         let addressIndex = 
-            headerOffsets headers physicalAddressAddressSynonyms |> Array.toList
+            headerOffsets headers physicalAddressAddressSynonyms 
+            |> Array.filter (fun x ->
+                List.exists (fun x' -> x' = x) excludes
+                |> not
+                )
+            |> Array.toList
             |> headersNotExluded excludes
 
         {

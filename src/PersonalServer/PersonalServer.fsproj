@@ -67,6 +67,7 @@
     <Compile Include="ContactImportExcel.fs" />
     <Compile Include="ContactImportMeetup.fs" />
     <Compile Include="ContactImportTwitter.fs" />
+    <Compile Include="ContactImportLinkedIn.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
     <None Include="Scripts\load-references-debug.fsx" />
@@ -79,6 +80,7 @@
     <None Include="Scripts\MeetupScript.fsx" />
     <None Include="Scripts\GoogleCsvScript.fsx" />
     <None Include="Scripts\Twitter.fsx" />
+    <None Include="Scripts\LinkedInScript.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
