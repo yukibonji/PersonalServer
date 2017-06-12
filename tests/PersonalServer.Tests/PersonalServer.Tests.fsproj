@@ -73,7 +73,7 @@
   <ItemGroup>
     <Compile Include="DomainGenerators.fs" />
     <Compile Include="DomainTypes.fs" />
-    <Compile Include="AgentImport.fs" />
+    <Compile Include="ContactImport.fs" />
     <Compile Include="RunTests.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
