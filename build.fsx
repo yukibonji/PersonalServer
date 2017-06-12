@@ -4,18 +4,22 @@
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 open Fake
-open Fake.Git
+open Fake.Core.Targets
+open Fake.Core.Trace
+open Fake.DotNet
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
+open Fake.Tools
+open Fake.Tools.Git
 open Fake.Testing.Expecto
 open System
 //open System.IO
-#if MONO
-#else
-#load "packages/build/SourceLink.Fake/tools/Fake.fsx"
-open SourceLink
-#endif
+//#if MONO
+//#else
+//#load "packages/build/SourceLink.Fake/tools/Fake.fsx"
+//open SourceLink
+//#endif
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -312,7 +316,7 @@ Target "ReleaseDocs" (fun _ ->
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
     CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
-    StageAll tempDocsDir
+    Staging.StageAll tempDocsDir
     Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
     Branches.push tempDocsDir
 )
@@ -335,7 +339,7 @@ Target "Release" (fun _ ->
         |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
         |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
 
-    StageAll ""
+    Staging.StageAll ""
     Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
     Branches.pushBranch "" remote (Information.getBranchName "")
 

@@ -5,7 +5,7 @@ NUGET
     ExcelDataReader (2.1.2.3)
       SharpZipLib (>= 0.86)
     FSharp.Control.AsyncSeq (2.0.12)
-    FSharp.Core (4.2)
+    FSharp.Core (4.2.1)
     FSharp.Data (2.3.3)
     FSharpx.Async (1.13.2)
       FSharp.Control.AsyncSeq
@@ -37,7 +37,7 @@ NUGET
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.61.3)
+    FAKE (5.0.0-alpha009)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
@@ -55,7 +55,7 @@ NUGET
     SourceLink.Fake (1.1)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (83c86c80b513f9fa97f7ebe325ce771ac97f4960)
+    modules/Octokit/Octokit.fsx (223c4127470255dc144c2fe95bb5a577d0a1ad82)
       Octokit (>= 0.20)
 GROUP Test
 NUGET
@@ -64,21 +64,22 @@ NUGET
       FSharp.Core (>= 4.0.1.7-alpha) - framework: >= net463, >= netstandard16
       NETStandard.Library (>= 1.6) - framework: >= net463, >= netstandard16
       System.Xml.XDocument (>= 4.0.11) - framework: >= net463, >= netstandard16
-    BenchmarkDotNet (0.10.6)
-      BenchmarkDotNet.Core (>= 0.10.6) - framework: >= net46, netcore11
-      BenchmarkDotNet.Toolchains.Roslyn (>= 0.10.6) - framework: >= net46
+    BenchmarkDotNet (0.10.8)
+      BenchmarkDotNet.Core (>= 0.10.8) - framework: >= net46, netcore11
+      BenchmarkDotNet.Toolchains.Roslyn (>= 0.10.8) - framework: >= net46
       Microsoft.NETCore.App (>= 1.1.2) - framework: netcore11
-    BenchmarkDotNet.Core (0.10.6) - framework: >= net46, netcore11
+    BenchmarkDotNet.Core (0.10.8) - framework: >= net46, netcore11
       Microsoft.DotNet.InternalAbstractions (>= 1.0) - framework: >= net46, netcore11
       Microsoft.DotNet.PlatformAbstractions (>= 1.1.1) - framework: >= net46, netcore11
       Microsoft.NETCore.App (>= 1.1.2) - framework: netcore11
+      Microsoft.Win32.Registry (>= 4.3) - framework: >= net46, netcore11
       System.Reflection.Emit.Lightweight (>= 4.3) - framework: netcore11
       System.Runtime.Serialization.Primitives (>= 4.3) - framework: netcore11
       System.Threading.Tasks.Extensions (>= 4.3) - framework: >= net46
       System.ValueTuple (>= 4.3) - framework: >= net46, netcore11
       System.Xml.XPath.XmlDocument (>= 4.3) - framework: netcore11
-    BenchmarkDotNet.Toolchains.Roslyn (0.10.6) - framework: >= net46
-      BenchmarkDotNet.Core (>= 0.10.6) - framework: >= net46
+    BenchmarkDotNet.Toolchains.Roslyn (0.10.8) - framework: >= net46
+      BenchmarkDotNet.Core (>= 0.10.8) - framework: >= net46
       Microsoft.CodeAnalysis.CSharp (>= 2.0) - framework: >= net46
       System.Threading.Tasks (>= 4.3) - framework: >= net46
     Expecto (4.2.1)
@@ -99,7 +100,7 @@ NUGET
       FSharp.Core (>= 4.1) - framework: >= net10, netstandard10, netstandard11, netstandard12, netstandard13, netstandard14, netstandard15
       FSharp.Core (>= 4.1.17) - framework: >= netstandard16
       NETStandard.Library (>= 1.6.1) - framework: >= netstandard16
-    FSharp.Core (4.2)
+    FSharp.Core (4.2.1)
       System.Collections (>= 4.0.11) - framework: >= net463, >= netstandard16
       System.Console (>= 4.0) - framework: >= net463, >= netstandard16
       System.Diagnostics.Debug (>= 4.0.11) - framework: >= net463, >= netstandard16
@@ -235,6 +236,7 @@ NUGET
       Microsoft.NETCore.Platforms (>= 1.1) - framework: >= netstandard13
       Microsoft.NETCore.Targets (>= 1.1) - framework: >= netstandard13
       System.Runtime (>= 4.3) - framework: >= netstandard13
+    Microsoft.Win32.Registry (4.3) - framework: >= net46, netcore11
     Mono.Cecil (0.9.6.4)
     NETStandard.Library (1.6.1) - framework: >= net463, >= netstandard16, netcore11
       Microsoft.NETCore.Platforms (>= 1.1) - framework: >= netstandard10

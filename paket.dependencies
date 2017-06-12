@@ -13,7 +13,7 @@ group Build
   source https://nuget.org/api/v2
 
   nuget SourceLink.Fake
-  nuget FAKE
+  nuget FAKE >= 5.0.0-alpha009
   nuget FSharp.Formatting
 
   github fsharp/FAKE modules/Octokit/Octokit.fsx

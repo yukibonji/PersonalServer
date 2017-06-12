@@ -31,6 +31,7 @@ let info =
 #I "../../packages/build/FAKE/tools/"
 #r "FakeLib.dll"
 open Fake
+open Fake.Core
 open System.IO
 open Fake.FileHelper
 open FSharp.Literate
@@ -68,10 +69,10 @@ subDirectories (directoryInfo templates)
 
 // Copy static files and CSS + JS from F# Formatting
 let copyFiles () =
-  CopyRecursive files output true |> Log "Copying file: "
+  CopyRecursive files output true |> Trace.Log "Copying file: "
   ensureDirectory (output @@ "content")
   CopyRecursive (formatting @@ "styles") (output @@ "content") true 
-    |> Log "Copying styles and scripts: "
+    |> Trace.Log "Copying styles and scripts: "
 
 let binaries =
     let manuallyAdded = 
