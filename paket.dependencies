@@ -6,8 +6,8 @@ nuget FSharp.Core
 nuget FSharp.Data
 nuget Fsharpx.Extras
 nuget FsRegEx
-nuget TweetinviAPI == 1.2.0.1
-nuget Autofac == 3.5.0
+nuget TweetinviAPI 
+nuget Autofac 
 
 group Build
   source https://nuget.org/api/v2
