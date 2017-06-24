@@ -9,10 +9,11 @@
     <OutputType>Library</OutputType>
     <RootNamespace>PersonalServer</RootNamespace>
     <AssemblyName>PersonalServer</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>PersonalServer</Name>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -93,7 +94,7 @@
     <Reference Include="System.ServiceModel.Discovery" />
   </ItemGroup>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="Autofac">
           <HintPath>..\..\packages\Autofac\lib\net45\Autofac.dll</HintPath>
@@ -104,7 +105,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="Excel">
           <HintPath>..\..\packages\ExcelDataReader\lib\net45\Excel.dll</HintPath>
@@ -115,7 +116,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="FSharp.Control.AsyncSeq">
           <HintPath>..\..\packages\FSharp.Control.AsyncSeq\lib\net45\FSharp.Control.AsyncSeq.dll</HintPath>
@@ -126,7 +127,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="FSharp.Core">
           <HintPath>..\..\packages\FSharp.Core\lib\net45\FSharp.Core.dll</HintPath>
@@ -137,7 +138,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="System.Xml.Linq">
           <Paket>True</Paket>
@@ -151,7 +152,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="FSharpx.Async">
           <HintPath>..\..\packages\FSharpx.Async\lib\net45\FSharpx.Async.dll</HintPath>
@@ -162,7 +163,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="FSharpx.Collections">
           <HintPath>..\..\packages\FSharpx.Collections\lib\net40\FSharpx.Collections.dll</HintPath>
@@ -173,7 +174,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="FSharpx.Extras">
           <HintPath>..\..\packages\FSharpx.Extras\lib\net45\FSharpx.Extras.dll</HintPath>
@@ -184,7 +185,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="FsRegEx">
           <HintPath>..\..\packages\FsRegEx\lib\net461\FsRegEx.dll</HintPath>
@@ -195,7 +196,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -206,7 +207,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="Nito.AsyncEx.Context">
           <HintPath>..\..\packages\Nito.AsyncEx.Context\lib\net46\Nito.AsyncEx.Context.dll</HintPath>
@@ -217,7 +218,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="Nito.AsyncEx.Tasks">
           <HintPath>..\..\packages\Nito.AsyncEx.Tasks\lib\net46\Nito.AsyncEx.Tasks.dll</HintPath>
@@ -228,7 +229,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="Nito.Disposables">
           <HintPath>..\..\packages\Nito.Disposables\lib\netstandard1.0\Nito.Disposables.dll</HintPath>
@@ -239,7 +240,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="ICSharpCode.SharpZipLib">
           <HintPath>..\..\packages\SharpZipLib\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -250,7 +251,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="System.Collections.Immutable">
           <HintPath>..\..\packages\System.Collections.Immutable\lib\netstandard1.0\System.Collections.Immutable.dll</HintPath>
@@ -261,10 +262,10 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
-        <Reference Include="System.Reflection.TypeExtensions">
-          <HintPath>..\..\packages\System.Reflection.TypeExtensions\lib\net46\System.Reflection.TypeExtensions.dll</HintPath>
+        <Reference Include="System.IO">
+          <HintPath>..\..\packages\System.IO\lib\net462\System.IO.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -272,7 +273,43 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
+      <ItemGroup>
+        <Reference Include="System.Reflection">
+          <HintPath>..\..\packages\System.Reflection\lib\net462\System.Reflection.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
+      <ItemGroup>
+        <Reference Include="System.Reflection.TypeExtensions">
+          <HintPath>..\..\packages\System.Reflection.TypeExtensions\lib\net462\System.Reflection.TypeExtensions.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
+      <ItemGroup>
+        <Reference Include="System.ComponentModel.Composition">
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="System.Runtime">
+          <HintPath>..\..\packages\System.Runtime\lib\net462\System.Runtime.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="System.Runtime.Serialization">
           <Paket>True</Paket>
@@ -286,10 +323,10 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="System.Security.Cryptography.Algorithms">
-          <HintPath>..\..\packages\System.Security.Cryptography.Algorithms\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
+          <HintPath>..\..\packages\System.Security.Cryptography.Algorithms\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -297,7 +334,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="System.Security.Cryptography.Encoding">
           <HintPath>..\..\packages\System.Security.Cryptography.Encoding\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
@@ -308,7 +345,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="System.Security.Cryptography.Primitives">
           <HintPath>..\..\packages\System.Security.Cryptography.Primitives\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
@@ -319,7 +356,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="System.Security.Cryptography.X509Certificates">
           <HintPath>..\..\packages\System.Security.Cryptography.X509Certificates\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
@@ -330,7 +367,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
         <Reference Include="Tweetinvi">
           <HintPath>..\..\packages\TweetinviAPI\lib\net46\Tweetinvi.dll</HintPath>
