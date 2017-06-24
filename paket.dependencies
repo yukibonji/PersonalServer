@@ -9,19 +9,15 @@ nuget FsRegEx
 nuget TweetinviAPI 
 nuget Autofac 
 
-group Build
-  source https://nuget.org/api/v2
 
-  nuget SourceLink.Fake
-  nuget FAKE
-  nuget FSharp.Formatting
+nuget SourceLink.Fake
+nuget FAKE
+nuget FSharp.Formatting
 
-  github fsharp/FAKE modules/Octokit/Octokit.fsx
+github fsharp/FAKE modules/Octokit/Octokit.fsx
 
-group Test
-	source https://www.nuget.org/api/v2
 
-	nuget Expecto
-	nuget Expecto.BenchmarkDotNet
-	nuget Expecto.FsCheck
-	nuget Expecto.VisualStudio.TestAdapter version_in_path: true
+nuget Expecto
+nuget Expecto.BenchmarkDotNet
+nuget Expecto.FsCheck
+nuget Expecto.VisualStudio.TestAdapter version_in_path: true

@@ -7,8 +7,8 @@ open FsCheck
 
 module DomainTypes =
 
-    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000; arbitrary = [typeof<DomainGenerators>] } //FullName/equality
-//    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
+    //let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000; arbitrary = [typeof<DomainGenerators>] } //FullName/equality
+    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
     let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (1940624926, 296296394) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
 
     [<Tests>]
@@ -411,15 +411,15 @@ module DomainTypes =
             testCase "TryParse None on null string" <| fun () ->
                 Expect.isNone (FullName.TryParse (None, [], (Some null), NameOrder.Western, Set.empty<Tag>) ) "Expected None"
 
-            testPropertyWithConfig config10k "equality" <|
-                fun  (fullName : FullName) ->
-                    let first = fullName.First |> Option.map (fun x -> x.Value)
-                    let middle = fullName.Middle |> List.map (fun x -> x.ToString())
-                    let family = fullName.Family |> Option.map (fun x -> x.Value)
+            //testPropertyWithConfig config10k "equality" <|
+            //    fun  (fullName : FullName) ->
+            //        let first = fullName.First |> Option.map (fun x -> x.Value)
+            //        let middle = fullName.Middle |> List.map (fun x -> x.ToString())
+            //        let family = fullName.Family |> Option.map (fun x -> x.Value)
 
-                    let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
+            //        let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
  
-                    t.Value = fullName
+            //        t.Value = fullName
 
             testCase "ordered on first name" <| fun () ->
                 let ordered =

@@ -2,7 +2,7 @@
 // FAKE build script
 // --------------------------------------------------------------------------------------
 
-#r @"packages/build/FAKE/tools/FakeLib.dll"
+#r @"packages/FAKE/tools/FakeLib.dll"
 open Fake
 open Fake.Git
 open Fake.AssemblyInfoFile
@@ -10,16 +10,6 @@ open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
 open Fake.Testing.Expecto
 open System
-//open System.IO
-#if MONO
-#else
-#load "packages/build/SourceLink.Fake/tools/Fake.fsx"
-open SourceLink
-#endif
-
-// --------------------------------------------------------------------------------------
-// START TODO: Provide project-specific details below
-// --------------------------------------------------------------------------------------
 
 // Information about the project are used
 //  - for version and project name in generated AssemblyInfo file
@@ -176,7 +166,7 @@ Target "PublishNuget" (fun _ ->
 // Generate the documentation
 
 
-let fakePath = "packages" </> "build" </> "FAKE" </> "tools" </> "FAKE.exe"
+let fakePath = "packages" </> "FAKE" </> "tools" </> "FAKE.exe"
 let fakeStartInfo script workingDirectory args fsiargs environmentVars =
     (fun (info: System.Diagnostics.ProcessStartInfo) ->
         info.FileName <- System.IO.Path.GetFullPath fakePath
@@ -317,7 +307,7 @@ Target "ReleaseDocs" (fun _ ->
     Branches.push tempDocsDir
 )
 
-#load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
+#load "paket-files/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
 
 Target "Release" (fun _ ->

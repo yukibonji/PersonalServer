@@ -73,3 +73,8 @@ module ContactImport =
 //        let physicalAddressBuilders =
 //            [physicalAddressBuilder physicalAddressBuilderParms source headers >> rawToFinalResult Address.PhysicalAddress]
 
+    [<Tests>]
+    let contactElimination =
+        testList "ContactImport.ContactElimination" [
+        ]
+
