@@ -9,7 +9,7 @@ module ContactImport =
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000}
 
     [<Tests>]
-    let testSimpleEntityBuilder =
+    let simpleEntityBuilder =
 
         let testSimpleEntity input tryParse =
             let t1 = tryParse (input, Set.empty<Tag>)
