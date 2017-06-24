@@ -307,7 +307,7 @@ module ContactImport =
             | [], [], s when s.IsEmpty -> None
             | _ ->
 
-                {Names = names |> Set.ofList
+                {Names = names |> ContactName.elimination |> Set.ofList
                  Addresses = addresses |> Set.ofList
                  Tags = tagSet
                  } |> Some

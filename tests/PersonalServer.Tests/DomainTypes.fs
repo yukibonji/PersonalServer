@@ -7,7 +7,7 @@ open FsCheck
 
 module DomainTypes =
 
-    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000; arbitrary = [typeof<DomainGenerators>] }
+    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000; arbitrary = [typeof<DomainGenerators>] } //FullName/equality
 //    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
     let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (1940624926, 296296394) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
 

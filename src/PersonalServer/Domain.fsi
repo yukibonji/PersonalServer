@@ -327,3 +327,22 @@ module Countries =
     val byName : IDictionary<string, Country>
     val stateByAbbreviation : IDictionary<string, State>
     val stateByName : IDictionary<string, State>
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module SimpleName =
+    val tryElimination : simpleName1 : SimpleName -> simpleName2 : SimpleName -> SimpleName option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module FullName =
+    val tryElimination : fullName1 : FullName -> fullName2 : FullName -> FullName option
+    val tryEliminateSimpleName : fullName : FullName -> simpleName : SimpleName -> FullName option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module NameAndAffixes =
+    val tryElimination : nameAndAffixes1 : NameAndAffixes -> nameAndAffixes2 : NameAndAffixes -> NameAndAffixes option
+    val tryEliminateSimpleName : nameAndAffixes : NameAndAffixes -> simpleName : SimpleName -> NameAndAffixes option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module ContactName =
+    val elimination : contactNames : ContactName list -> ContactName list
+    

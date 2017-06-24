@@ -180,6 +180,12 @@ type FullName internal (first, middle, family, nameOrder, tags) =
         | _, x, _ when x.Length > 0 -> FullName (fi, m, fa, nameOrder, tags) |> Some 
         | _, _, Some _ -> FullName (fi, m, fa, nameOrder, tags) |> Some 
         | _ -> None
+    static member TryParse ((first : TrimNonEmptyString option), middle, (family : TrimNonEmptyString option), nameOrder, tags) =
+        match first, middle, family with
+        | Some _, _, _ -> FullName (first, middle, family, nameOrder, tags) |> Some
+        | _, x, _ when x.Length > 0 -> FullName (first, middle, family, nameOrder, tags) |> Some 
+        | _, _, Some _ -> FullName (first, middle, family, nameOrder, tags) |> Some 
+        | _ -> None
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -239,6 +245,11 @@ and NameAndAffixes (salutations, simpleName, suffixes) =
         match SimpleName.TryParse (simpleName, tags) with
         | Some x -> 
             Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes))
+        | None -> None
+    static member TryParse ((salutations : TrimNonEmptyString list), (simpleName : SimpleName), (suffixes : TrimNonEmptyString list), tags) = 
+        match SimpleName.TryParse (simpleName.Value.Value, tags) with
+        | Some s ->
+            Some <| NameAndAffixes (salutations, s, suffixes)
         | None -> None
 
     interface IComparable with
@@ -1272,3 +1283,116 @@ type EmailAccount =
     SMTP : string
     Imap : IMAP
     }
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module SimpleName =
+
+    let elimination (simpleName1 : SimpleName) (simpleName2 : SimpleName) = 
+        if simpleName1.Value = simpleName2.Value then
+                SimpleName.TryParse (simpleName1.Value.Value, (Set.union simpleName1.Tags simpleName2.Tags))
+        else
+            None
+
+    let tryElimination simpleName1 simpleName2 = 
+        match elimination simpleName1 simpleName2 with
+        | Some x -> Some x
+        | None -> elimination simpleName2 simpleName1
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module FullName =
+    
+    let elimination (fullName1 : FullName) (fullName2 : FullName) = 
+        if (fullName1.Family = fullName2.Family || fullName2.Family.IsNone)
+            && (fullName1.First = fullName2.First || fullName2.First.IsNone)
+            && (fullName1.Middle = fullName2.Middle || listContainsList fullName1.Middle fullName2.Middle) then
+                FullName.TryParse (fullName1.First, fullName1.Middle, fullName1.Family, fullName1.NameOrder, (Set.union fullName1.Tags fullName2.Tags))
+        else
+            None
+    
+    let tryElimination fullName1 fullName2 = 
+        match elimination fullName1 fullName2 with
+        | Some x -> Some x
+        | None -> elimination fullName2 fullName1
+
+    let tryEliminateSimpleName (fullName : FullName) (simpleName : SimpleName) =  
+        if fullName.SimpleName.Value = simpleName.Value 
+            || (fullName.First.IsSome && fullName.First.Value = simpleName.Value)
+            || (fullName.Family.IsSome && fullName.First.Value = simpleName.Value) //to do: first & last only
+            then
+            FullName.TryParse (fullName.First, fullName.Middle, fullName.Family, fullName.NameOrder, (Set.union fullName.Tags simpleName.Tags))
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module NameAndAffixes =
+
+    let elimination (nameAndAffixes1 : NameAndAffixes) (nameAndAffixes2 : NameAndAffixes) = 
+        if (nameAndAffixes1.Salutations = nameAndAffixes2.Salutations || listContainsList nameAndAffixes1.Salutations nameAndAffixes2.Salutations)
+            && nameAndAffixes1.SimpleName = nameAndAffixes2.SimpleName
+            && (nameAndAffixes1.Suffixes = nameAndAffixes2.Suffixes || listContainsList nameAndAffixes1.Suffixes nameAndAffixes2.Suffixes) then
+                NameAndAffixes.TryParse (nameAndAffixes1.Salutations, nameAndAffixes1.SimpleName, nameAndAffixes1.Suffixes,  (Set.union nameAndAffixes1.SimpleName.Tags nameAndAffixes2.SimpleName.Tags))
+        else
+            None
+    
+    let tryElimination nameAndAffixes1 nameAndAffixes2 = 
+        match elimination nameAndAffixes1 nameAndAffixes2 with
+        | Some x -> Some x
+        | None -> elimination nameAndAffixes2 nameAndAffixes1
+
+    let tryEliminateSimpleName (nameAndAffixes : NameAndAffixes) (simpleName : SimpleName) =  
+        if nameAndAffixes.SimpleName.Value = simpleName.Value then
+            NameAndAffixes.TryParse (nameAndAffixes.Salutations, nameAndAffixes.SimpleName, nameAndAffixes.Suffixes, (Set.union nameAndAffixes.SimpleName.Tags simpleName.Tags))
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module ContactName =
+    let tryElim (contact : ContactName) (elimContact : ContactName) =
+        match (box contact), (box elimContact) with
+        | (:? SimpleName as cntct), (:? SimpleName as elim)  -> 
+            match SimpleName.tryElimination cntct elim with
+            | Some x -> ContactName.SimpleName x |> Some
+            | None -> None
+        | (:? FullName as cntct), (:? FullName as elim) -> 
+            match FullName.tryElimination cntct elim with
+            | Some x -> ContactName.FullName x |> Some
+            | None -> None
+        | (:? FullName as cntct), (:? SimpleName as elim) -> 
+            match FullName.tryEliminateSimpleName cntct elim with
+            | Some x -> ContactName.FullName x |> Some
+            | None -> None
+        | (:? NameAndAffixes as cntct), (:? NameAndAffixes as elim) -> 
+            match NameAndAffixes.tryElimination cntct elim with
+            | Some x -> ContactName.NameAndAffixes x |> Some
+            | None -> None
+        | (:? NameAndAffixes as cntct), (:? SimpleName as elim) -> 
+            match NameAndAffixes.tryEliminateSimpleName cntct elim with
+            | Some x -> ContactName.NameAndAffixes x |> Some
+            | None -> None
+        | _ -> 
+            None
+
+    let oneElimination (contactName : ContactName) (contactNames : ContactName list)=
+        contactNames
+        |> List.fold (fun (current, newOut) t -> 
+            match tryElim current t with
+            | Some x ->
+                x, newOut
+            | None -> 
+                current, (t::newOut)) (contactName, [])
+
+    let rec loop (inNames : ContactName list) (outNames : ContactName list) =
+        match inNames with
+        | [] -> 
+            outNames
+        | hd::tl ->
+            let contactName, names = oneElimination hd inNames
+
+            loop names (contactName::outNames)
+        
+    let elimination (contactNames : ContactName list) =
+        match contactNames with
+        | [] | [_] ->
+            contactNames
+        | _ ->
+            loop (contactNames |> Seq.toList) []
