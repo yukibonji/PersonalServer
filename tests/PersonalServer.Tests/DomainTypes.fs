@@ -411,6 +411,7 @@ module DomainTypes =
             testCase "TryParse None on null string" <| fun () ->
                 Expect.isNone (FullName.TryParse (None, [], (Some null), NameOrder.Western, Set.empty<Tag>) ) "Expected None"
 
+            // uncomment this to test Expecto adapter arb generator
             //testPropertyWithConfig config10k "equality" <|
             //    fun  (fullName : FullName) ->
             //        let first = fullName.First |> Option.map (fun x -> x.Value)
@@ -420,6 +421,18 @@ module DomainTypes =
             //        let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
  
             //        t.Value = fullName
+
+            testPropertyWithConfig config10k "equality" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genFullName())
+                        (fun  (fullName : FullName) ->
+                            let first = fullName.First |> Option.map (fun x -> x.Value)
+                            let middle = fullName.Middle |> List.map (fun x -> x.ToString())
+                            let family = fullName.Family |> Option.map (fun x -> x.Value)
+
+                            let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
+ 
+                            t.Value = fullName)
 
             testCase "ordered on first name" <| fun () ->
                 let ordered =
