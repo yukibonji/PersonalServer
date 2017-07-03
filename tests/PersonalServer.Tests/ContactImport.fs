@@ -54,7 +54,7 @@ module ContactImport =
         ]
 
     [<Tests>]
-    let testFullNameBuilder =
+    let fullNameBuilder =
         testList "ContactImport.FullNameBuilder" [
 //            testPropertyWithConfig config10k "equality" <|
 //                fun  () ->
@@ -67,7 +67,7 @@ module ContactImport =
 //            [fullNameBuilder fullNameBuilderParms source headers >> rawToFinalResult NameOfPerson.FullName]
 
     [<Tests>]
-    let testPhysicalAddressBuilder =
+    let physicalAddressBuilder =
         testList "ContactImport.PhysicalAddressBuilder" [
         ]
 //        let physicalAddressBuilders =
@@ -76,5 +76,15 @@ module ContactImport =
     [<Tests>]
     let contactElimination =
         testList "ContactImport.ContactElimination" [
+            testCase "elim" <| fun () ->
+                let names = Contacts.contactNames
+                let expectedLength = names.Length - 1
+
+                let namesPerumations = List.permutations names
+
+                namesPerumations
+                |> Seq.iteri (fun i x ->
+                    let res = ContactName.elimination x
+                    Expect.isTrue (res.Length = expectedLength) (sprintf "Expected perumutation %i to be %i, but was %i" i  expectedLength res.Length) )
         ]
 

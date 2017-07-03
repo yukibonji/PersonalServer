@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="DomainGenerators.fs" />
     <Compile Include="DomainTypes.fs" />
+    <Compile Include="Contacts.fs" />
     <Compile Include="ContactImport.fs" />
     <Compile Include="RunTests.fs" />
     <None Include="paket.references" />
@@ -74,6 +75,7 @@
     <None Include="Scripts\Script1.fsx" />
     <None Include="Scripts\load-references-release.fsx" />
     <None Include="Scripts\load-project-release.fsx" />
+    <None Include="Scripts\Script2.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

@@ -13,14 +13,6 @@ module internal Utilities =
     let inline Success x = Choice1Of2 x
     let inline Failure x = Choice2Of2 x
 
-    let listContainsList (container : 'a list) (contained : 'a list) =
-        contained
-        |> List.fold (fun s t ->
-            if List.contains t container then
-                s
-            else 
-                false ) true
-
     let digitsFromString (s : string) =
         s.ToCharArray()
         |> Array.fold (fun s t -> 

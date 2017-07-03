@@ -30,9 +30,9 @@ NUGET
       Expecto (>= 5.0)
       FsCheck (>= 2.8)
       FSharp.Core (>= 4.1.12)
-    Expecto.VisualStudio.TestAdapter (5.0.0-alpha008) - version_in_path: true
-      Expecto (>= 5.0.0-beta1 < 6.0)
-    FAKE (4.61.3)
+    Expecto.VisualStudio.TestAdapter (5.0.0) - version_in_path: true
+      Expecto (>= 5.0 < 6.0)
+    FAKE (4.62.1)
     FsCheck (2.9)
       FSharp.Core (>= 4.1)
     FSharp.Compiler.Service (2.0.0.6)
@@ -47,7 +47,7 @@ NUGET
     FSharpx.Async (1.13.2)
       FSharp.Control.AsyncSeq
       FSharp.Core
-    FSharpx.Collections (1.16)
+    FSharpx.Collections (1.17)
       FSharp.Core
     FSharpx.Extras (2.2.1)
       FSharpx.Async
@@ -178,5 +178,5 @@ NUGET
       System.Runtime.Serialization.Primitives (>= 4.3)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (15e1b741f4ae9fbaad640a65231dfcec28ce6ddd)
+    modules/Octokit/Octokit.fsx (b5933798c1944051bf358a460fcdc8ffbd678dfc)
       Octokit (>= 0.20)
