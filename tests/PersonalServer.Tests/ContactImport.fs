@@ -75,16 +75,63 @@ module ContactImport =
 
     [<Tests>]
     let contactElimination =
+
+        let nameElim (names : ContactName list) expectToElim =
+            let expectedLength = names.Length - expectToElim
+
+            List.permutations names
+            |> Seq.iteri (fun i x ->
+                let res = ContactName.elimination x
+                Expect.isTrue (res.Length = expectedLength) (sprintf "Expected perumutation %i to be %i, but was %i" i  expectedLength res.Length) )
+
         testList "ContactImport.ContactElimination" [
-            testCase "elim" <| fun () ->
-                let names = Contacts.contactNames
-                let expectedLength = names.Length - 1
+            testCase "simple name elim1" <| fun () ->
+                nameElim Contacts.simpleNameElim1 1 
 
-                let namesPerumations = List.permutations names
+            testCase "simple name elim2" <| fun () ->
+                nameElim Contacts.simpleNameElim2 1
 
-                namesPerumations
+            testCase "simple name elim3" <| fun () ->
+                nameElim Contacts.simpleNameElim3 1
+
+            testCase "simple name elim4" <| fun () ->
+                nameElim Contacts.simpleNameElim4 1
+
+            testCase "simple name elim5" <| fun () ->
+                nameElim Contacts.simpleNameElim5 1
+
+            testCase "simple name elim6" <| fun () ->
+                nameElim Contacts.simpleNameElim6 2
+
+            testCase "fullname elim1" <| fun () ->
+                nameElim Contacts.fullNameElim1 1
+
+            testCase "NameAndAffixes elim1" <| fun () ->
+                nameElim Contacts.nameAndAffixesElim1 1
+        ]
+
+    [<Tests>]
+    let contactEliminationTagMerge =
+        testList "ContactImport.ContactEliminationTagMerge" [
+            testCase "simple name tag merge" <| fun () ->
+                List.permutations Contacts.simpleNameTagMerge
                 |> Seq.iteri (fun i x ->
                     let res = ContactName.elimination x
-                    Expect.isTrue (res.Length = expectedLength) (sprintf "Expected perumutation %i to be %i, but was %i" i  expectedLength res.Length) )
+                    let simpleName = match res.Head with | ContactName.SimpleName x -> x | _ -> invalidArg "can't" "get here"
+                    Expect.isTrue (simpleName.Tags = Contacts.tagSet1) (sprintf "Expected perumutation %i to match tagSet1" i) )
+
+            testCase "fullname tag merge" <| fun () ->
+                List.permutations Contacts.fullNameTagMerge
+                |> Seq.iteri (fun i x ->
+                    let res = ContactName.elimination x
+                    let fullName = match res.Head with | ContactName.FullName x -> x | _ -> invalidArg "can't" "get here"
+                    Expect.isTrue (fullName.Tags = Contacts.tagSet2) (sprintf "Expected perumutation %i to match tagSet1" i) )
+
+            testCase "NameAndAffixes tag merge" <| fun () ->
+                List.permutations Contacts.nameAndAffixesTagMerge
+                |> Seq.iteri (fun i x ->
+                    let res = ContactName.elimination x
+                    let nameAndAffixes = match res.Head with | ContactName.NameAndAffixes x -> x | _ -> invalidArg "can't" "get here"
+                    Expect.isTrue (nameAndAffixes.SimpleName.Tags = Contacts.tagSet3) (sprintf "Expected perumutation %i to match tagSet1" i) )
         ]
 
