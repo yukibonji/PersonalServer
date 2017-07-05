@@ -308,7 +308,7 @@ module ContactImport =
             | _ ->
 
                 {Names = names |> ContactName.elimination |> Set.ofList
-                 Addresses = addresses |> Set.ofList
+                 Addresses = addresses |> Address.elimination |> Set.ofList
                  Tags = tagSet
                  } |> Some
             )

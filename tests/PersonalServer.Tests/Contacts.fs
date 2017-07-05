@@ -2,7 +2,7 @@
 
 open Jackfoxy.PersonalServer
 
-module Contacts =
+module Tags =
     let tagSet1 = [Tag.TryParse "foo1";Tag.TryParse "foo2";Tag.TryParse "foo3";Tag.TryParse "foo4"] |> List.choose id |> Set.ofList
     let tagSet1a = [Tag.TryParse "foo1";Tag.TryParse "foo3";] |> List.choose id |> Set.ofList
     let tagSet1b = [Tag.TryParse "foo1";Tag.TryParse "foo2";Tag.TryParse "foo4";] |> List.choose id |> Set.ofList
@@ -15,37 +15,38 @@ module Contacts =
     let tagSet3a = [Tag.TryParse "zip1";Tag.TryParse "zip3";] |> List.choose id |> Set.ofList
     let tagSet3b = [Tag.TryParse "zip2";Tag.TryParse "zip4";] |> List.choose id |> Set.ofList
 
+module Contacts =
     let nameAndAffixes1 =
-        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Herr";"Dr"; "Dr"], "Anthony Foo", ["esq"; "IV"],  tagSet3a)).Value
+        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Herr";"Dr"; "Dr"], "Anthony Foo", ["esq"; "IV"], Tags.tagSet3a)).Value
     let nameAndAffixes2 =
-        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Dr"; "Dr"], "Anthony Foo", [],                   Set.empty)).Value
+        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Dr"; "Dr"], "Anthony Foo", [],                       Set.empty)).Value
     let nameAndAffixes3 =
-        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Dr"], "Anthony Foo", ["IV"],                     Set.empty)).Value
+        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Dr"], "Anthony Foo", ["IV"],                         Set.empty)).Value
 
     let nameAndAffixesFoo1 =
-        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Foo"], "Foo1 Foo", ["Foo"],                      Set.empty)).Value
+        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Foo"], "Foo1 Foo", ["Foo"],                          Set.empty)).Value
     let nameAndAffixesFoo2 =
-        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Foo"], "Foo2 Foo", ["Foo"],                      Set.empty)).Value 
+        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Foo"], "Foo2 Foo", ["Foo"],                          Set.empty)).Value 
 
     let simpleName1 =
-        ContactName.SimpleName     <| (SimpleName.TryParse ("Anthony Foo",                                         tagSet1a)).Value
+        ContactName.SimpleName     <| (SimpleName.TryParse ("Anthony Foo",                                         Tags.tagSet1a)).Value
     let simpleName2 =
-        ContactName.SimpleName     <| (SimpleName.TryParse ("Bar Bar",                                             Set.empty)).Value
+        ContactName.SimpleName     <| (SimpleName.TryParse ("Bar Bar",                                                 Set.empty)).Value
 
     let simpleNameFoo1 =
-        ContactName.SimpleName     <| (SimpleName.TryParse ("Foo1 Foo",                                            Set.empty)).Value
+        ContactName.SimpleName     <| (SimpleName.TryParse ("Foo1 Foo",                                                Set.empty)).Value
     let simpleNameFoo3 =
-        ContactName.SimpleName     <| (SimpleName.TryParse ("Foo3 Foo",                                            Set.empty)).Value
+        ContactName.SimpleName     <| (SimpleName.TryParse ("Foo3 Foo",                                                Set.empty)).Value
 
 
     let fullName1 =
-        ContactName.FullName       <| (FullName.TryParse (Some "Anthony", [], Some "Foo", NameOrder.Western,       tagSet2a)).Value
+        ContactName.FullName       <| (FullName.TryParse (Some "Anthony", [], Some "Foo", NameOrder.Western,       Tags.tagSet2a)).Value
 
     let fullNameFoo1 =
-        ContactName.FullName       <| (FullName.TryParse (Some "Foo", [], Some "Foo1", NameOrder.Western,          Set.empty)).Value
+        ContactName.FullName       <| (FullName.TryParse (Some "Foo", [], Some "Foo1", NameOrder.Western,              Set.empty)).Value
 
     let fullNameFoo2 =
-        ContactName.FullName       <| (FullName.TryParse (Some "Foo", [], Some "Foo2", NameOrder.Western,          Set.empty)).Value
+        ContactName.FullName       <| (FullName.TryParse (Some "Foo", [], Some "Foo2", NameOrder.Western,              Set.empty)).Value
 
     let simpleNameElim1 =
         [
@@ -109,7 +110,7 @@ module Contacts =
     let simpleNameTagMerge =
         [
         simpleName1  
-        ContactName.SimpleName <| (SimpleName.TryParse ("Anthony Foo", tagSet1b)).Value //eliminated by simpleName1
+        ContactName.SimpleName <| (SimpleName.TryParse ("Anthony Foo", Tags.tagSet1b)).Value //eliminated by simpleName1
         ]
 
     let fullNameElim1 =
@@ -125,7 +126,7 @@ module Contacts =
     let fullNameTagMerge =
         [ 
         fullName1
-        ContactName.FullName <| (FullName.TryParse (Some "Anthony", [], Some "Foo", NameOrder.Western, tagSet2b)).Value
+        ContactName.FullName <| (FullName.TryParse (Some "Anthony", [], Some "Foo", NameOrder.Western, Tags.tagSet2b)).Value
         ]
 
     let nameAndAffixesElim1 =
@@ -141,7 +142,7 @@ module Contacts =
     let nameAndAffixesTagMerge =
         [
         nameAndAffixes1
-        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Herr";"Dr"; "Dr"], "Anthony Foo", ["esq"; "IV"], tagSet3b)).Value
+        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Herr";"Dr"; "Dr"], "Anthony Foo", ["esq"; "IV"], Tags.tagSet3b)).Value
         ]
 
 module List = 

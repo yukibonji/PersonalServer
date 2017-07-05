@@ -345,4 +345,27 @@ module NameAndAffixes =
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module ContactName =
     val elimination : contactNames : ContactName list -> ContactName list
-    
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module PhysicalAddress =
+    val tryElimination : physicalAddress1 : PhysicalAddress -> physicalAddress2 : PhysicalAddress -> PhysicalAddress option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module EmailAddress =
+    val tryElimination : emailAddress1 : EmailAddress -> emailAddress2 : EmailAddress -> EmailAddress option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module PhoneNumber =
+    val tryElimination : phoneNumber1 : PhoneNumber -> phoneNumber2 : PhoneNumber -> PhoneNumber option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module UriTagged =
+    val tryElimination : uriTagged1 : UriTagged -> uriTagged2 : UriTagged -> UriTagged option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Handle =
+    val tryElimination : handle1 : Handle -> handle2 : Handle -> Handle option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Address =
+    val elimination : addresses : Address list -> Address list
