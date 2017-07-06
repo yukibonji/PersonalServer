@@ -99,3 +99,33 @@ module Addresses =
         uriTagged1
         Address.Url <| (UriTagged.TryParse ("https://fsprojects.github.io/Paket/dependencies-file.html", Tags.tagSet1a) ).Value
         ]
+
+    let physicalAddressTagMerge =
+        [
+        physicalAddress1
+        Address.PhysicalAddress <| (PhysicalAddress.TryParse (["40 Garden Lane";"apt. 2";], (Some "Belmont"), (Some "Ca"), (Some "94002"), (Some "USA"), Tags.tagSet1b)).Value
+        ]
+
+    let emailTagMerge =
+        [
+        emailAddress1 
+        Address.EmailAddress <| (EmailAddress.TryParse ("xx@gg.com", Tags.tagSet3b)).Value
+        ]
+
+    let phoneNumberTagMerge =
+        [
+        phoneNumber2
+        Address.PhoneNumber <| (PhoneNumber.TryParse ("15101231234", Tags.tagSet2b) ).Value
+        ]
+
+    let uriTagMerge = 
+        [
+        uriTagged1
+        Address.Url <| (UriTagged.TryParse ("https://fsprojects.github.io/Paket/dependencies-file.html", Tags.tagSet1b) ).Value
+        ]
+        
+    let handleTagMerge =
+        [
+        handle1
+        Address.Handle <| {Address = (TrimNonEmptyString.TryParse "foxyjackfox").Value; Tags = Tags.tagSet1b}
+        ]

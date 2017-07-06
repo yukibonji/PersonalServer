@@ -30,5 +30,9 @@ module Tests =
         Tests.runTestsWithArgs defaultConfig args DomainTypes.uriTagged |> ignore
 
         Tests.runTestsWithArgs defaultConfig args ContactImport.simpleEntityBuilder |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.addressElimination |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.addressEliminationTagMerge |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.contactElimination |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.addressEliminationTagMerge |> ignore
 
         0

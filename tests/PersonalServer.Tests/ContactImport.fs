@@ -125,14 +125,14 @@ module ContactImport =
                 |> Seq.iteri (fun i x ->
                     let res = ContactName.elimination x
                     let fullName = match res.Head with | ContactName.FullName x -> x | _ -> invalidArg "can't" "get here"
-                    Expect.isTrue (fullName.Tags = Tags.tagSet2) (sprintf "Expected perumutation %i to match tagSet1" i) )
+                    Expect.isTrue (fullName.Tags = Tags.tagSet2) (sprintf "Expected perumutation %i to match tagSet2" i) )
 
             testCase "NameAndAffixes tag merge" <| fun () ->
                 List.permutations Contacts.nameAndAffixesTagMerge
                 |> Seq.iteri (fun i x ->
                     let res = ContactName.elimination x
                     let nameAndAffixes = match res.Head with | ContactName.NameAndAffixes x -> x | _ -> invalidArg "can't" "get here"
-                    Expect.isTrue (nameAndAffixes.SimpleName.Tags = Tags.tagSet3) (sprintf "Expected perumutation %i to match tagSet1" i) )
+                    Expect.isTrue (nameAndAffixes.SimpleName.Tags = Tags.tagSet3) (sprintf "Expected perumutation %i to match tagSet3" i) )
         ]
 
     [<Tests>]
@@ -141,17 +141,13 @@ module ContactImport =
         let addressElim (addresses : Address list) expectToElim =
             let expectedLength = addresses.Length - expectToElim
 
-            let func i x =
+            let test i x =
                 let res = Address.elimination x
                 let resA = Array.ofList res
                 Expect.isTrue (res.Length = expectedLength) (sprintf "Expected perumutation %i to be %i, but was %i" i  expectedLength res.Length) 
                 
             List.permutations addresses
-            |> Seq.iteri (fun i x -> func i x
-                //let res = Address.elimination x
-                //let resA = Array.ofList res
-                //Expect.isTrue (res.Length = expectedLength) (sprintf "Expected perumutation %i to be %i, but was %i" i  expectedLength res.Length) 
-                )
+            |> Seq.iteri (fun i x -> test i x)
 
         testList "ContactImport.AddressElimination" [
             testCase "address elim physical 1" <| fun () ->
@@ -173,5 +169,44 @@ module ContactImport =
                 addressElim Addresses.halfAllElim1 3
 
             testCase "address elim half all 2" <| fun () ->
-                addressElim Addresses.halfAllElim2 4
+                addressElim Addresses.halfAllElim2 3
+        ]
+
+    [<Tests>]
+    let addressEliminationTagMerge =
+        testList "AddressImport.AddressEliminationTagMerge" [
+            testCase "physical address tag merge" <| fun () ->
+                List.permutations Addresses.physicalAddressTagMerge
+                |> Seq.iteri (fun i x ->
+                    let res = Address.elimination x
+                    let physicalAddress = match res.Head with | Address.PhysicalAddress x -> x | _ -> invalidArg "can't" "get here"
+                    Expect.isTrue (physicalAddress.Tags = Tags.tagSet1) (sprintf "Expected perumutation %i to match tagSet1" i) )
+
+            testCase "email tag merge" <| fun () ->
+                List.permutations Addresses.emailTagMerge
+                |> Seq.iteri (fun i x ->
+                    let res = Address.elimination x
+                    let emailAddress = match res.Head with | Address.EmailAddress x -> x | _ -> invalidArg "can't" "get here"
+                    Expect.isTrue (emailAddress.Tags = Tags.tagSet3) (sprintf "Expected perumutation %i to match tagSet3" i) )
+
+            testCase "phone number tag merge" <| fun () ->
+                List.permutations Addresses.phoneNumberTagMerge
+                |> Seq.iteri (fun i x ->
+                    let res = Address.elimination x
+                    let phoneNumber = match res.Head with | Address.PhoneNumber x -> x | _ -> invalidArg "can't" "get here"
+                    Expect.isTrue (phoneNumber.Tags = Tags.tagSet2) (sprintf "Expected perumutation %i to match tagSet2" i) )
+
+            testCase "uri tag merge" <| fun () ->
+                List.permutations Addresses.uriTagMerge
+                |> Seq.iteri (fun i x ->
+                    let res = Address.elimination x
+                    let uri = match res.Head with | Address.Url x -> x | _ -> invalidArg "can't" "get here"
+                    Expect.isTrue (uri.Tags = Tags.tagSet1) (sprintf "Expected perumutation %i to match tagSet1" i) )
+
+            testCase "handle tag merge" <| fun () ->
+                List.permutations Addresses.handleTagMerge
+                |> Seq.iteri (fun i x ->
+                    let res = Address.elimination x
+                    let handle = match res.Head with | Address.Handle x -> x | _ -> invalidArg "can't" "get here"
+                    Expect.isTrue (handle.Tags = Tags.tagSet1) (sprintf "Expected perumutation %i to match tagSet1" i) )
         ]
