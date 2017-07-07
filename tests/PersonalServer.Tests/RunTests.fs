@@ -7,28 +7,32 @@ module Tests =
     [<EntryPoint>]
     let main args =
 
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testTag |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testTrimNonEmptyString |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testDigits |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testDigits2 |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testDigits3 |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testDigits4 |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testFullName |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testSimpleName |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testNameAndAffixes |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testZipCode5 |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testZipCode5Plus4 |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testNonUsPostalCode |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testZipCode |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testPostalCode |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testPhysicalAddress |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testEmailAddress |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testUsPhone |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.tesuOtherPhone |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testPhone |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testPhoneNumber |> ignore
-        Tests.runTestsWithArgs defaultConfig args DomainTypes.testUriTagged |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.tag |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.trimNonEmptyString |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.digits |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.digits2 |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.digits3 |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.digits4 |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.fullName |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.simpleName |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.nameAndAffixes |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.zipCode5 |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.zipCode5Plus4 |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.nonUsPostalCode |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.zipCode |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.postalCode |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.physicalAddress |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.emailAddress |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.usPhone |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.otherPhone |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.phone |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.phoneNumber |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.uriTagged |> ignore
 
-        Tests.runTestsWithArgs defaultConfig args ContactImport.testSimpleEntityBuilder |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.simpleEntityBuilder |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.addressElimination |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.addressEliminationTagMerge |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.contactElimination |> ignore
+        Tests.runTestsWithArgs defaultConfig args ContactImport.addressEliminationTagMerge |> ignore
 
         0

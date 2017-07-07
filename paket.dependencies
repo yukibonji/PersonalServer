@@ -6,22 +6,16 @@ nuget FSharp.Core
 nuget FSharp.Data
 nuget Fsharpx.Extras
 nuget FsRegEx
-nuget TweetinviAPI == 1.2.0.1
-nuget Autofac == 3.5.0
+nuget TweetinviAPI 
+nuget Autofac 
 
-group Build
-  source https://nuget.org/api/v2
+nuget SourceLink.Fake
+nuget FAKE >= 5.0.0-alpha010
+nuget FSharp.Formatting
 
-  nuget SourceLink.Fake
-  nuget FAKE >= 5.0.0-alpha009
-  nuget FSharp.Formatting
+github fsharp/FAKE modules/Octokit/Octokit.fsx
 
-  github fsharp/FAKE modules/Octokit/Octokit.fsx
-
-group Test
-	source https://www.nuget.org/api/v2
-
-	nuget Expecto
-	nuget Expecto.BenchmarkDotNet
-	nuget Expecto.FsCheck
-	nuget Expecto.VisualStudio.TestAdapter version_in_path: true
+nuget Expecto
+nuget Expecto.BenchmarkDotNet
+nuget Expecto.FsCheck
+nuget Expecto.VisualStudio.TestAdapter version_in_path: true

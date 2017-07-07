@@ -1,6 +1,5 @@
 FSharp.Core
 FSharp.Data
-group Test
 Expecto
 Expecto.BenchmarkDotNet
 Expecto.FsCheck
