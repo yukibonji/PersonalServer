@@ -2,15 +2,19 @@
 // FAKE build script
 // --------------------------------------------------------------------------------------
 
+(* -- Fake Dependencies paket.dependencies
+file ./paket.dependencies
+-- Fake Dependencies -- *)
+
 #r @"packages/FAKE/tools/FakeLib.dll"
 open Fake
-//open Fake.Core.Targets
+open Fake.Core.Environment
 open Fake.Core.Trace
-open Fake.DotNet
+//open Fake.DotNet
 open Fake.DotNet.AssemblyInfoFile
 open Fake.DotNet.AssemblyInfoFile.AssemblyInfo
 open Fake.ReleaseNotesHelper
-open Fake.UserInputHelper
+//open Fake.UserInputHelper
 open Fake.Tools
 open Fake.Tools.Git
 open Fake.Testing.Expecto
