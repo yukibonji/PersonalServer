@@ -37,6 +37,16 @@ module Addresses =
         handle1
         ]
 
+    let physicalElim2 =
+        [
+        physicalAddress1
+        Address.PhysicalAddress <| (PhysicalAddress.TryParse (["40 Garden Lane";"apt. 2";], None, None, None, None, Tags.tagSet1a)).Value
+        Address.PhysicalAddress <| (PhysicalAddress.TryParse ([], (Some "Belmont"), None, None, None, Tags.tagSet1a)).Value
+        Address.PhysicalAddress <| (PhysicalAddress.TryParse ([], (Some "Belmont"), None, (Some "94002"), None, Tags.tagSet1a)).Value
+        Address.PhysicalAddress <| (PhysicalAddress.TryParse ([], (Some "Belmont"), None, None, (Some "USA"), Tags.tagSet1a)).Value
+        physicalAddress2
+        ]
+
     let emailElim1 =
         [
         physicalAddress1

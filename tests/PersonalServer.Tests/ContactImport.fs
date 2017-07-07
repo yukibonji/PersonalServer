@@ -153,6 +153,9 @@ module ContactImport =
             testCase "address elim physical 1" <| fun () ->
                 addressElim Addresses.physicalElim1 1 
 
+            testCase "address elim physical 2" <| fun () ->
+                addressElim Addresses.physicalElim2 4 
+
             testCase "address elim email 1" <| fun () ->
                 addressElim Addresses.emailElim1 1
 
