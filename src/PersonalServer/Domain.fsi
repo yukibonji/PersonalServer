@@ -327,3 +327,45 @@ module Countries =
     val byName : IDictionary<string, Country>
     val stateByAbbreviation : IDictionary<string, State>
     val stateByName : IDictionary<string, State>
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module SimpleName =
+    val tryElimination : simpleName1 : SimpleName -> simpleName2 : SimpleName -> SimpleName option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module FullName =
+    val tryElimination : fullName1 : FullName -> fullName2 : FullName -> FullName option
+    val tryEliminateSimpleName : fullName : FullName -> simpleName : SimpleName -> FullName option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module NameAndAffixes =
+    val tryElimination : nameAndAffixes1 : NameAndAffixes -> nameAndAffixes2 : NameAndAffixes -> NameAndAffixes option
+    val tryEliminateSimpleName : nameAndAffixes : NameAndAffixes -> simpleName : SimpleName -> NameAndAffixes option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module ContactName =
+    val elimination : contactNames : ContactName list -> ContactName list
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module PhysicalAddress =
+    val tryElimination : physicalAddress1 : PhysicalAddress -> physicalAddress2 : PhysicalAddress -> PhysicalAddress option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module EmailAddress =
+    val tryElimination : emailAddress1 : EmailAddress -> emailAddress2 : EmailAddress -> EmailAddress option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module PhoneNumber =
+    val tryElimination : phoneNumber1 : PhoneNumber -> phoneNumber2 : PhoneNumber -> PhoneNumber option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module UriTagged =
+    val tryElimination : uriTagged1 : UriTagged -> uriTagged2 : UriTagged -> UriTagged option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Handle =
+    val tryElimination : handle1 : Handle -> handle2 : Handle -> Handle option
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Address =
+    val elimination : addresses : Address list -> Address list

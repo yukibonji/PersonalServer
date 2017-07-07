@@ -7,12 +7,12 @@ open FsCheck
 
 module DomainTypes =
 
-    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000; arbitrary = [typeof<DomainGenerators>] }
-//    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
+    //let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000; arbitrary = [typeof<DomainGenerators>] } //FullName/equality
+    let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000 }
     let configReplay = { FsCheckConfig.defaultConfig with maxTest = 10000 ; replay = Some <| (1940624926, 296296394) } // ; arbitrary = [typeof<DomainGenerators>] }  //see Tips & Tricks for FsCheck
 
     [<Tests>]
-    let testTag =
+    let tag =
 
         let distinctList nonEmptyStrings = 
             nonEmptyStrings
@@ -119,7 +119,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testTrimNonEmptyString =
+    let trimNonEmptyString =
         testList "DomainTypes.TrimNonEmptyString" [
 
             testCase "TryParse None on empty string" <| fun () ->
@@ -211,7 +211,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testDigits =
+    let digits =
         testList "DomainTypes.Digits" [
 
             testCase "TryParse None on empty string" <| fun () ->
@@ -255,7 +255,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testDigits2 =
+    let digits2 =
         testList "DomainTypes.Digits2" [
 
             testCase "TryParse None on empty string" <| fun () ->
@@ -305,7 +305,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testDigits3 =
+    let digits3 =
         testList "DomainTypes.Digits3" [
 
             testCase "TryParse None on empty string" <| fun () ->
@@ -354,7 +354,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testDigits4 =
+    let digits4 =
         testList "DomainTypes.Digits4" [
 
             testCase "TryParse None on empty string" <| fun () ->
@@ -403,7 +403,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testFullName =
+    let fullName =
         testList "DomainTypes.FullName" [
             testCase "TryParse None on all empty" <| fun () ->
                 Expect.isNone (FullName.TryParse (None, [], (Some System.String.Empty), NameOrder.Western, Set.empty<Tag>) ) "Expected None"
@@ -411,15 +411,28 @@ module DomainTypes =
             testCase "TryParse None on null string" <| fun () ->
                 Expect.isNone (FullName.TryParse (None, [], (Some null), NameOrder.Western, Set.empty<Tag>) ) "Expected None"
 
-            testPropertyWithConfig config10k "equality" <|
-                fun  (fullName : FullName) ->
-                    let first = fullName.First |> Option.map (fun x -> x.Value)
-                    let middle = fullName.Middle |> List.map (fun x -> x.ToString())
-                    let family = fullName.Family |> Option.map (fun x -> x.Value)
+            // uncomment this to test Expecto adapter arb generator
+            //testPropertyWithConfig config10k "equality" <|
+            //    fun  (fullName : FullName) ->
+            //        let first = fullName.First |> Option.map (fun x -> x.Value)
+            //        let middle = fullName.Middle |> List.map (fun x -> x.ToString())
+            //        let family = fullName.Family |> Option.map (fun x -> x.Value)
 
-                    let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
+            //        let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
  
-                    t.Value = fullName
+            //        t.Value = fullName
+
+            testPropertyWithConfig config10k "equality" <|
+                fun  () ->
+                    Prop.forAll (Arb.fromGen <| genFullName())
+                        (fun  (fullName : FullName) ->
+                            let first = fullName.First |> Option.map (fun x -> x.Value)
+                            let middle = fullName.Middle |> List.map (fun x -> x.ToString())
+                            let family = fullName.Family |> Option.map (fun x -> x.Value)
+
+                            let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
+ 
+                            t.Value = fullName)
 
             testCase "ordered on first name" <| fun () ->
                 let ordered =
@@ -462,7 +475,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testSimpleName =
+    let simpleName =
         testList "DomainTypes.SimpleName" [
 
             testCase "TryParse None on empty string" <| fun () ->
@@ -515,7 +528,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testNameAndAffixes =
+    let nameAndAffixes =
         testList "DomainTypes.NameAndAffixes" [
             testCase "TryParse None on all empty" <| fun () ->
                 Expect.isNone (NameAndAffixes.TryParse ([], System.String.Empty, [], Set.empty<Tag>) ) "Expected None"
@@ -554,7 +567,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testZipCode5 =
+    let zipCode5 =
         testList "DomainTypes.ZipCode5" [
 
             testCase "TryParse None on empty string" <| fun () ->
@@ -603,7 +616,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testZipCode5Plus4 =
+    let zipCode5Plus4 =
         let valid5Plus4 seed =
             let validDigit = validDigits seed 9
             ZipCode5Plus4.TryParse validDigit
@@ -687,7 +700,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testNonUsPostalCode =
+    let nonUsPostalCode =
         testList "DomainTypes.NonUsPostalCode" [
 
             testCase "TryParse None on empty string" <| fun () ->
@@ -739,7 +752,7 @@ module DomainTypes =
     let zip22322 = ZipCode.ZipCode5 (ZipCode5.TryParse "22322").Value
 
     [<Tests>]
-    let testZipCode =
+    let zipCode =
         testList "DomainTypes.ZipCode" [
             testCase "ordered" <| fun () ->
                 
@@ -754,7 +767,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testPostalCode =
+    let postalCode =
         testList "DomainTypes.PostalCode" [
             testCase "ordered" <| fun () ->
                 let ordered =
@@ -771,7 +784,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testPhysicalAddress =
+    let physicalAddress =
         testList "DomainTypes.PhysicalAddress" [
             testCase "TryParse None on all empty" <| fun () ->
                 Expect.isNone (PhysicalAddress.TryParse ([], (Some System.String.Empty), None, None, None, Set.empty<Tag>) ) "Expected None"
@@ -862,7 +875,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testEmailAddress =
+    let emailAddress =
 
         let makeList nonEmptyStrings = 
             nonEmptyStrings
@@ -934,7 +947,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testUsPhone =
+    let usPhone =
 
         testList "DomainTypes.UsPhone" [
 
@@ -1006,7 +1019,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let tesuOtherPhone =
+    let otherPhone =
 
         testList "DomainTypes.OtherPhone" [
 
@@ -1068,7 +1081,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testPhone =
+    let phone =
         testList "DomainTypes.Phone" [
             testPropertyWithConfig config10k "ordered" <|
                 fun  () ->
@@ -1093,7 +1106,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testPhoneNumber =
+    let phoneNumber =
         testList "DomainTypes.PhoneNumber" [
              testPropertyWithConfig config10k "equality" <|
                 fun  () ->
@@ -1109,7 +1122,7 @@ module DomainTypes =
         ]
 
     [<Tests>]
-    let testUriTagged =
+    let uriTagged =
 
         testList "DomainTypes.UriTagged" [
             testCase "TryParse None on empty string" <| fun () ->

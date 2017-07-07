@@ -180,6 +180,12 @@ type FullName internal (first, middle, family, nameOrder, tags) =
         | _, x, _ when x.Length > 0 -> FullName (fi, m, fa, nameOrder, tags) |> Some 
         | _, _, Some _ -> FullName (fi, m, fa, nameOrder, tags) |> Some 
         | _ -> None
+    static member TryParse ((first : TrimNonEmptyString option), middle, (family : TrimNonEmptyString option), nameOrder, tags) =
+        match first, middle, family with
+        | Some _, _, _ -> FullName (first, middle, family, nameOrder, tags) |> Some
+        | _, x, _ when x.Length > 0 -> FullName (first, middle, family, nameOrder, tags) |> Some 
+        | _, _, Some _ -> FullName (first, middle, family, nameOrder, tags) |> Some 
+        | _ -> None
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -240,6 +246,11 @@ and NameAndAffixes (salutations, simpleName, suffixes) =
         | Some x -> 
             Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes))
         | None -> None
+    static member TryParse ((salutations : TrimNonEmptyString list), (simpleName : SimpleName), (suffixes : TrimNonEmptyString list), tags) = 
+        match SimpleName.TryParse (simpleName.Value.Value, tags) with
+        | Some s ->
+            Some <| NameAndAffixes (salutations, s, suffixes)
+        | None -> None
 
     interface IComparable with
         member __.CompareTo yobj =
@@ -255,7 +266,7 @@ and NameAndAffixes (salutations, simpleName, suffixes) =
             | _ -> invalidArg "NameAndAffixes" "cannot compare values of different types"
 
 type ContactName =
-    | SimpleName of SimpleName
+    | SimpleName of SimpleName 
     | FullName of FullName
     | NameAndAffixes of NameAndAffixes
 
@@ -426,6 +437,8 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
         | _, _, _, Some _, _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
         | _, _, _, _, Some _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
         | _ -> None
+    static member TryParse ((streetAddress : TrimNonEmptyString list), (city : TrimNonEmptyString option), (state : TrimNonEmptyString option), (postalCode : PostalCode option), (country : TrimNonEmptyString option), tags) =
+        PhysicalAddress (streetAddress, city, state, postalCode, country, tags) |> Some
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -1093,6 +1106,8 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
                 None
         
         PhoneNumber (code, phone, (Option.map Digits extension), tags) |> Some 
+    static member TryParse (callingCode, phone, extension, tags) =
+        PhoneNumber (callingCode, phone, extension, tags) |> Some
     static member TryParse (phone : string, tags) : PhoneNumber option = 
         if String.IsNullOrWhiteSpace phone then
             None
@@ -1272,3 +1287,316 @@ type EmailAccount =
     SMTP : string
     Imap : IMAP
     }
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module SimpleName =
+
+    let elimination (simpleName1 : SimpleName) (simpleName2 : SimpleName) = 
+        if simpleName1.Value = simpleName2.Value then
+                SimpleName.TryParse (simpleName1.Value.Value, (Set.union simpleName1.Tags simpleName2.Tags))
+        else
+            None
+
+    let tryElimination simpleName1 simpleName2 = 
+        match elimination simpleName1 simpleName2 with
+        | Some x -> Some x
+        | None -> elimination simpleName2 simpleName1
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module FullName =
+    
+    let elimination (fullName1 : FullName) (fullName2 : FullName) = 
+        if (fullName1.Family = fullName2.Family || fullName2.Family.IsNone)
+            && (fullName1.First = fullName2.First || fullName2.First.IsNone)
+            && (fullName1.Middle = fullName2.Middle || fullName2.Middle.IsEmpty) then
+                FullName.TryParse (fullName1.First, fullName1.Middle, fullName1.Family, fullName1.NameOrder, (Set.union fullName1.Tags fullName2.Tags))
+        else
+            None
+    
+    let tryElimination fullName1 fullName2 = 
+        match elimination fullName1 fullName2 with
+        | Some x -> Some x
+        | None -> elimination fullName2 fullName1
+
+    let tryEliminateSimpleName (fullName : FullName) (simpleName : SimpleName) =  
+        if fullName.SimpleName.Value = simpleName.Value 
+            || (fullName.First.IsSome && fullName.First.Value = simpleName.Value)
+            || (fullName.Family.IsSome && fullName.First.Value = simpleName.Value) 
+            || (fullName.First.IsSome 
+                && fullName.Family.IsSome 
+                && sprintf "%s %s " fullName.First.Value.Value fullName.Family.Value.Value |> TrimNonEmptyString = simpleName.Value) 
+            then
+            FullName.TryParse (fullName.First, fullName.Middle, fullName.Family, fullName.NameOrder, (Set.union fullName.Tags simpleName.Tags))
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module NameAndAffixes =
+
+    let elimination (nameAndAffixes1 : NameAndAffixes) (nameAndAffixes2 : NameAndAffixes) = 
+        if (nameAndAffixes1.Salutations = nameAndAffixes2.Salutations || nameAndAffixes2.Salutations.IsEmpty)
+            && nameAndAffixes1.SimpleName = nameAndAffixes2.SimpleName  
+            && (nameAndAffixes1.Suffixes = nameAndAffixes2.Suffixes || nameAndAffixes2.Suffixes.IsEmpty) then
+                NameAndAffixes.TryParse (nameAndAffixes1.Salutations, nameAndAffixes1.SimpleName, nameAndAffixes1.Suffixes,  (Set.union nameAndAffixes1.SimpleName.Tags nameAndAffixes2.SimpleName.Tags))
+        else
+            None
+    
+    let tryElimination nameAndAffixes1 nameAndAffixes2 = 
+        match elimination nameAndAffixes1 nameAndAffixes2 with
+        | Some x -> Some x
+        | None -> elimination nameAndAffixes2 nameAndAffixes1
+
+    let tryEliminateSimpleName (nameAndAffixes : NameAndAffixes) (simpleName : SimpleName) =  
+        if nameAndAffixes.SimpleName.Value = simpleName.Value then
+            NameAndAffixes.TryParse (nameAndAffixes.Salutations, nameAndAffixes.SimpleName, nameAndAffixes.Suffixes, (Set.union nameAndAffixes.SimpleName.Tags simpleName.Tags))
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module ContactName =
+    let tryElim (contact : ContactName) (elimContact : ContactName) =
+        match contact, elimContact with
+        | (ContactName.SimpleName cntct), (ContactName.SimpleName elim) -> 
+            match SimpleName.tryElimination cntct elim with
+            | Some x -> ContactName.SimpleName x |> Some
+            | None -> None
+        | (ContactName.FullName cntct), (ContactName.FullName elim) -> 
+            match FullName.tryElimination cntct elim with
+            | Some x -> ContactName.FullName x |> Some
+            | None -> None
+        | (ContactName.FullName cntct), (ContactName.SimpleName elim) -> 
+            match FullName.tryEliminateSimpleName cntct elim with
+            | Some x -> ContactName.FullName x |> Some
+            | None -> None
+        | (ContactName.SimpleName elim), (ContactName.FullName cntct) -> 
+            match FullName.tryEliminateSimpleName cntct elim with
+            | Some x -> ContactName.FullName x |> Some
+            | None -> None
+        | (ContactName.NameAndAffixes cntct), (ContactName.NameAndAffixes elim) -> 
+            match NameAndAffixes.tryElimination cntct elim with
+            | Some x -> ContactName.NameAndAffixes x |> Some
+            | None -> None
+        | (ContactName.NameAndAffixes cntct), (ContactName.SimpleName elim) -> 
+            match NameAndAffixes.tryEliminateSimpleName cntct elim with
+            | Some x -> ContactName.NameAndAffixes x |> Some
+            | None -> None
+        | (ContactName.SimpleName elim), (ContactName.NameAndAffixes cntct) -> 
+            match NameAndAffixes.tryEliminateSimpleName cntct elim with
+            | Some x -> ContactName.NameAndAffixes x |> Some
+            | None -> None
+        | _ -> 
+            None
+
+    let oneElimination (contactName : ContactName) (contactNames : ContactName list)=
+        contactNames
+        |> List.fold (fun (current, newOut) t -> 
+            match tryElim current t with
+            | Some x ->
+                x, newOut
+            | None -> 
+                current, (t::newOut)) (contactName, [])
+
+    let rec loop (inNames : ContactName list) (outNames : ContactName list) =
+        match inNames with
+        | [] -> 
+            outNames
+        | hd::tl ->
+            let contactName, names = oneElimination hd tl
+
+            if hd.GetType().Name = contactName.GetType().Name then
+                loop names (contactName::outNames)
+
+            else
+                loop (contactName::names) outNames
+        
+    let elimination (contactNames : ContactName list) =
+        match contactNames with
+        | [] | [_] ->
+            contactNames
+        | _ ->
+            loop (contactNames |> Seq.toList) []
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module PhysicalAddress =
+
+    let isMergeable (postalCode1 : PostalCode option) (postalCode2 : PostalCode option) =
+        if postalCode1 = postalCode2 then
+            true
+        else
+            match postalCode1, postalCode2 with
+            | (Some _), None
+            | None, (Some _) ->
+                true
+            | (Some (PostalCode.ZipCode _)), (Some (PostalCode.NonUsPostalCode _))
+            | (Some (PostalCode.NonUsPostalCode _)), (Some (PostalCode.ZipCode _)) 
+            | (Some (PostalCode.NonUsPostalCode _)), (Some (PostalCode.NonUsPostalCode _)) ->
+                false
+            | (Some (PostalCode.ZipCode zipCode1)), (Some (PostalCode.ZipCode zipCode2)) ->
+                match zipCode1, zipCode2 with
+                | (ZipCode.ZipCode5 zip1), (ZipCode.ZipCode5Plus4 zip2) ->
+                    zip1.Value = (zip2.Value.Substring(0, 5))
+                | (ZipCode.ZipCode5Plus4 zip1), (ZipCode.ZipCode5 zip2) ->
+                    (zip1.Value.Substring(0, 5)) = zip2.Value
+                | _ ->
+                    false
+            | _ ->
+                false
+
+    let merge (postalCode1 : PostalCode option) (postalCode2 : PostalCode option) =
+        if postalCode1 = postalCode2 then
+            postalCode1
+        else
+            match postalCode1, postalCode2 with
+            | None, (Some _) ->
+                postalCode2
+            | (Some (PostalCode.ZipCode zipCode1)), (Some (PostalCode.ZipCode zipCode2)) ->
+                match zipCode1, zipCode2 with
+                | (ZipCode.ZipCode5 _), (ZipCode.ZipCode5Plus4 _) ->
+                    postalCode2
+                | _ ->
+                    postalCode1
+            | _ ->
+                postalCode1
+
+    let tryElimination (physicalAddress1 : PhysicalAddress) (physicalAddress2 : PhysicalAddress) = 
+        if (physicalAddress1.StreetAddress = physicalAddress2.StreetAddress || physicalAddress1.StreetAddress.IsEmpty || physicalAddress2.StreetAddress.IsEmpty)
+            && (physicalAddress1.City = physicalAddress2.City || physicalAddress1.City.IsNone || physicalAddress2.City.IsNone)
+            && (physicalAddress1.State = physicalAddress2.State || physicalAddress1.State.IsNone || physicalAddress2.State.IsNone) 
+            && (physicalAddress1.Country = physicalAddress2.Country || physicalAddress1.Country.IsNone || physicalAddress2.Country.IsNone) 
+            && (isMergeable physicalAddress1.PostalCode physicalAddress2.PostalCode) then
+                PhysicalAddress.TryParse (
+                    (if physicalAddress1.StreetAddress.IsEmpty then physicalAddress2.StreetAddress else physicalAddress1.StreetAddress), 
+                    (if physicalAddress1.City.IsSome then physicalAddress1.City else physicalAddress2.City), 
+                    (if physicalAddress1.State.IsSome then physicalAddress1.State else physicalAddress2.State), 
+                    (merge physicalAddress1.PostalCode physicalAddress1.PostalCode), 
+                    (if physicalAddress1.Country.IsSome then physicalAddress1.Country else physicalAddress2.Country), 
+                    (Set.union physicalAddress1.Tags physicalAddress2.Tags))
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module EmailAddress =
+    let tryElimination (emailAddress1 : EmailAddress) (emailAddress2 : EmailAddress) = 
+        if emailAddress1 = emailAddress2 then
+            EmailAddress.TryParse (emailAddress1.Value, (Set.union emailAddress1.Tags emailAddress2.Tags))
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module PhoneNumber =
+    let isMergeable (phone1 : Phone) (phone2 : Phone) =
+        if phone1 = phone2 then
+            true
+        else
+            match phone1, phone2 with
+            | (Phone.UsPhone _), (Phone.OtherPhone _)
+            | (Phone.OtherPhone _), (Phone.UsPhone _) ->
+                false
+            | (Phone.UsPhone us1), (Phone.UsPhone us2) ->
+                if (us1.AreaCode.IsNone
+                        || us2.AreaCode.IsNone
+                        || us1.AreaCode = us2.AreaCode)
+                    && us1.Exchange = us2.Exchange
+                    && us1.Suffix = us2.Suffix then
+                    true
+                else
+                    false
+            | _ -> 
+                false
+
+    let merge (phone1 : Phone) (phone2 : Phone) =
+        if phone1 = phone2 then
+            phone1
+        else
+            match phone1 with
+            | (Phone.UsPhone us1) ->
+                if us1.AreaCode.IsNone then
+                    phone2
+                else
+                    phone1
+            | _ -> 
+                phone1
+        
+    let tryElimination (phoneNumber1 : PhoneNumber) (phoneNumber2 : PhoneNumber) = 
+        if (phoneNumber1.CallingCode = phoneNumber2.CallingCode || phoneNumber1.CallingCode.IsNone || phoneNumber2.CallingCode.IsNone)
+            && (isMergeable phoneNumber1.Phone phoneNumber2.Phone)
+            && (phoneNumber1.Extension = phoneNumber2.Extension || phoneNumber1.Extension.IsNone || phoneNumber2.Extension.IsNone) then
+                PhoneNumber.TryParse (
+                    (if phoneNumber1.CallingCode.IsSome then phoneNumber1.CallingCode else phoneNumber2.CallingCode), 
+                    (merge phoneNumber1.Phone phoneNumber2.Phone), 
+                    (if phoneNumber1.Extension.IsSome then phoneNumber1.Extension else phoneNumber2.Extension),
+                    (Set.union phoneNumber1.Tags phoneNumber2.Tags))
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module UriTagged =
+    let tryElimination (uriTagged1 : UriTagged) (uriTagged2 : UriTagged) = 
+        if uriTagged1 = uriTagged2 then
+            UriTagged.TryParse (uriTagged1.ToString(), (Set.union uriTagged1.Tags uriTagged2.Tags))
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Handle =
+    let tryElimination (handle1 : Handle) (handle2 : Handle) = 
+        if handle1.Address = handle2.Address then
+            {Address = handle1.Address; Tags = (Set.union handle1.Tags handle2.Tags)} |> Some
+        else
+            None
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Address =
+    let tryElim (address : Address) (elimAddress : Address) =
+        match address, elimAddress with
+        | (Address.PhysicalAddress addr), (Address.PhysicalAddress elim) -> 
+            match PhysicalAddress.tryElimination addr elim with
+            | Some x -> Address.PhysicalAddress x |> Some
+            | None -> None
+        | (Address.EmailAddress addr), (Address.EmailAddress elim) -> 
+            match EmailAddress.tryElimination addr elim with
+            | Some x -> Address.EmailAddress x |> Some
+            | None -> None
+        | (Address.PhoneNumber addr), (Address.PhoneNumber elim) -> 
+            match PhoneNumber.tryElimination addr elim with
+            | Some x -> Address.PhoneNumber x |> Some
+            | None -> None
+        | (Address.Url addr), (Address.Url elim) -> 
+            match UriTagged.tryElimination addr elim with
+            | Some x -> Address.Url x |> Some
+            | None -> None
+        | (Address.Handle addr), (Address.Handle elim) -> 
+            match Handle.tryElimination addr elim with
+            | Some x -> Address.Handle x |> Some
+            | None -> None
+        | _ -> 
+            None
+
+    let oneElimination (contactAddress : Address) (contactAddresses : Address list)=
+        contactAddresses
+        |> List.fold (fun (current, newOut) t -> 
+            match tryElim current t with
+            | Some x ->
+                x, newOut
+            | None -> 
+                current, (t::newOut)) (contactAddress, [])
+
+    let rec loop (inAddresss : Address list) (outAddresses : Address list) =
+        match inAddresss with
+        | [] -> 
+            outAddresses
+        | hd::tl ->
+            let contactAddress, addresses = oneElimination hd tl
+
+            if hd = contactAddress then
+                loop addresses (contactAddress::outAddresses)
+
+            else
+                loop (contactAddress::addresses) outAddresses
+
+    let elimination (addresses : Address list) =
+        match addresses with
+        | [] | [_] ->
+            addresses
+        | _ ->
+            loop (addresses |> Seq.toList) []
