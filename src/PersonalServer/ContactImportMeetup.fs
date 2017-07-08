@@ -294,7 +294,7 @@ module ContactImportMeetup =
         match members apiKey with
         | Some rows -> 
             let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
-            let defaultBuilders, _ = entityBuilders source headers unUsedColumns UriTagged.TryParse Address.Url
+            let defaultBuilders, _ = entityBuilders source headers UriTagged.TryParse unUsedColumns Address.Url
 
             contactImport rows meetupMemberRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
 

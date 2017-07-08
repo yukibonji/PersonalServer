@@ -218,7 +218,7 @@ module ContactImport =
         [physicalAddressBuilder physicalAddressBuilderParms source headers >> rawToFinalResult Address.PhysicalAddress]
 
     //email, phone, uri, contact name
-    let simpleEntityBuilder (tryParse : string * Set<Tag> -> 'a option) displ source (headers : string []) =
+    let simpleEntityBuilder source headers (tryParse : string * Set<Tag> -> 'a option) displ =
         fun (columns : string []) ->
             if String.IsNullOrWhiteSpace columns.[displ] then
                 (None, Set.empty)
@@ -230,11 +230,11 @@ module ContactImport =
                 | None ->
                     (None, (sourceTags source headers columns [displ]) )
 
-    let entityBuilders source headers coveredHeaderColumns tryParse entityCstr =
+    let entityBuilders source headers tryParse coveredHeaderColumns entityCstr =
         let builders =
             coveredHeaderColumns
             |> Array.fold (fun s i -> 
-                (simpleEntityBuilder tryParse i source headers >> rawToFinalResult entityCstr)::s ) []
+                (simpleEntityBuilder source headers tryParse i >> rawToFinalResult entityCstr)::s ) []
 
         builders, coveredHeaderColumns
 
@@ -251,9 +251,9 @@ module ContactImport =
             |> List.toArray
 
         let builders, usedHeaderColumns = 
-            [|entityBuilders source headers (headerOffsets headers phoneNumberSynonyms) PhoneNumber.TryParse Address.PhoneNumber;
-            entityBuilders source headers (headerOffsets headers emailSynonyms) EmailAddress.TryParse Address.EmailAddress; 
-            entityBuilders source headers (headerOffsets headers uriSynonyms) UriTagged.TryParse Address.Url; 
+            [|entityBuilders source headers PhoneNumber.TryParse (headerOffsets headers phoneNumberSynonyms) Address.PhoneNumber ;
+            entityBuilders source headers EmailAddress.TryParse (headerOffsets headers emailSynonyms) Address.EmailAddress; 
+            entityBuilders source headers UriTagged.TryParse (headerOffsets headers uriSynonyms) Address.Url; 
             (physicalAddressBuilders physicalAddressBuilderParms source headers), usedPhysicalAddressHeaderColumns;|]
             |> Array.unzip
 
@@ -276,7 +276,7 @@ module ContactImport =
             |> Array.ofList
 
         let builders, usedHeaderColumns = 
-            [|entityBuilders source headers namesOtherThanFullName SimpleName.TryParse ContactName.SimpleName; 
+            [|entityBuilders source headers SimpleName.TryParse namesOtherThanFullName ContactName.SimpleName; 
             (fullNameBuilders fullNameBuilderParms source headers), usedNameHeaderColumns|]
             |> Array.unzip
 

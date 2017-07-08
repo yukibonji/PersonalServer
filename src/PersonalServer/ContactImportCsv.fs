@@ -20,7 +20,7 @@ module ContactImportCsv =
             |> Array.map (fun x -> x.Replace("\r\n", " ").Replace("\n", " "))
  
         let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
-        let defaultBuilders, _ = entityBuilders source headers unUsedColumns UriTagged.TryParse Address.Url
+        let defaultBuilders, _ = entityBuilders source headers UriTagged.TryParse unUsedColumns Address.Url
         
         {
         Headers = headers

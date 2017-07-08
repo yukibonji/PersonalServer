@@ -17,7 +17,7 @@ module ContactImport =
             let headers = [|"doodle"; "web"; "doodle2";|]
             let columns = [|"a"; input; ""|]
 
-            let result = Jackfoxy.PersonalServer.ContactImport.simpleEntityBuilder tryParse 1 "test" headers columns
+            let result = Jackfoxy.PersonalServer.ContactImport.simpleEntityBuilder "test" headers tryParse 1 columns
 
             match t1 with 
             | Some _ -> 

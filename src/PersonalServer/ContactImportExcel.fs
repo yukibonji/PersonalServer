@@ -40,7 +40,7 @@ module ContactImportExcel =
             |> Array.map (fun x -> x.ToString())
         
         let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
-        let defaultBuilders, _ = entityBuilders source headers unUsedColumns UriTagged.TryParse Address.Url
+        let defaultBuilders, _ = entityBuilders source headers UriTagged.TryParse unUsedColumns Address.Url
 
         let rows = workSheet.Rows |> Seq.cast |> Seq.skip headerRows.[headerRows.Length - 1]
 
