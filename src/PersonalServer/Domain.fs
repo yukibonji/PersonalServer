@@ -50,6 +50,41 @@ type TrimNonEmptyString internal (value : string) =
                     else 0
                 | _ -> invalidArg "TrimNonEmptyString" "cannot compare values of different types"
 
+type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option, utcTimeStamp : DateTime) =
+    member __.Primary = primary
+    member __.Secondary = secondary
+    member __.UtcTimeStamp = utcTimeStamp.ToUniversalTime()
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? Source as y -> (__.Primary = y.Primary && __.Secondary = y.Secondary && __.UtcTimeStamp = y.UtcTimeStamp)
+        | _ -> false
+    override __.GetHashCode() = hash __
+    override __.ToString() = 
+        match __.Secondary with
+        | Some x ->
+            sprintf "%s : %s - %A" __.Primary.Value x.Value __.UtcTimeStamp
+        | None ->
+            sprintf "%s - %A" __.Primary.Value  __.UtcTimeStamp
+    with
+        interface IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? Source as y -> 
+                    if __.Primary > y.Primary then 1
+                    elif __.Primary < y.Primary then -1
+                    else 
+                        match __.Secondary, y.Secondary with
+                        | Some a, Some b ->
+                            if a > b then 1
+                            elif a < b then -1
+                            else
+                                if __.UtcTimeStamp > y.UtcTimeStamp then 1
+                                elif __.UtcTimeStamp < y.UtcTimeStamp then -1
+                                else 0
+                        | Some a, None -> 1
+                        | _ -> -1
+                | _ -> invalidArg "Source" "cannot compare values of different types"
+
 type Digits internal (value) =
     member __.Value = value
     override __.ToString() = value
@@ -205,7 +240,7 @@ and NameOrder =
 and SimpleName internal (name: string, tags : Tag Set) = 
     member __.Value = TrimNonEmptyString name
     member __.Tags = tags
-    override __.ToString() = name
+    override __.ToString() = sprintf "%s TAGS: %A" name __.Tags
     override __.Equals(yobj) = 
         match yobj with
         |  :? SimpleName as y -> (__.Value = y.Value)
@@ -420,7 +455,7 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
         | _ -> false
     override __.GetHashCode() = hash __
     override __.ToString() = 
-        sprintf "%A %A %A %A %A" __.StreetAddress __.City __.State __.PostalCode __.Country
+        sprintf "%A %A %A %A %A TAGS: %A" __.StreetAddress __.City __.State __.PostalCode __.Country __.Tags
     static member TryParse ((streetAddress : string list), (city : string option), (state : string option), (postalCode : string option), (country : string option), tags) =
         let sa = TrimNonEmptyString.Parse streetAddress
         let cy = TrimNonEmptyString.TryParse city
@@ -459,7 +494,7 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
 type EmailAddress internal (email : string, tags : Tag Set) =
     member __.Value = email
     member __.Tags = tags
-    override __.ToString() = email
+    override __.ToString() = sprintf "%s TAGS: %A" email __.Tags
     override __.Equals(yobj) = 
         match yobj with
         |  :? EmailAddress as y -> (__.Value = y.Value)
@@ -1057,9 +1092,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
                  | Some x -> x.ToString()
                  | None -> "")
         |> Digits
-
     member __.Tags = tags
-
     member __.Formatted =
         sprintf "%s%s%s"
             (match callingCode with
@@ -1071,7 +1104,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
             (match extension with
             | Some x -> " x" + x.ToString()
             | None -> "")
-    override __.ToString() = __.Value.Value
+    override __.ToString() = sprintf "%s TAGS: %A" __.Value.Value __.Tags
     override __.Equals(yobj) = 
         match yobj with
         |  :? PhoneNumber as y -> (__.Value = y.Value)
@@ -1194,7 +1227,7 @@ type Handle =
 type UriTagged internal (uri, tags) = 
     member __.Uri : Uri = uri
     member __.Tags : Set<Tag> = tags
-    override __.ToString() = __.Uri.ToString()
+    override __.ToString() = sprintf "%s TAGS: %A" (__.Uri.ToString()) __.Tags
     override __.Equals(yobj) = 
         match yobj with
         |  :? UriTagged as y -> (__.Uri.AbsolutePath = y.Uri.AbsolutePath)
@@ -1533,9 +1566,9 @@ module PhoneNumber =
 module UriTagged =
     let tryElimination (uriTagged1 : UriTagged) (uriTagged2 : UriTagged) = 
         if uriTagged1 = uriTagged2 then
-            UriTagged.TryParse (uriTagged1.ToString(), (Set.union uriTagged1.Tags uriTagged2.Tags))
+            UriTagged.TryParse (uriTagged1.Uri.ToString(), (Set.union uriTagged1.Tags uriTagged2.Tags))
         else
-            None
+            None 
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module Handle =

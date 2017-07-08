@@ -32,21 +32,23 @@ module ContactImportExcel =
                 
         loop (index - 1) lastHeader
 
-    let importExcelSheet source workSheet headerRows =
+    let importExcelSheet sourceMeta workSheet headerRows =
         let headers = getExcelSheetHeaders workSheet headerRows
             
         let excelRowSequenceBuilder (row : DataRow) =
             row.ItemArray
             |> Array.map (fun x -> x.ToString())
+
+        let sourceMeta' = {sourceMeta with Headers = headers}
         
-        let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
-        let defaultBuilders, _ = entityBuilders source headers UriTagged.TryParse unUsedColumns Address.Url
+        let nameBuilders, addressBuilders, unUsedColumns = commonBuilders sourceMeta'
+        let defaultBuilders, _ = entityBuilders sourceMeta' UriTagged.TryParse unUsedColumns Address.Url
 
         let rows = workSheet.Rows |> Seq.cast |> Seq.skip headerRows.[headerRows.Length - 1]
 
         contactImport rows excelRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
 
-    let import source (path : string) (excelSheets : ExcelSheet list) =
+    let import sourceMeta (path : string) (excelSheets : ExcelSheet list) =
 
         use stream =
             File.OpenRead(path)
@@ -62,6 +64,6 @@ module ContactImportExcel =
 
         (Seq.empty, excelSheets)
         ||> List.fold (fun s t ->
-            importExcelSheet source dataset.Tables.[t.Name] t.HeaderRows
+            importExcelSheet sourceMeta dataset.Tables.[t.Name] t.HeaderRows
             |> Seq.append s ) 
 

@@ -2,8 +2,10 @@
 
 open DomainGeneratorsCode
 open Jackfoxy.PersonalServer
+open ContactImport
 open Expecto
 open FsCheck
+open System
 
 module ContactImport =
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000}
@@ -14,10 +16,16 @@ module ContactImport =
         let testSimpleEntity input tryParse =
             let t1 = tryParse (input, Set.empty<Tag>)
 
-            let headers = [|"doodle"; "web"; "doodle2";|]
             let columns = [|"a"; input; ""|]
 
-            let result = Jackfoxy.PersonalServer.ContactImport.simpleEntityBuilder "test" headers tryParse 1 columns
+            let sourceMeta =
+                {
+                PrimaryName = TrimNonEmptyString.Parse ["test"] |> List.head
+                TimeStamp = DateTime.UtcNow
+                Headers = [|"doodle"; "web"; "doodle2";|]
+                }
+
+            let result = Jackfoxy.PersonalServer.ContactImport.simpleEntityBuilder sourceMeta tryParse 1 columns
 
             match t1 with 
             | Some _ -> 

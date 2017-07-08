@@ -287,14 +287,17 @@ module ContactImportMeetup =
             |]
 
     let import apiKey =
-
-        let headers = [|"member id"; "name"; "bio"; "joined meetup"; "city"; "state"; "country"; "photo link"; "intros"; "roles"|]
-        let source = "Meetup"
-
+        let sourceMeta = 
+            {
+            PrimaryName = TrimNonEmptyString.Parse ["Meetup"] |> List.head
+            TimeStamp = DateTime.UtcNow
+            Headers = [|"member id"; "name"; "bio"; "joined meetup"; "city"; "state"; "country"; "photo link"; "intros"; "roles"|]
+            }
+            
         match members apiKey with
         | Some rows -> 
-            let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
-            let defaultBuilders, _ = entityBuilders source headers UriTagged.TryParse unUsedColumns Address.Url
+            let nameBuilders, addressBuilders, unUsedColumns = commonBuilders sourceMeta
+            let defaultBuilders, _ = entityBuilders sourceMeta UriTagged.TryParse unUsedColumns Address.Url
 
             contactImport rows meetupMemberRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
 

@@ -24,6 +24,17 @@ type TrimNonEmptyString =
     static member Parse : value:string list -> TrimNonEmptyString list
 
 [<Class>]
+type Source =
+    interface IComparable
+    new : primary : TrimNonEmptyString * secondary : TrimNonEmptyString option * utcTimeStamp : DateTime -> Source
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Primary : TrimNonEmptyString
+    member Secondary : TrimNonEmptyString option
+    member UtcTimeStamp : DateTime
+
+[<Class>]
 type Digits =
     interface IComparable
     override Equals : yobj:obj -> bool
