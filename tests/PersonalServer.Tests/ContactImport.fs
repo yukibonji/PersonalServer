@@ -60,7 +60,7 @@ module ContactImport =
 //                fun  () ->
 //                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
 //                        (fun  (simpleName) ->
-//                            testSimpleEntity simpleName PersonName.TryParse )
+//                            testSimpleEntity simpleName ContactName.TryParse )
         ]
 
 //        let fullNameBuilders =

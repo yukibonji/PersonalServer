@@ -63,6 +63,7 @@
     <Compile Include="Furl.fs" />
     <Compile Include="Domain.fsi" />
     <Compile Include="Domain.fs" />
+    <Compile Include="ContactImport.fsi" />
     <Compile Include="ContactImport.fs" />
     <Compile Include="ContactImportCsv.fs" />
     <Compile Include="ContactImportExcel.fs" />

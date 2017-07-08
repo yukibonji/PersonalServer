@@ -4,6 +4,12 @@ open System
 
 module ContactImport =
 
+    type ImportSourceMeta =
+        {
+        PrimaryName : TrimNonEmptyString
+        TimeStamp : DateTime
+        }
+
     //to do: eventually resource file
     let phoneNumberSynonyms = [|"phone"; "fax"; "pager"; "mobile"; "cell"; "telephone";|]
 
@@ -42,19 +48,6 @@ module ContactImport =
             | None ->
                 None )
         |> Set.ofSeq
-
-    //email, phone, uri, person name
-    let simpleEntityBuilder (tryParse : string * Set<Tag> -> 'a option) displ source (headers : string []) =
-        fun (columns : string []) ->
-            if String.IsNullOrWhiteSpace columns.[displ] then
-                (None, Set.empty)
-            else
-                let tags = sourceHeaderTags source headers [displ]
-                match tryParse (columns.[displ], tags) with
-                | Some entity ->
-                    (Some entity, Set.empty)
-                | None ->
-                    (None, (sourceTags source headers columns [displ]) )
 
     type PhysicalAddressBuilderParms =
         {
@@ -141,14 +134,6 @@ module ContactImport =
         | (Some x), tags -> (Some <| transform x), tags
         | None, tags -> None, tags
 
-    let entityBuilders source headers coveredHeaderColumns tryParse entityCstr =
-        let builders =
-            coveredHeaderColumns
-            |> Array.fold (fun s i -> 
-                (simpleEntityBuilder tryParse i source headers >> rawToFinalResult entityCstr)::s ) []
-
-        builders, coveredHeaderColumns
-
         //to do: complete first/last name coverage (i.e. potential multiples)
         //to do: eventually resource file
     let fullNameFirstNameSynonyms = [|"first name"; "given name"; "firstname"|]
@@ -232,6 +217,27 @@ module ContactImport =
     let physicalAddressBuilders physicalAddressBuilderParms source headers =
         [physicalAddressBuilder physicalAddressBuilderParms source headers >> rawToFinalResult Address.PhysicalAddress]
 
+    //email, phone, uri, contact name
+    let simpleEntityBuilder (tryParse : string * Set<Tag> -> 'a option) displ source (headers : string []) =
+        fun (columns : string []) ->
+            if String.IsNullOrWhiteSpace columns.[displ] then
+                (None, Set.empty)
+            else
+                let tags = sourceHeaderTags source headers [displ]
+                match tryParse (columns.[displ], tags) with
+                | Some entity ->
+                    (Some entity, Set.empty)
+                | None ->
+                    (None, (sourceTags source headers columns [displ]) )
+
+    let entityBuilders source headers coveredHeaderColumns tryParse entityCstr =
+        let builders =
+            coveredHeaderColumns
+            |> Array.fold (fun s i -> 
+                (simpleEntityBuilder tryParse i source headers >> rawToFinalResult entityCstr)::s ) []
+
+        builders, coveredHeaderColumns
+
     let getAddressBuilders source headers =
         let physicalAddressBuilderParms = physicalAddressBuilderParms headers
 
@@ -276,43 +282,6 @@ module ContactImport =
 
         (builders |> List.concat), (usedHeaderColumns |> Array.concat)
 
-    let contactImport sources sourceBuilder nameBuilders addressBuilders =
-        sources
-        |> Seq.choose (fun source ->
-            let columns = sourceBuilder source
-            let names =
-                ([], nameBuilders)
-                ||> Seq.fold (fun s f -> (f columns)::s )
-            let addresses =
-                ([], addressBuilders)
-                ||> Seq.fold (fun s f -> (f columns)::s )
-
-            let nameOfPersons, nameTags =
-                names
-                |> List.unzip
-
-            let addressesOpts, addressTags =
-                addresses
-                |> List.unzip
-
-            let tagSet = 
-                [nameTags; addressTags]
-                |> List.concat
-                |> List.collect Set.toList 
-                |> Set.ofList
-   
-            let names = nameOfPersons |> List.choose id
-            let addresses = addressesOpts |> List.choose id
-            match names, addresses, tagSet with
-            | [], [], s when s.IsEmpty -> None
-            | _ ->
-
-                {Names = names |> ContactName.elimination |> Set.ofList
-                 Addresses = addresses |> Address.elimination |> Set.ofList
-                 Tags = tagSet
-                 } |> Some
-            )
-
     let commonBuilders source headers =
         let addressBuilders, usedAddressColumns = getAddressBuilders source headers
         let nameBuilders, usedNameColumns = getNameBuilders source headers
@@ -330,3 +299,40 @@ module ContactImport =
             |> Array.choose id
 
         nameBuilders, addressBuilders, unUsedColumns
+
+    let contactImport sources sourceBuilder nameBuilders addressBuilders =
+        sources
+        |> Seq.choose (fun source ->
+            let columns = sourceBuilder source
+            let namesAndTags =
+                ([], nameBuilders)
+                ||> Seq.fold (fun s f -> (f columns)::s )
+            let addressesAndTags =
+                ([], addressBuilders)
+                ||> Seq.fold (fun s f -> (f columns)::s )
+
+            let contactNames, nameTags =
+                namesAndTags
+                |> List.unzip
+
+            let addressOpts, addressTags =
+                addressesAndTags
+                |> List.unzip
+
+            let tagSet = 
+                [nameTags; addressTags]
+                |> List.concat
+                |> List.collect Set.toList 
+                |> Set.ofList
+   
+            let names = contactNames |> List.choose id
+            let addresses = addressOpts |> List.choose id
+            match names, addresses, tagSet with
+            | [], [], s when s.IsEmpty -> None
+            | _ ->
+
+                {Names = names |> ContactName.elimination |> Set.ofList
+                 Addresses = addresses |> Address.elimination |> Set.ofList
+                 Tags = tagSet
+                 } |> Some
+            )
