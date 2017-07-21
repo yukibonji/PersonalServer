@@ -99,7 +99,7 @@ module DomainGeneratorsCode =
                 let! family = Arb.generate<string option>
 
                 return
-                    FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>)
+                    FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>, Set.empty)
         }
         |> Gen.filter Option.isSome
         |> Gen.map (fun x -> x.Value)
@@ -111,7 +111,7 @@ module DomainGeneratorsCode =
                 let! suffixes = Arb.generate<string list>
 
                 return
-                    NameAndAffixes.TryParse (salutations, simpleName.ToString(), suffixes, Set.empty<Tag>)
+                    NameAndAffixes.TryParse (salutations, simpleName.ToString(), suffixes, Set.empty<Tag>, Set.empty)
         }
         |> Gen.filter Option.isSome
         |> Gen.map (fun x -> x.Value)
@@ -166,7 +166,7 @@ module DomainGeneratorsCode =
                 let! postalCode = Gen.elements [Some postalCodeString; Some postalCodeZip; Some postalCodeZip5Plus4; None]
 
                 return
-                    PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty<Tag>)
+                    PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty<Tag>, Set.empty)
         }
         |> Gen.filter Option.isSome
         |> Gen.map (fun x -> x.Value)

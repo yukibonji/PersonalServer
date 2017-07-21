@@ -41,6 +41,8 @@ module ContactImportTwitter =
         |> Set.ofList
 
     let parseFollower (follower : Models.IUser) =
+        let primarySource = (TrimNonEmptyString.TryParse "Twitter").Value
+        let timeStamp = DateTime.UtcNow
         let createdAt =
             sprintf "Twitter::Id::%O" follower.CreatedAt
             |> Tag.TryParse
@@ -65,17 +67,18 @@ module ContactImportTwitter =
             }
 
         let name =
-            SimpleName.TryParse (follower.Name, Set.add (Tag.TryParse "Twitter::Name").Value Set.empty)
+            SimpleName.TryParse (follower.Name, Set.empty, Set.add (Source.Parse (primarySource, Some "Name", timeStamp, timeStamp)) Set.empty)
 
         let uriTagged =
-            UriTagged.TryParse (follower.Url, Set.add (Tag.TryParse "Twitter::Url").Value Set.empty)
+            UriTagged.TryParse (follower.Url, Set.empty, Set.add (Source.Parse (primarySource, Some "Url", timeStamp, timeStamp)) Set.empty)
 
         let uriPhoto =
-            UriTagged.TryParse ((if follower.DefaultProfileImage then String.Empty else follower.ProfileImageUrlFullSize), Set.add (Tag.TryParse "Twitter::ProfileImageUrlFullSize").Value Set.empty)
+            UriTagged.TryParse ((if follower.DefaultProfileImage then String.Empty else follower.ProfileImageUrlFullSize), Set.empty, Set.add (Source.Parse (primarySource, Some "ProfileImageUrlFullSize", timeStamp, timeStamp)) Set.empty)
    
         let timeZone = tryTag "Twitter::TimeZone" follower.TimeZone
 
-        let tagSet = setOfOptionList [timeZone; Tag.TryParse "Twitter::Location"]
+        let tagSet = Set.singleton timeZone.Value
+        let sourceSet = Source.Parse (primarySource, Some ":Location", timeStamp, timeStamp) |> Set.singleton
 
         let s = follower.Location.Split ','
 
@@ -85,22 +88,22 @@ module ContactImportTwitter =
                     Countries.stateByAbbreviation.TryGetValue (s.[1].Trim()) |> toOption, 
                     Countries.stateByName.TryGetValue (s.[1].Trim()) |> toOption with
                 | Some _, None, None ->
-                    PhysicalAddress.TryParse ([], Some s.[0], None, None, Some s.[1], tagSet)
+                    PhysicalAddress.TryParse ([], Some s.[0], None, None, Some s.[1], tagSet, sourceSet)
                 | None, Some _, None ->
-                    PhysicalAddress.TryParse ([], Some s.[0], Some s.[1], None, None, tagSet)
+                    PhysicalAddress.TryParse ([], Some s.[0], Some s.[1], None, None, tagSet, sourceSet)
                 | None, None, Some _ ->
-                    PhysicalAddress.TryParse ([], Some s.[0], Some s.[1], None, None, tagSet)
+                    PhysicalAddress.TryParse ([], Some s.[0], Some s.[1], None, None, tagSet, sourceSet)
                 | _ ->
-                    PhysicalAddress.TryParse ([], Some follower.Location, None, None, None, tagSet)
+                    PhysicalAddress.TryParse ([], Some follower.Location, None, None, None, tagSet, sourceSet)
             else
                 match Countries.byName.TryGetValue (follower.Location.Trim()) |> toOption, 
                     Countries.stateByName.TryGetValue (follower.Location.Trim()) |> toOption with
                 | Some _, None ->
-                    PhysicalAddress.TryParse ([], None, None, None, Some follower.Location, tagSet)
+                    PhysicalAddress.TryParse ([], None, None, None, Some follower.Location, tagSet, sourceSet)
                 | None, Some _ ->
-                    PhysicalAddress.TryParse ([], None, Some follower.Location, None, None, tagSet)
+                    PhysicalAddress.TryParse ([], None, Some follower.Location, None, None, tagSet, sourceSet)
                 | _ ->
-                    PhysicalAddress.TryParse ([], Some follower.Location, None, None, None, tagSet)
+                    PhysicalAddress.TryParse ([], Some follower.Location, None, None, None, tagSet, sourceSet)
 
         let uriAddresses =
             [uriTagged; uriPhoto]

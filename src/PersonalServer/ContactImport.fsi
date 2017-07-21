@@ -11,10 +11,10 @@ module ContactImport =
         Headers : string []
         }
 
-    val simpleEntityBuilder : sourceMeta : ImportSourceMeta -> tryParse : (string * Set<Tag> -> 'a option) -> displ : int -> columns : string [] -> 
+    val simpleEntityBuilder : sourceMeta : ImportSourceMeta -> tryParse : (string * Set<Tag> * Set<Source> -> 'a option) -> displ : int -> columns : string [] -> 
         'a option * Set<Tag>
 
-    val entityBuilders : sourceMeta : ImportSourceMeta -> tryParse : (string * Set<Tag> -> 'a option) ->  coveredHeaderColumns : int [] ->  entityCstr : ('a -> 'b) -> 
+    val entityBuilders : sourceMeta : ImportSourceMeta -> tryParse : (string * Set<Tag> * Set<Source> -> 'a option) ->  coveredHeaderColumns : int [] ->  entityCstr : ('a -> 'b) -> 
         (string [] -> 'b option * Set<Tag>) list * int []
 
     val commonBuilders : sourceMeta : ImportSourceMeta -> (string [] -> ContactName option * Set<Tag>) list * (string [] -> Address option * Set<Tag>) list * int []

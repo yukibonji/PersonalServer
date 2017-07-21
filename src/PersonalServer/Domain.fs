@@ -50,21 +50,50 @@ type TrimNonEmptyString internal (value : string) =
                     else 0
                 | _ -> invalidArg "TrimNonEmptyString" "cannot compare values of different types"
 
-type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option, utcTimeStamp : DateTime) =
-    member __.Primary = primary
-    member __.Secondary = secondary
-    member __.UtcTimeStamp = utcTimeStamp.ToUniversalTime()
+type UtcDateTime (dateTime : DateTime) =
+    member __.Value = dateTime.ToUniversalTime()
     override __.Equals(yobj) = 
         match yobj with
-        |  :? Source as y -> (__.Primary = y.Primary && __.Secondary = y.Secondary && __.UtcTimeStamp = y.UtcTimeStamp)
+        |  :? UtcDateTime as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash __.Value
+    override __.ToString() = 
+         dateTime.ToUniversalTime().ToString()
+    with
+        interface IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? UtcDateTime as y -> 
+                    if __.Value > y.Value then 1
+                    elif __.Value < y.Value then -1
+                    else 0
+                | _ -> invalidArg "UtcDateTime" "cannot compare values of different types"
+
+type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option, earliestTimeStamp : UtcDateTime, latestTimeStamp : UtcDateTime) =
+    member __.Primary = primary
+    member __.Secondary = secondary
+    member __.EarliestTimeStamp = earliestTimeStamp
+    member __.LatestTimeStamp = latestTimeStamp
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? Source as y -> (__.Primary = y.Primary && __.Secondary = y.Secondary)
         | _ -> false
     override __.GetHashCode() = hash __
     override __.ToString() = 
         match __.Secondary with
         | Some x ->
-            sprintf "%s : %s - %A" __.Primary.Value x.Value __.UtcTimeStamp
+            sprintf "%s : %s - %A" __.Primary.Value x.Value __.EarliestTimeStamp
         | None ->
-            sprintf "%s - %A" __.Primary.Value  __.UtcTimeStamp
+            sprintf "%s - %A" __.Primary.Value  __.EarliestTimeStamp
+    static member Parse (primary : TrimNonEmptyString , secondary : string option, earliestTimeStamp : DateTime , latestTimeStamp : DateTime) =
+        Source (primary, (TrimNonEmptyString.TryParse secondary), UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp))
+    static member TryParse (primary : string , secondary : string option, earliestTimeStamp : DateTime , latestTimeStamp : DateTime) =
+        match (TrimNonEmptyString.TryParse primary), secondary with
+        | (Some x, Some y) -> 
+            Source (x, (TrimNonEmptyString.TryParse y), UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp)) |> Some
+        | (Some x, None) -> Source (x, None, UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp)) |> Some
+        | _ -> 
+            None
     with
         interface IComparable with
             member __.CompareTo yobj =
@@ -72,17 +101,7 @@ type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option
                 | :? Source as y -> 
                     if __.Primary > y.Primary then 1
                     elif __.Primary < y.Primary then -1
-                    else 
-                        match __.Secondary, y.Secondary with
-                        | Some a, Some b ->
-                            if a > b then 1
-                            elif a < b then -1
-                            else
-                                if __.UtcTimeStamp > y.UtcTimeStamp then 1
-                                elif __.UtcTimeStamp < y.UtcTimeStamp then -1
-                                else 0
-                        | Some a, None -> 1
-                        | _ -> -1
+                    else 0
                 | _ -> invalidArg "Source" "cannot compare values of different types"
 
 type Digits internal (value) =
@@ -174,19 +193,20 @@ type Digits4 internal (value) =
                     else 0
                 | _ -> invalidArg "Digits4" "cannot compare values of different types"
 
-type FullName internal (first, middle, family, nameOrder, tags) =
+type FullName internal (first, middle, family, nameOrder, tags, sources) =
     member __.First : TrimNonEmptyString option = first 
     member __.Middle : TrimNonEmptyString list = middle 
     member __.Family : TrimNonEmptyString option = family 
     member __.NameOrder : NameOrder = nameOrder
     member __.Tags : Tag Set = tags
+    member __.Sources : Source Set = sources
     member __.SimpleName =
         let combineName nameParts =
             let name =
                 nameParts
                 |> List.concat
                 |> String.concat " "
-            SimpleName(name, __.Tags)
+            SimpleName(name, __.Tags, sources)
 
         match __.NameOrder with
         | Western -> 
@@ -206,20 +226,20 @@ type FullName internal (first, middle, family, nameOrder, tags) =
         | _ -> false
     override __.GetHashCode() = hash __
     override __.ToString() = __.SimpleName.ToString()
-    static member TryParse ((first : string option), middle, (family : string option), nameOrder, tags) =
+    static member TryParse ((first : string option), middle, (family : string option), nameOrder, tags, sources) =
         let fi = TrimNonEmptyString.TryParse first
         let m = TrimNonEmptyString.Parse middle
         let fa = TrimNonEmptyString.TryParse family
         match fi, m, fa with
-        | Some _, _, _ -> FullName (fi, m, fa, nameOrder, tags) |> Some
-        | _, x, _ when x.Length > 0 -> FullName (fi, m, fa, nameOrder, tags) |> Some 
-        | _, _, Some _ -> FullName (fi, m, fa, nameOrder, tags) |> Some 
+        | Some _, _, _ -> FullName (fi, m, fa, nameOrder, tags, sources) |> Some
+        | _, x, _ when x.Length > 0 -> FullName (fi, m, fa, nameOrder, tags, sources) |> Some 
+        | _, _, Some _ -> FullName (fi, m, fa, nameOrder, tags, sources) |> Some 
         | _ -> None
-    static member TryParse ((first : TrimNonEmptyString option), middle, (family : TrimNonEmptyString option), nameOrder, tags) =
+    static member TryParse ((first : TrimNonEmptyString option), middle, (family : TrimNonEmptyString option), nameOrder, tags, sources) =
         match first, middle, family with
-        | Some _, _, _ -> FullName (first, middle, family, nameOrder, tags) |> Some
-        | _, x, _ when x.Length > 0 -> FullName (first, middle, family, nameOrder, tags) |> Some 
-        | _, _, Some _ -> FullName (first, middle, family, nameOrder, tags) |> Some 
+        | Some _, _, _ -> FullName (first, middle, family, nameOrder, tags, sources) |> Some
+        | _, x, _ when x.Length > 0 -> FullName (first, middle, family, nameOrder, tags, sources) |> Some 
+        | _, _, Some _ -> FullName (first, middle, family, nameOrder, tags, sources) |> Some 
         | _ -> None
     interface IComparable with
         member __.CompareTo yobj =
@@ -237,20 +257,21 @@ and NameOrder =
     | Western
     | FamilyFirst
     | Custom of (FullName -> SimpleName)
-and SimpleName internal (name: string, tags : Tag Set) = 
+and SimpleName internal (name: string, tags : Tag Set, sources : Source Set) = 
     member __.Value = TrimNonEmptyString name
     member __.Tags = tags
+    member __.Sources : Source Set = sources
     override __.ToString() = sprintf "%s TAGS: %A" name __.Tags
     override __.Equals(yobj) = 
         match yobj with
         |  :? SimpleName as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse (name, tags) =
+    static member TryParse (name, tags, sources) =
         if String.IsNullOrWhiteSpace name then
             None        
         else 
-            Some <| SimpleName ((name.Trim()), tags)
+            Some <| SimpleName ((name.Trim()), tags, sources)
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -259,10 +280,11 @@ and SimpleName internal (name: string, tags : Tag Set) =
                 elif __.Value < y.Value then -1
                 else 0
             | _ -> invalidArg "SimpleName" "cannot compare values of different types"
-and NameAndAffixes (salutations, simpleName, suffixes) =
+and NameAndAffixes (salutations, simpleName, suffixes, sources : Source Set) =
     member __.Salutations = salutations 
     member __.SimpleName : SimpleName = simpleName
     member __.Suffixes = suffixes
+    member __.Sources : Source Set = sources
     member __.Value =
         TrimNonEmptyString <| __.ToString()
     override __.ToString() = 
@@ -276,15 +298,15 @@ and NameAndAffixes (salutations, simpleName, suffixes) =
         |  :? NameAndAffixes as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse ((salutations : string list), (simpleName : string), (suffixes : string list), tags) =
-        match SimpleName.TryParse (simpleName, tags) with
+    static member TryParse ((salutations : string list), (simpleName : string), (suffixes : string list), tags, sources) =
+        match SimpleName.TryParse (simpleName, tags, sources) with
         | Some x -> 
-            Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes))
+            Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes), sources)
         | None -> None
-    static member TryParse ((salutations : TrimNonEmptyString list), (simpleName : SimpleName), (suffixes : TrimNonEmptyString list), tags) = 
-        match SimpleName.TryParse (simpleName.Value.Value, tags) with
+    static member TryParse ((salutations : TrimNonEmptyString list), (simpleName : SimpleName), (suffixes : TrimNonEmptyString list), tags, sources) = 
+        match SimpleName.TryParse (simpleName.Value.Value, tags, sources) with
         | Some s ->
-            Some <| NameAndAffixes (salutations, s, suffixes)
+            Some <| NameAndAffixes (salutations, s, suffixes, sources)
         | None -> None
 
     interface IComparable with
@@ -437,13 +459,14 @@ type PostalCode =
             elif xString <yString then -1
             else 0
 
-type PhysicalAddress internal (streetAddress, city, state, postalCode, country, tags) =
+type PhysicalAddress internal (streetAddress, city, state, postalCode, country, tags, sources) =
     member __.StreetAddress : TrimNonEmptyString list = streetAddress 
     member __.City : TrimNonEmptyString option = city 
     member __.State : TrimNonEmptyString option = state 
     member __.PostalCode : PostalCode option = postalCode
     member __.Country : TrimNonEmptyString option = country
     member __.Tags : Tag Set = tags
+    member __.Sources : Source Set = sources
     override __.Equals(yobj) = 
         match yobj with
         |  :? PhysicalAddress as y -> 
@@ -456,7 +479,7 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
     override __.GetHashCode() = hash __
     override __.ToString() = 
         sprintf "%A %A %A %A %A TAGS: %A" __.StreetAddress __.City __.State __.PostalCode __.Country __.Tags
-    static member TryParse ((streetAddress : string list), (city : string option), (state : string option), (postalCode : string option), (country : string option), tags) =
+    static member TryParse ((streetAddress : string list), (city : string option), (state : string option), (postalCode : string option), (country : string option), tags, sources) =
         let sa = TrimNonEmptyString.Parse streetAddress
         let cy = TrimNonEmptyString.TryParse city
         let s = TrimNonEmptyString.TryParse state
@@ -466,14 +489,14 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
             | None -> None 
         let c = TrimNonEmptyString.TryParse country
         match sa, cy, s, p, c with
-        | x, _, _, _, _ when x.Length > 0 -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some 
-        | _, Some _, _, _, _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
-        | _, _, Some _, _, _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
-        | _, _, _, Some _, _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
-        | _, _, _, _, Some _ -> PhysicalAddress (sa, cy, s, p, c, tags) |> Some
+        | x, _, _, _, _ when x.Length > 0 -> PhysicalAddress (sa, cy, s, p, c, tags, sources) |> Some 
+        | _, Some _, _, _, _ -> PhysicalAddress (sa, cy, s, p, c, tags, sources) |> Some
+        | _, _, Some _, _, _ -> PhysicalAddress (sa, cy, s, p, c, tags, sources) |> Some
+        | _, _, _, Some _, _ -> PhysicalAddress (sa, cy, s, p, c, tags, sources) |> Some
+        | _, _, _, _, Some _ -> PhysicalAddress (sa, cy, s, p, c, tags, sources) |> Some
         | _ -> None
-    static member TryParse ((streetAddress : TrimNonEmptyString list), (city : TrimNonEmptyString option), (state : TrimNonEmptyString option), (postalCode : PostalCode option), (country : TrimNonEmptyString option), tags) =
-        PhysicalAddress (streetAddress, city, state, postalCode, country, tags) |> Some
+    static member TryParse (streetAddress, city, state, postalCode, country, tags, sources) =
+        PhysicalAddress (streetAddress, city, state, postalCode, country, tags, sources) |> Some
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
@@ -491,23 +514,24 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
                 else 0
             | _ -> invalidArg "PhysicalAddress" "cannot compare values of different types"
 
-type EmailAddress internal (email : string, tags : Tag Set) =
+type EmailAddress internal (email : string, tags : Tag Set, sources : Source Set) =
     member __.Value = email
     member __.Tags = tags
+    member __.Sources = sources
     override __.ToString() = sprintf "%s TAGS: %A" email __.Tags
     override __.Equals(yobj) = 
         match yobj with
         |  :? EmailAddress as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse (email, tags) = 
+    static member TryParse (email, tags, sources) = 
         match verifyTrimNonEmptyString email id with
         | Some x ->
             if x.StartsWith("@") || x.EndsWith("@") || x.EndsWith(".") then
                 None
             else
                 if x.Contains("@") then
-                    Some <| EmailAddress (x, tags)
+                    Some <| EmailAddress (x, tags, sources)
                 else
                     None
         | None ->
@@ -1077,7 +1101,7 @@ type Phone =
             elif xString < yString then -1
             else 0
        
-type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension : Digits option, tags : Tag Set) = 
+type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension : Digits option, tags : Tag Set, sources : Source Set) = 
     member __.CallingCode = callingCode    
     member __.Phone = phone
     member __.Extension = extension
@@ -1093,6 +1117,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
                  | None -> "")
         |> Digits
     member __.Tags = tags
+    member __.Sources = sources
     member __.Formatted =
         sprintf "%s%s%s"
             (match callingCode with
@@ -1110,7 +1135,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
         |  :? PhoneNumber as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse (callingCode, phone, extension, tags) = 
+    static member TryParse (callingCode, phone, extension, tags, sources) = 
         //max 15 digits including callingCode, excluding extension
         //https://github.com/googlei18n/libphonenumber
         //https://en.wikipedia.org/wiki/E.164
@@ -1138,10 +1163,10 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
             | None -> 
                 None
         
-        PhoneNumber (code, phone, (Option.map Digits extension), tags) |> Some 
-    static member TryParse (callingCode, phone, extension, tags) =
-        PhoneNumber (callingCode, phone, extension, tags) |> Some
-    static member TryParse (phone : string, tags) : PhoneNumber option = 
+        PhoneNumber (code, phone, (Option.map Digits extension), tags, sources) |> Some 
+    static member TryParse (callingCode, phone, extension, tags, sources) =
+        PhoneNumber (callingCode, phone, extension, tags, sources) |> Some
+    static member TryParse (phone : string, tags, sources) : PhoneNumber option = 
         if String.IsNullOrWhiteSpace phone then
             None
         else
@@ -1197,7 +1222,7 @@ type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension
 
                 match Phone.TryParse numberDigits with
                 | Some phone ->
-                    PhoneNumber (callingCode, phone, extension, tags) |> Some 
+                    PhoneNumber (callingCode, phone, extension, tags, sources) |> Some 
                 | None ->
                     None
             else
@@ -1224,29 +1249,30 @@ type Handle =
     Tags : Tag Set
     }
 
-type UriTagged internal (uri, tags) = 
+type UriTagged internal (uri, tags, sources) = 
     member __.Uri : Uri = uri
     member __.Tags : Set<Tag> = tags
+    member __.Sources : Set<Source> = sources
     override __.ToString() = sprintf "%s TAGS: %A" (__.Uri.ToString()) __.Tags
     override __.Equals(yobj) = 
         match yobj with
         |  :? UriTagged as y -> (__.Uri.AbsolutePath = y.Uri.AbsolutePath)
         | _ -> false
     override __.GetHashCode() = __.Uri.GetHashCode()
-    static member Create (uri, tags) = 
-        UriTagged (uri, tags)
-    static member TryParse ((uri : string), tags) = 
+    static member Create (uri, tags, sources) = 
+        UriTagged (uri, tags, sources)
+    static member TryParse ((uri : string), tags, sources) = 
         if String.IsNullOrWhiteSpace uri then
             None
         else
             let x = Uri.EscapeUriString <| uri.Trim()
             match Uri.IsWellFormedUriString(x, UriKind.Absolute) with
-            | true -> UriTagged ((Uri(x, UriKind.Absolute)), tags) |> Some
+            | true -> UriTagged ((Uri(x, UriKind.Absolute)), tags, sources) |> Some
             | false -> None
-    static member TryParse ((uri : string), uriKind, tags) =
+    static member TryParse ((uri : string), uriKind, tags, sources) =
         let x = Uri.EscapeUriString <| uri.Trim()
         match Uri.IsWellFormedUriString(x, uriKind) with
-        | true -> UriTagged ((Uri(x, uriKind)), tags) |> Some
+        | true -> UriTagged ((Uri(x, uriKind)), tags, sources) |> Some
         | false -> None
     with
         interface IComparable with
@@ -1322,11 +1348,36 @@ type EmailAccount =
     }
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Source =
+    let elimination (sources1 : Set<Source>) (sources2 : Set<Source>) =
+        let toElim = Set.intersect sources1 sources2
+
+        if toElim.IsEmpty then
+            Set.union sources1 sources2
+        else
+            let list1 = Set.toList sources1
+            let list2 = Set.toList sources2
+            let mergedDates =
+                (Set.empty, toElim)
+                ||> Set.fold (fun s t -> 
+                    let source1 = list1 |> List.find (fun lt -> lt = t)
+                    let source2 = list2 |> List.find (fun lt -> lt = t)
+                    let merged = Source(t.Primary, t.Secondary, 
+                        (if source1.EarliestTimeStamp < source2.EarliestTimeStamp then source1.EarliestTimeStamp else source2.EarliestTimeStamp),
+                        (if source1.EarliestTimeStamp > source2.EarliestTimeStamp then source1.EarliestTimeStamp else source2.EarliestTimeStamp) )
+                    s.Add merged
+                     )
+
+            toElim
+            |> Set.difference (Set.union sources1 sources2)
+            |> Set.union mergedDates
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module SimpleName =
 
     let elimination (simpleName1 : SimpleName) (simpleName2 : SimpleName) = 
         if simpleName1.Value = simpleName2.Value then
-                SimpleName.TryParse (simpleName1.Value.Value, (Set.union simpleName1.Tags simpleName2.Tags))
+                SimpleName.TryParse (simpleName1.Value.Value, (Set.union simpleName1.Tags simpleName2.Tags), (Source.elimination simpleName1.Sources simpleName2.Sources))
         else
             None
 
@@ -1342,7 +1393,8 @@ module FullName =
         if (fullName1.Family = fullName2.Family || fullName2.Family.IsNone)
             && (fullName1.First = fullName2.First || fullName2.First.IsNone)
             && (fullName1.Middle = fullName2.Middle || fullName2.Middle.IsEmpty) then
-                FullName.TryParse (fullName1.First, fullName1.Middle, fullName1.Family, fullName1.NameOrder, (Set.union fullName1.Tags fullName2.Tags))
+                FullName.TryParse (fullName1.First, fullName1.Middle, fullName1.Family, fullName1.NameOrder, 
+                    (Set.union fullName1.Tags fullName2.Tags), (Source.elimination fullName1.Sources fullName2.Sources))
         else
             None
     
@@ -1359,7 +1411,8 @@ module FullName =
                 && fullName.Family.IsSome 
                 && sprintf "%s %s " fullName.First.Value.Value fullName.Family.Value.Value |> TrimNonEmptyString = simpleName.Value) 
             then
-            FullName.TryParse (fullName.First, fullName.Middle, fullName.Family, fullName.NameOrder, (Set.union fullName.Tags simpleName.Tags))
+            FullName.TryParse (fullName.First, fullName.Middle, fullName.Family, fullName.NameOrder, 
+                (Set.union fullName.Tags simpleName.Tags), (Source.elimination fullName.Sources simpleName.Sources))
         else
             None
 
@@ -1370,7 +1423,8 @@ module NameAndAffixes =
         if (nameAndAffixes1.Salutations = nameAndAffixes2.Salutations || nameAndAffixes2.Salutations.IsEmpty)
             && nameAndAffixes1.SimpleName = nameAndAffixes2.SimpleName  
             && (nameAndAffixes1.Suffixes = nameAndAffixes2.Suffixes || nameAndAffixes2.Suffixes.IsEmpty) then
-                NameAndAffixes.TryParse (nameAndAffixes1.Salutations, nameAndAffixes1.SimpleName, nameAndAffixes1.Suffixes,  (Set.union nameAndAffixes1.SimpleName.Tags nameAndAffixes2.SimpleName.Tags))
+                NameAndAffixes.TryParse (nameAndAffixes1.Salutations, nameAndAffixes1.SimpleName, nameAndAffixes1.Suffixes, 
+                    (Set.union nameAndAffixes1.SimpleName.Tags nameAndAffixes2.SimpleName.Tags), (Source.elimination nameAndAffixes1.Sources nameAndAffixes2.Sources))
         else
             None
     
@@ -1381,7 +1435,8 @@ module NameAndAffixes =
 
     let tryEliminateSimpleName (nameAndAffixes : NameAndAffixes) (simpleName : SimpleName) =  
         if nameAndAffixes.SimpleName.Value = simpleName.Value then
-            NameAndAffixes.TryParse (nameAndAffixes.Salutations, nameAndAffixes.SimpleName, nameAndAffixes.Suffixes, (Set.union nameAndAffixes.SimpleName.Tags simpleName.Tags))
+            NameAndAffixes.TryParse (nameAndAffixes.Salutations, nameAndAffixes.SimpleName, nameAndAffixes.Suffixes, 
+                (Set.union nameAndAffixes.SimpleName.Tags simpleName.Tags), (Source.elimination nameAndAffixes.Sources simpleName.Sources))
         else
             None
 
@@ -1503,7 +1558,8 @@ module PhysicalAddress =
                     (if physicalAddress1.State.IsSome then physicalAddress1.State else physicalAddress2.State), 
                     (merge physicalAddress1.PostalCode physicalAddress1.PostalCode), 
                     (if physicalAddress1.Country.IsSome then physicalAddress1.Country else physicalAddress2.Country), 
-                    (Set.union physicalAddress1.Tags physicalAddress2.Tags))
+                    (Set.union physicalAddress1.Tags physicalAddress2.Tags),
+                    (Source.elimination physicalAddress1.Sources physicalAddress2.Sources))
         else
             None
 
@@ -1511,7 +1567,7 @@ module PhysicalAddress =
 module EmailAddress =
     let tryElimination (emailAddress1 : EmailAddress) (emailAddress2 : EmailAddress) = 
         if emailAddress1 = emailAddress2 then
-            EmailAddress.TryParse (emailAddress1.Value, (Set.union emailAddress1.Tags emailAddress2.Tags))
+            EmailAddress.TryParse (emailAddress1.Value, (Set.union emailAddress1.Tags emailAddress2.Tags), (Source.elimination emailAddress1.Sources emailAddress2.Sources))
         else
             None
 
@@ -1558,7 +1614,8 @@ module PhoneNumber =
                     (if phoneNumber1.CallingCode.IsSome then phoneNumber1.CallingCode else phoneNumber2.CallingCode), 
                     (merge phoneNumber1.Phone phoneNumber2.Phone), 
                     (if phoneNumber1.Extension.IsSome then phoneNumber1.Extension else phoneNumber2.Extension),
-                    (Set.union phoneNumber1.Tags phoneNumber2.Tags))
+                    (Set.union phoneNumber1.Tags phoneNumber2.Tags),
+                    (Source.elimination phoneNumber1.Sources phoneNumber2.Sources))
         else
             None
 
@@ -1566,7 +1623,7 @@ module PhoneNumber =
 module UriTagged =
     let tryElimination (uriTagged1 : UriTagged) (uriTagged2 : UriTagged) = 
         if uriTagged1 = uriTagged2 then
-            UriTagged.TryParse (uriTagged1.Uri.ToString(), (Set.union uriTagged1.Tags uriTagged2.Tags))
+            UriTagged.TryParse (uriTagged1.Uri.ToString(), (Set.union uriTagged1.Tags uriTagged2.Tags), (Source.elimination uriTagged1.Sources uriTagged2.Sources))
         else
             None 
 
