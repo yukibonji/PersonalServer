@@ -35,6 +35,7 @@ module ContactImport =
         |> Seq.map (fun index -> 
             Source.Parse (primarySource, Some headers.[index], sourceTimeStamp, sourceTimeStamp) )
         |> Set.ofSeq
+        |> NonEmptySet.TryParse
 
     let sourceTags source (headers : string []) (columns : string []) (contentIndices : int seq) =
         contentIndices
@@ -64,8 +65,6 @@ module ContactImport =
                     physicalAddressBuilderParms.PostalCodeIndex;
                     physicalAddressBuilderParms.CountryIndex]
                     |> List.choose id)
-                
-            let sources = headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers contentIndices
 
             let streetAddress: string list =
                 physicalAddressBuilderParms.AddressIndex
@@ -76,9 +75,13 @@ module ContactImport =
             let postalCode = valueFromIndexOpt columns physicalAddressBuilderParms.PostalCodeIndex
             let country = valueFromIndexOpt columns physicalAddressBuilderParms.CountryIndex
 
-            match PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty, sources) with
-            | Some physicalAddress ->
-                (Some physicalAddress, Set.empty)
+            match  headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers contentIndices with
+            | Some sources ->
+                match PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty, sources) with
+                | Some physicalAddress ->
+                    (Some physicalAddress, Set.empty)
+                | None ->
+                    (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns contentIndices) )
             | None ->
                 (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns contentIndices) )
 
@@ -97,8 +100,6 @@ module ContactImport =
                    ([fullNameBuilderParms.FirstIndex;
                     fullNameBuilderParms.FamilyIndex]
                     |> List.choose id)
-                
-            let sources = headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers contentIndices
 
             let middle: string list =
                 fullNameBuilderParms.MiddleIndex
@@ -108,9 +109,13 @@ module ContactImport =
             let family = valueFromIndexOpt columns fullNameBuilderParms.FamilyIndex
             let nameOrder = fullNameBuilderParms.NameOrder
 
-            match FullName.TryParse (first, middle, family, nameOrder, Set.empty, sources) with
-            | Some fullName ->
-                (Some fullName, Set.empty)
+            match headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers contentIndices with
+            | Some sources ->
+                match FullName.TryParse (first, middle, family, nameOrder, Set.empty, sources) with
+                | Some fullName ->
+                    (Some fullName, Set.empty)
+                | None ->
+                    (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns contentIndices) )
             | None ->
                 (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns contentIndices) )
 
@@ -215,18 +220,21 @@ module ContactImport =
         [physicalAddressBuilder physicalAddressBuilderParms sourceMeta >> rawToFinalResult Address.PhysicalAddress]
 
     //email, phone, uri, contact name
-    let simpleEntityBuilder (sourceMeta : ImportSourceMeta) (tryParse : string * Set<Tag> * Set<Source> -> 'a option) displ =
+    let simpleEntityBuilder (sourceMeta : ImportSourceMeta) (tryParse : string * Set<Tag> * NonEmptySet<Source> -> 'a option) displ =
         fun (columns : string []) ->
             if String.IsNullOrWhiteSpace columns.[displ] then
                 (None, Set.empty)
             else
-                let sources = headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers [displ]
-                match tryParse (columns.[displ], Set.empty, sources) with
-                | Some entity ->
-                    (Some entity, Set.empty)
+                match headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers [displ] with
+                | Some sources ->
+                    match tryParse (columns.[displ], Set.empty, sources) with
+                    | Some entity ->
+                        (Some entity, Set.empty)
+                    | None ->
+                        (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns [displ]) )
                 | None ->
                     (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns [displ]) )
-
+                     
     let entityBuilders sourceMeta tryParse coveredHeaderColumns entityCstr =
         let builders =
             coveredHeaderColumns

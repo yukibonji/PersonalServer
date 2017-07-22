@@ -4,25 +4,6 @@ open System
 open System.Text.RegularExpressions
 open Utilities
 
-type Tag internal (tag: string) =
-    member __.Value = tag
-    override __.ToString() = tag
-    override __.Equals(yobj) = 
-        match yobj with
-        |  :? Tag as y -> (__.Value = y.Value)
-        | _ -> false
-    override __.GetHashCode() = hash tag
-    static member TryParse (tag : string) = verifyTrimNonEmptyString tag Tag
-    with
-        interface IComparable with
-            member __.CompareTo yobj =
-                match yobj with
-                | :? Tag as y -> 
-                    if __.Value > y.Value then 1
-                    elif __.Value < y.Value then -1
-                    else 0
-                | _ -> invalidArg "Tag" "cannot compare values of different types"
-
 type TrimNonEmptyString internal (value : string) =
     member __.Value = value
     override __.ToString() =  value
@@ -69,6 +50,29 @@ type UtcDateTime (dateTime : DateTime) =
                     else 0
                 | _ -> invalidArg "UtcDateTime" "cannot compare values of different types"
 
+type NonEmptySet<'T when 'T : comparison>(set : Set<'T>) =
+    member __.Value = set
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? NonEmptySet<'T> as y -> __.Value = y.Value
+        | _ -> false
+    override __.GetHashCode() = __.Value.GetHashCode()
+    override __.ToString() = __.Value.ToString()
+    static member TryParse (set : Set<'T>) =
+        if set.IsEmpty then None
+        else Some (NonEmptySet set)
+    static member TryParse (values : seq<'T>) =
+        NonEmptySet.TryParse <| Set.ofSeq values
+    with
+        interface IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? NonEmptySet<'T> as y -> 
+                    if __.Value > y.Value then 1
+                    elif __.Value < y.Value then -1
+                    else 0
+                | _ -> invalidArg "Source" "cannot compare values of different types"
+
 type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option, earliestTimeStamp : UtcDateTime, latestTimeStamp : UtcDateTime) =
     member __.Primary = primary
     member __.Secondary = secondary
@@ -103,6 +107,25 @@ type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option
                     elif __.Primary < y.Primary then -1
                     else 0
                 | _ -> invalidArg "Source" "cannot compare values of different types"
+
+type Tag internal (tag: string) =
+    member __.Value = tag
+    override __.ToString() = tag
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? Tag as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash tag
+    static member TryParse (tag : string) = verifyTrimNonEmptyString tag Tag
+    with
+        interface IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? Tag as y -> 
+                    if __.Value > y.Value then 1
+                    elif __.Value < y.Value then -1
+                    else 0
+                | _ -> invalidArg "Tag" "cannot compare values of different types"
 
 type Digits internal (value) =
     member __.Value = value
@@ -199,7 +222,7 @@ type FullName internal (first, middle, family, nameOrder, tags, sources) =
     member __.Family : TrimNonEmptyString option = family 
     member __.NameOrder : NameOrder = nameOrder
     member __.Tags : Tag Set = tags
-    member __.Sources : Source Set = sources
+    member __.Sources :NonEmptySet<Source> = sources
     member __.SimpleName =
         let combineName nameParts =
             let name =
@@ -257,10 +280,10 @@ and NameOrder =
     | Western
     | FamilyFirst
     | Custom of (FullName -> SimpleName)
-and SimpleName internal (name: string, tags : Tag Set, sources : Source Set) = 
+and SimpleName internal (name, tags : Tag Set, sources : NonEmptySet<Source>) = 
     member __.Value = TrimNonEmptyString name
     member __.Tags = tags
-    member __.Sources : Source Set = sources
+    member __.Sources = sources
     override __.ToString() = sprintf "%s TAGS: %A" name __.Tags
     override __.Equals(yobj) = 
         match yobj with
@@ -280,11 +303,11 @@ and SimpleName internal (name: string, tags : Tag Set, sources : Source Set) =
                 elif __.Value < y.Value then -1
                 else 0
             | _ -> invalidArg "SimpleName" "cannot compare values of different types"
-and NameAndAffixes (salutations, simpleName, suffixes, sources : Source Set) =
+and NameAndAffixes (salutations, simpleName, suffixes, sources : NonEmptySet<Source>) =
     member __.Salutations = salutations 
     member __.SimpleName : SimpleName = simpleName
     member __.Suffixes = suffixes
-    member __.Sources : Source Set = sources
+    member __.Sources = sources
     member __.Value =
         TrimNonEmptyString <| __.ToString()
     override __.ToString() = 
@@ -466,7 +489,7 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
     member __.PostalCode : PostalCode option = postalCode
     member __.Country : TrimNonEmptyString option = country
     member __.Tags : Tag Set = tags
-    member __.Sources : Source Set = sources
+    member __.Sources : NonEmptySet<Source> = sources
     override __.Equals(yobj) = 
         match yobj with
         |  :? PhysicalAddress as y -> 
@@ -514,7 +537,7 @@ type PhysicalAddress internal (streetAddress, city, state, postalCode, country, 
                 else 0
             | _ -> invalidArg "PhysicalAddress" "cannot compare values of different types"
 
-type EmailAddress internal (email : string, tags : Tag Set, sources : Source Set) =
+type EmailAddress internal (email : string, tags : Tag Set, sources : NonEmptySet<Source>) =
     member __.Value = email
     member __.Tags = tags
     member __.Sources = sources
@@ -1101,7 +1124,7 @@ type Phone =
             elif xString < yString then -1
             else 0
        
-type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension : Digits option, tags : Tag Set, sources : Source Set) = 
+type PhoneNumber internal (callingCode : UInt16 option, phone : Phone, extension : Digits option, tags : Tag Set, sources : NonEmptySet<Source>) = 
     member __.CallingCode = callingCode    
     member __.Phone = phone
     member __.Extension = extension
@@ -1252,7 +1275,7 @@ type Handle =
 type UriTagged internal (uri, tags, sources) = 
     member __.Uri : Uri = uri
     member __.Tags : Set<Tag> = tags
-    member __.Sources : Set<Source> = sources
+    member __.Sources : NonEmptySet<Source> = sources
     override __.ToString() = sprintf "%s TAGS: %A" (__.Uri.ToString()) __.Tags
     override __.Equals(yobj) = 
         match yobj with
@@ -1349,14 +1372,16 @@ type EmailAccount =
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module Source =
-    let elimination (sources1 : Set<Source>) (sources2 : Set<Source>) =
-        let toElim = Set.intersect sources1 sources2
+    
+    let elimination (sources1 : NonEmptySet<Source>) (sources2 : NonEmptySet<Source>) =
+        let toElim = Set.intersect sources1.Value sources2.Value
 
         if toElim.IsEmpty then
-            Set.union sources1 sources2
+            Set.union sources1.Value sources2.Value
+            |> NonEmptySet
         else
-            let list1 = Set.toList sources1
-            let list2 = Set.toList sources2
+            let list1 = Set.toList sources1.Value
+            let list2 = Set.toList sources2.Value
             let mergedDates =
                 (Set.empty, toElim)
                 ||> Set.fold (fun s t -> 
@@ -1369,8 +1394,9 @@ module Source =
                      )
 
             toElim
-            |> Set.difference (Set.union sources1 sources2)
+            |> Set.difference (Set.union sources1.Value sources2.Value)
             |> Set.union mergedDates
+            |> NonEmptySet
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module SimpleName =

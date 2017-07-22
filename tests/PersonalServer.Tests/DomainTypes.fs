@@ -406,10 +406,10 @@ module DomainTypes =
     let fullName =
         testList "DomainTypes.FullName" [
             testCase "TryParse None on all empty" <| fun () ->
-                Expect.isNone (FullName.TryParse (None, [], (Some System.String.Empty), NameOrder.Western, Set.empty<Tag>, Set.empty) ) "Expected None"
+                Expect.isNone (FullName.TryParse (None, [], (Some System.String.Empty), NameOrder.Western, Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (FullName.TryParse (None, [], (Some null), NameOrder.Western, Set.empty<Tag>, Set.empty) ) "Expected None"
+                Expect.isNone (FullName.TryParse (None, [], (Some null), NameOrder.Western, Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
 
             // uncomment this to test Expecto adapter arb generator
             //testPropertyWithConfig config10k "equality" <|
@@ -418,7 +418,7 @@ module DomainTypes =
             //        let middle = fullName.Middle |> List.map (fun x -> x.ToString())
             //        let family = fullName.Family |> Option.map (fun x -> x.Value)
 
-            //        let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>, Set.empty)
+            //        let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>, Sources.sourceSet)
  
             //        t.Value = fullName
 
@@ -430,47 +430,47 @@ module DomainTypes =
                             let middle = fullName.Middle |> List.map (fun x -> x.ToString())
                             let family = fullName.Family |> Option.map (fun x -> x.Value)
 
-                            let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>, Set.empty)
+                            let t = FullName.TryParse (first, middle, family, NameOrder.Western, Set.empty<Tag>, Sources.sourceSet)
  
                             t.Value = fullName)
 
             testCase "ordered on first name" <| fun () ->
                 let ordered =
-                    [FullName.TryParse (Some "5555", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "1111", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "2232", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "2222", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); ]
+                    [FullName.TryParse (Some "5555", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "1111", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "2232", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "2222", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [FullName.TryParse (Some "1111", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                                            FullName.TryParse (Some "2222", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                                            FullName.TryParse (Some "2232", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                                            FullName.TryParse (Some "5555", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [FullName.TryParse (Some "1111", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                                            FullName.TryParse (Some "2222", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                                            FullName.TryParse (Some "2232", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                                            FullName.TryParse (Some "5555", ["1 middle"; "2 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
 
             testCase "ordered on middle names" <| fun () ->
                 let ordered =
-                    [FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "John", ["3 middle";], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); ]
+                    [FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "John", ["3 middle";], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [FullName.TryParse (Some "John", ["3 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                                            FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                                            FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                                            FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [FullName.TryParse (Some "John", ["3 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                                            FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                                            FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                                            FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "SameLast", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
 
             testCase "ordered on family" <| fun () ->
                 let ordered =
-                    [FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "b", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "aaa", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "d", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                    FullName.TryParse (Some "John", ["3 middle";], Some "cc", NameOrder.Western, Set.empty<Tag>, Set.empty); ]
+                    [FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "b", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "aaa", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "d", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                    FullName.TryParse (Some "John", ["3 middle";], Some "cc", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "aaa", NameOrder.Western, Set.empty<Tag>, Set.empty);
-                                            FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "b", NameOrder.Western, Set.empty<Tag>, Set.empty);
-                                            FullName.TryParse (Some "John", ["3 middle";], Some "cc", NameOrder.Western, Set.empty<Tag>, Set.empty); 
-                                            FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "d", NameOrder.Western, Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [FullName.TryParse (Some "John", ["4 middle"; "5 middle"], Some "aaa", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet);
+                                            FullName.TryParse (Some "John", ["3 middle"; "4 middle"], Some "b", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet);
+                                            FullName.TryParse (Some "John", ["3 middle";], Some "cc", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); 
+                                            FullName.TryParse (Some "John", ["4 middle"; "4 middle"], Some "d", NameOrder.Western, Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
         ]
 
@@ -479,51 +479,51 @@ module DomainTypes =
         testList "DomainTypes.SimpleName" [
 
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (SimpleName.TryParse (System.String.Empty, Set.empty<Tag>, Set.empty)) "Expected None"
+                Expect.isNone (SimpleName.TryParse (System.String.Empty, Set.empty<Tag>, Sources.sourceSet)) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (SimpleName.TryParse (null, Set.empty<Tag>, Set.empty)) "Expected None"
+                Expect.isNone (SimpleName.TryParse (null, Set.empty<Tag>, Sources.sourceSet)) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| whitespaceString())
                         (fun (x : string) -> 
-                            let t = SimpleName.TryParse (x, Set.empty<Tag>, Set.empty)
+                            let t = SimpleName.TryParse (x, Set.empty<Tag>, Sources.sourceSet)
                             t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
-                            let t = SimpleName.TryParse (x, Set.empty<Tag>, Set.empty)
+                            let t = SimpleName.TryParse (x, Set.empty<Tag>, Sources.sourceSet)
                             x.Trim() = t.Value.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (x : NonEmptyString) ->
 
                     let t = 
-                        (x.ToString(), Set.empty<Tag>, Set.empty)
+                        (x.ToString(), Set.empty<Tag>, Sources.sourceSet)
                         |> SimpleName.TryParse 
                     match t with
                     | Some s ->
-                        t = SimpleName.TryParse (s.Value.Value, Set.empty<Tag>, Set.empty)
+                        t = SimpleName.TryParse (s.Value.Value, Set.empty<Tag>, Sources.sourceSet)
                     | None ->
                         let t2 = 
-                            (x.ToString(), Set.empty<Tag>, Set.empty)
+                            (x.ToString(), Set.empty<Tag>, Sources.sourceSet)
                             |> SimpleName.TryParse
                         t = t2
 
             testCase "ordered" <| fun () ->
                 let ordered =
-                    [SimpleName.TryParse ("b", Set.empty<Tag>, Set.empty); 
-                    SimpleName.TryParse ("aaa", Set.empty<Tag>, Set.empty); 
-                    SimpleName.TryParse ("d", Set.empty<Tag>, Set.empty); 
-                    SimpleName.TryParse ("cc", Set.empty<Tag>, Set.empty); ]
+                    [SimpleName.TryParse ("b", Set.empty<Tag>, Sources.sourceSet); 
+                    SimpleName.TryParse ("aaa", Set.empty<Tag>, Sources.sourceSet); 
+                    SimpleName.TryParse ("d", Set.empty<Tag>, Sources.sourceSet); 
+                    SimpleName.TryParse ("cc", Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [SimpleName.TryParse ("aaa", Set.empty<Tag>, Set.empty);
-                                            SimpleName.TryParse ("b", Set.empty<Tag>, Set.empty);
-                                            SimpleName.TryParse ("cc", Set.empty<Tag>, Set.empty); 
-                                            SimpleName.TryParse ("d", Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [SimpleName.TryParse ("aaa", Set.empty<Tag>, Sources.sourceSet);
+                                            SimpleName.TryParse ("b", Set.empty<Tag>, Sources.sourceSet);
+                                            SimpleName.TryParse ("cc", Set.empty<Tag>, Sources.sourceSet); 
+                                            SimpleName.TryParse ("d", Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
         ]
 
@@ -531,10 +531,10 @@ module DomainTypes =
     let nameAndAffixes =
         testList "DomainTypes.NameAndAffixes" [
             testCase "TryParse None on all empty" <| fun () ->
-                Expect.isNone (NameAndAffixes.TryParse ([], System.String.Empty, [], Set.empty<Tag>, Set.empty) ) "Expected None"
+                Expect.isNone (NameAndAffixes.TryParse ([], System.String.Empty, [], Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (NameAndAffixes.TryParse ([], null, [], Set.empty<Tag>, Set.empty) ) "Expected None"
+                Expect.isNone (NameAndAffixes.TryParse ([], null, [], Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
 
             testPropertyWithConfig config10k "equality" <|
                 fun  () ->
@@ -545,24 +545,24 @@ module DomainTypes =
                                     let salutations = nameAndAffixes.Salutations |> List.map (fun x -> x.Value)
                                     let simpleName = nameAndAffixes.SimpleName.Value.Value
                                     let suffixes = nameAndAffixes.Suffixes |> List.map (fun x -> x.Value)
-                                    NameAndAffixes.TryParse (salutations, simpleName, suffixes, Set.empty<Tag>, Set.empty)
+                                    NameAndAffixes.TryParse (salutations, simpleName, suffixes, Set.empty<Tag>, Sources.sourceSet)
 
                                 t.Value = nameAndAffixes
                             )
 
             testCase "ordered" <| fun () ->
                 let ordered =
-                    [NameAndAffixes.TryParse ([], "bb", [], Set.empty<Tag>, Set.empty); 
-                    NameAndAffixes.TryParse ([], "b", ["IV"], Set.empty<Tag>, Set.empty); 
-                    NameAndAffixes.TryParse ([], "b", ["III"], Set.empty<Tag>, Set.empty);
-                    NameAndAffixes.TryParse (["Mr"], "b", [], Set.empty<Tag>, Set.empty); 
-                    NameAndAffixes.TryParse (["Mr"], "c", [], Set.empty<Tag>, Set.empty); ]
+                    [NameAndAffixes.TryParse ([], "bb", [], Set.empty<Tag>, Sources.sourceSet); 
+                    NameAndAffixes.TryParse ([], "b", ["IV"], Set.empty<Tag>, Sources.sourceSet); 
+                    NameAndAffixes.TryParse ([], "b", ["III"], Set.empty<Tag>, Sources.sourceSet);
+                    NameAndAffixes.TryParse (["Mr"], "b", [], Set.empty<Tag>, Sources.sourceSet); 
+                    NameAndAffixes.TryParse (["Mr"], "c", [], Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [NameAndAffixes.TryParse ([], "b", ["III"], Set.empty<Tag>, Set.empty);
-                                            NameAndAffixes.TryParse  ([], "b", ["IV"], Set.empty<Tag>, Set.empty);
-                                            NameAndAffixes.TryParse (["Mr"], "b", [], Set.empty<Tag>, Set.empty);
-                                            NameAndAffixes.TryParse ([], "bb", [], Set.empty<Tag>, Set.empty);
-                                            NameAndAffixes.TryParse (["Mr"], "c", [], Set.empty<Tag>, Set.empty);])
+                Expect.isTrue (ordered = [NameAndAffixes.TryParse ([], "b", ["III"], Set.empty<Tag>, Sources.sourceSet);
+                                            NameAndAffixes.TryParse  ([], "b", ["IV"], Set.empty<Tag>, Sources.sourceSet);
+                                            NameAndAffixes.TryParse (["Mr"], "b", [], Set.empty<Tag>, Sources.sourceSet);
+                                            NameAndAffixes.TryParse ([], "bb", [], Set.empty<Tag>, Sources.sourceSet);
+                                            NameAndAffixes.TryParse (["Mr"], "c", [], Set.empty<Tag>, Sources.sourceSet);])
                     "expected equality"
         ]
 
@@ -787,10 +787,10 @@ module DomainTypes =
     let physicalAddress =
         testList "DomainTypes.PhysicalAddress" [
             testCase "TryParse None on all empty" <| fun () ->
-                Expect.isNone (PhysicalAddress.TryParse ([], (Some System.String.Empty), None, None, None, Set.empty<Tag>, Set.empty) ) "Expected None"
+                Expect.isNone (PhysicalAddress.TryParse ([], (Some System.String.Empty), None, None, None, Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (PhysicalAddress.TryParse ([], (Some null), None, None, None, Set.empty<Tag>, Set.empty) ) "Expected None"
+                Expect.isNone (PhysicalAddress.TryParse ([], (Some null), None, None, None, Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
 
             testPropertyWithConfig config10k "equality" <|
                  fun  () ->
@@ -803,74 +803,74 @@ module DomainTypes =
                                 let postalCode = physicalAddress.PostalCode |> Option.map (fun x -> x.ToString())
                                 let country = physicalAddress.Country |> Option.map (fun x -> x.Value)
 
-                                let t = PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty<Tag>, Set.empty)
+                                let t = PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty<Tag>, Sources.sourceSet)
  
                                 t.Value = physicalAddress
                         )
 
             testCase "ordered on country" <| fun () ->
                 let ordered =
-                    [PhysicalAddress.TryParse ([], None, None, None, Some "a", Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, None, None, Some "c", Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, None, None, Some "b", Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, None, None, Some "d", Set.empty<Tag>, Set.empty); ]
+                    [PhysicalAddress.TryParse ([], None, None, None, Some "a", Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, None, None, Some "c", Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, None, None, Some "b", Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, None, None, Some "d", Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, None, None, Some "a", Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], None, None, None, Some "b", Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], None, None, None, Some "c", Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], None, None, None, Some "d", Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, None, None, Some "a", Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], None, None, None, Some "b", Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], None, None, None, Some "c", Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], None, None, None, Some "d", Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
 
             testCase "ordered on postalcode" <| fun () ->
                 let ordered =
-                    [PhysicalAddress.TryParse ([], None, None, Some "55555", None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, None, Some "55555a", None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, None, Some "22322a", None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, None, Some "22322", None, Set.empty<Tag>, Set.empty); ]
+                    [PhysicalAddress.TryParse ([], None, None, Some "55555", None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, None, Some "55555a", None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, None, Some "22322a", None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, None, Some "22322", None, Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, None, Some "22322", None, Set.empty<Tag>, Set.empty);
-                                            PhysicalAddress.TryParse ([], None, None, Some "22322a", None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], None, None, Some "55555", None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], None, None, Some "55555a", None, Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, None, Some "22322", None, Set.empty<Tag>, Sources.sourceSet);
+                                            PhysicalAddress.TryParse ([], None, None, Some "22322a", None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], None, None, Some "55555", None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], None, None, Some "55555a", None, Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
 
             testCase "ordered on state" <| fun () ->
                 let ordered =
-                    [PhysicalAddress.TryParse ([], None, Some "a", None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, Some "c", None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, Some "b", None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], None, Some "d", None, None, Set.empty<Tag>, Set.empty); ]
+                    [PhysicalAddress.TryParse ([], None, Some "a", None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, Some "c", None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, Some "b", None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], None, Some "d", None, None, Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, Some "a",  None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], None, Some "b", None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], None, Some "c", None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], None, Some "d", None, None, Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], None, Some "a",  None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], None, Some "b", None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], None, Some "c", None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], None, Some "d", None, None, Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
 
             testCase "ordered on city" <| fun () ->
                 let ordered =
-                    [PhysicalAddress.TryParse ([], Some "a", None, None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], Some "c", None, None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], Some "b", None, None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse ([], Some "d", None, None, None, Set.empty<Tag>, Set.empty); ]
+                    [PhysicalAddress.TryParse ([], Some "a", None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], Some "c", None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], Some "b", None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse ([], Some "d", None, None, None, Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], Some "a",  None, None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], Some "b", None, None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], Some "c", None, None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse ([], Some "d", None, None, None, Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse ([], Some "a",  None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], Some "b", None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], Some "c", None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse ([], Some "d", None, None, None, Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
 
             testCase "ordered on address" <| fun () ->
                 let ordered =
-                    [PhysicalAddress.TryParse (["5 address"; "5 address"], None, None, None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse (["1 address"; "1 address"], None, None, None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse (["5 address"], None, None, None, None, Set.empty<Tag>, Set.empty); 
-                    PhysicalAddress.TryParse (["1 address"; "2 address"], None, None, None, None, Set.empty<Tag>, Set.empty); ]
+                    [PhysicalAddress.TryParse (["5 address"; "5 address"], None, None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse (["1 address"; "1 address"], None, None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse (["5 address"], None, None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                    PhysicalAddress.TryParse (["1 address"; "2 address"], None, None, None, None, Set.empty<Tag>, Sources.sourceSet); ]
                     |> List.sort
-                Expect.isTrue (ordered = [PhysicalAddress.TryParse (["1 address"; "1 address"], None,  None, None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse (["1 address"; "2 address"], None, None, None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse (["5 address"], None, None, None, None, Set.empty<Tag>, Set.empty); 
-                                            PhysicalAddress.TryParse (["5 address"; "5 address"], None, None, None, None, Set.empty<Tag>, Set.empty); ])
+                Expect.isTrue (ordered = [PhysicalAddress.TryParse (["1 address"; "1 address"], None,  None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse (["1 address"; "2 address"], None, None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse (["5 address"], None, None, None, None, Set.empty<Tag>, Sources.sourceSet); 
+                                            PhysicalAddress.TryParse (["5 address"; "5 address"], None, None, None, None, Set.empty<Tag>, Sources.sourceSet); ])
                     "expected equality"
         ]
 
@@ -879,28 +879,28 @@ module DomainTypes =
 
         let makeList nonEmptyStrings = 
             nonEmptyStrings
-            |> List.choose (fun x -> EmailAddress.TryParse (x, Set.empty<Tag>, Set.empty))
+            |> List.choose (fun x -> EmailAddress.TryParse (x, Set.empty<Tag>, Sources.sourceSet))
         
         testList "DomainTypes.EmailAddress" [
 
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (EmailAddress.TryParse (System.String.Empty, Set.empty<Tag>, Set.empty)) "Expected None"
+                Expect.isNone (EmailAddress.TryParse (System.String.Empty, Set.empty<Tag>, Sources.sourceSet)) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (EmailAddress.TryParse (null, Set.empty<Tag>, Set.empty)) "Expected None"
+                Expect.isNone (EmailAddress.TryParse (null, Set.empty<Tag>, Sources.sourceSet)) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| whitespaceString())
                         (fun (x : string) -> 
-                            let t = EmailAddress.TryParse (x, Set.empty<Tag>, Set.empty)
+                            let t = EmailAddress.TryParse (x, Set.empty<Tag>, Sources.sourceSet)
                             t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
-                            let t = EmailAddress.TryParse (x, Set.empty<Tag>, Set.empty)
+                            let t = EmailAddress.TryParse (x, Set.empty<Tag>, Sources.sourceSet)
                             match t with
                             | Some emailAddress ->
                                 x.Trim() = emailAddress.Value
@@ -910,17 +910,17 @@ module DomainTypes =
             testPropertyWithConfig config10k "equality" <|
                 fun  (x : NonEmptyString) ->
 
-                    let t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>, Set.empty)
+                    let t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>, Sources.sourceSet)
                     match t with
                     | Some emailAddress ->
-                        t = EmailAddress.TryParse (emailAddress.Value, Set.empty<Tag>, Set.empty)
+                        t = EmailAddress.TryParse (emailAddress.Value, Set.empty<Tag>, Sources.sourceSet)
                     | None ->
-                        t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>, Set.empty)
+                        t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>, Sources.sourceSet)
 
             testPropertyWithConfig config10k "is trim" <|
                 fun  (x : NonEmptyString) ->
 
-                    let t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>, Set.empty)
+                    let t = EmailAddress.TryParse (x.ToString(), Set.empty<Tag>, Sources.sourceSet)
                     match t with
                     | Some emailAddress ->
                         x.ToString().Trim() = emailAddress.Value
@@ -1114,8 +1114,8 @@ module DomainTypes =
                         (fun  (callingCode, phoneRaw, extension, phoneNumber) ->
 
                             let phone = Phone.TryParse phoneRaw
-                            let t1 = PhoneNumber.TryParse (callingCode, phone.Value, extension, Set.empty<Tag>, Set.empty)
-                            let t2 = PhoneNumber.TryParse (phoneNumber, Set.empty<Tag>, Set.empty)
+                            let t1 = PhoneNumber.TryParse (callingCode, phone.Value, extension, Set.empty<Tag>, Sources.sourceSet)
+                            let t2 = PhoneNumber.TryParse (phoneNumber, Set.empty<Tag>, Sources.sourceSet)
 
                             t1 = t2
                         )
@@ -1126,21 +1126,21 @@ module DomainTypes =
 
         testList "DomainTypes.UriTagged" [
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (UriTagged.TryParse (System.String.Empty, Set.empty<Tag>, Set.empty)) "Expected None"
+                Expect.isNone (UriTagged.TryParse (System.String.Empty, Set.empty<Tag>, Sources.sourceSet)) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (UriTagged.TryParse (null, Set.empty<Tag>, Set.empty)) "Expected None"
+                Expect.isNone (UriTagged.TryParse (null, Set.empty<Tag>, Sources.sourceSet)) "Expected None"
 
             testPropertyWithConfig config10k "equality" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| genUriTagged())
                         (fun  (uri) ->
 
-                            let t1 = UriTagged.TryParse (uri, Set.empty<Tag>, Set.empty)
+                            let t1 = UriTagged.TryParse (uri, Set.empty<Tag>, Sources.sourceSet)
 
                             match t1 with
                             | Some x -> 
-                                let t2 = UriTagged.TryParse (x.ToString(), Set.empty<Tag>, Set.empty)
+                                let t2 = UriTagged.TryParse (x.ToString(), Set.empty<Tag>, Sources.sourceSet)
                                 t1.Value.Uri = x.Uri
                             | None ->
                                 true

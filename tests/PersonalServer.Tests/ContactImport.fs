@@ -14,7 +14,7 @@ module ContactImport =
     let simpleEntityBuilder =
 
         let testSimpleEntity input tryParse =
-            let t1 = tryParse (input, Set.empty<Tag>, Set.empty<Source>)
+            let t1 = tryParse (input, Set.empty<Tag>, Sources.sourceSet)
 
             let columns = [|"a"; input; ""|]
 
@@ -29,7 +29,7 @@ module ContactImport =
 
             match t1 with 
             | Some _ -> 
-                let sources = Set.add (Source.TryParse ("test", Some "web", DateTime.UtcNow, DateTime.UtcNow)).Value Set.empty
+                let sources = (Set.singleton (Source.TryParse ("test", Some "web", DateTime.UtcNow, DateTime.UtcNow)).Value |> NonEmptySet.TryParse).Value
                 (fst result) = tryParse (input, Set.empty, sources)
             | None ->                        
                 (snd result) = Set.add (Tag.TryParse <| sprintf "test::web::%s" input).Value Set.empty
