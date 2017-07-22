@@ -26,12 +26,12 @@ module ContactImportTwitter =
         |> Seq.cast<Models.IUser>
         |> Seq.toList
 
-    let tryTag prefix (content : string) =
+    let tryTag prefix (content : string) sources =
         match TrimNonEmptyString.TryParse content
             |> Option.map (fun x -> 
                 sprintf "%s::%s" prefix x.Value) with
         | Some x ->
-            Tag.TryParse x
+            Tag.TryParse(x, sources)
         | None -> None
 
     
@@ -43,20 +43,24 @@ module ContactImportTwitter =
     let parseFollower (follower : Models.IUser) =
         let primarySource = (TrimNonEmptyString.TryParse "Twitter").Value
         let timeStamp = DateTime.UtcNow
+
+        let createSources secondary =
+            Source.Parse(primarySource, Some secondary, timeStamp, timeStamp)
+            |> Set.singleton
+            |> NonEmptySet.TryParse
+         
         let createdAt =
-            sprintf "Twitter::Id::%O" follower.CreatedAt
-            |> Tag.TryParse
+            Tag.TryParse ((sprintf "Twitter::Id::%O" follower.CreatedAt), (createSources "Id").Value)
         let identity =
-            sprintf "Twitter::Id::%s" follower.IdStr
-            |> Tag.TryParse
-        let description = tryTag "Twitter::Description" follower.Description
+            Tag.TryParse((sprintf "Twitter::Id::%s" follower.IdStr), (createSources "Id").Value)
+        let description = 
+            tryTag "Twitter::Description" follower.Description (createSources "Description").Value
         let followers =
-            sprintf "Twitter::Followers::%O::%i" DateTime.UtcNow follower.FollowersCount
-            |> Tag.TryParse
+            Tag.TryParse((sprintf "Twitter::Followers::%O::%i" DateTime.UtcNow follower.FollowersCount), (createSources "Followers").Value)
         let following =
-            sprintf "Twitter::Following::%O::%i" DateTime.UtcNow follower.FriendsCount
-            |> Tag.TryParse
-        let verified = tryTag "Twitter::UserIsVerified" <| follower.Verified.ToString()
+            Tag.TryParse((sprintf "Twitter::Following::%O::%i" DateTime.UtcNow follower.FriendsCount), (createSources "Following").Value)
+        let verified = 
+            tryTag "Twitter::UserIsVerified" (follower.Verified.ToString()) (createSources "UserIsVerified").Value
             
         let handle = 
             {
@@ -84,7 +88,7 @@ module ContactImportTwitter =
                 |> NonEmptySet.TryParse
             UriTagged.TryParse ((if follower.DefaultProfileImage then String.Empty else follower.ProfileImageUrlFullSize), Set.empty, sourceSet.Value)
    
-        let timeZone = tryTag "Twitter::TimeZone" follower.TimeZone
+        let timeZone = tryTag "Twitter::TimeZone" follower.TimeZone (createSources "TimeZone").Value
 
         let tagSet = Set.singleton timeZone.Value
         let sourceSet = 

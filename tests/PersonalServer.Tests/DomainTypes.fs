@@ -22,7 +22,7 @@ module DomainTypes =
 
         let tagSet distinctList =
             distinctList
-            |> List.choose (fun x -> Tag.TryParse <| x.ToString())
+            |> List.choose (fun x -> Tag.TryParse((x.ToString()), Sources.sourceSet) )
             |> Set.ofList
 
         let listFromSetOftags setOfTags = 
@@ -34,42 +34,42 @@ module DomainTypes =
         testList "DomainTypes.Tag" [
 
             testCase "TryParse None on empty string" <| fun () ->
-                Expect.isNone (Tag.TryParse System.String.Empty) "Expected None"
+                Expect.isNone (Tag.TryParse(System.String.Empty, Sources.sourceSet)) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (Tag.TryParse null) "Expected None"
+                Expect.isNone (Tag.TryParse(null, Sources.sourceSet)) "Expected None"
 
             testPropertyWithConfig config10k "TryParse None on all white space string" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| whitespaceString())
                         (fun (x : string) -> 
-                            let t = Tag.TryParse x
+                            let t = Tag.TryParse(x, Sources.sourceSet)
                             t.IsNone)
 
             testPropertyWithConfig config10k "TryParse" <|
                 fun  () ->
                     Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
                         (fun (x : string) -> 
-                            let t = Tag.TryParse x
-                            x.Trim() = t.Value.Value)
+                            let t = Tag.TryParse(x, Sources.sourceSet)
+                            x.Trim() = t.Value.Value.Value)
 
             testPropertyWithConfig config10k "equality" <|
                 fun  (x : NonEmptyString) ->
 
-                    let t = Tag.TryParse <| x.ToString()
+                    let t = Tag.TryParse(x.ToString(), Sources.sourceSet)
                     match t with
                     | Some tag ->
-                        t = Tag.TryParse tag.Value
+                        t = Tag.TryParse(tag.Value.Value, Sources.sourceSet)
                     | None ->
-                        t = (Tag.TryParse <| x.ToString())
+                        t = (Tag.TryParse(x.ToString(), Sources.sourceSet))
 
             testPropertyWithConfig config10k "is trim" <|
                 fun  (x : NonEmptyString) ->
 
-                    let t = Tag.TryParse <| x.ToString()
+                    let t = Tag.TryParse((x.ToString()), Sources.sourceSet)
                     match t with
                     | Some tag ->
-                        x.ToString().Trim() = tag.Value
+                        x.ToString().Trim() = tag.Value.Value
                     | None ->
                         t = t
                     
@@ -102,7 +102,7 @@ module DomainTypes =
                         (fun (xs : string list) -> 
                             let listOfTags = 
                                 xs  
-                                |> List.choose Tag.TryParse
+                                |> List.choose(fun x -> Tag.TryParse(x, Sources.sourceSet))
 
                             let stringFromTagsOrdered =
                                 listOfTags
@@ -113,7 +113,7 @@ module DomainTypes =
 
                             let tagsFromOrderedList =
                                 stringFromTagsOrdered
-                                |> List.choose Tag.TryParse
+                                |> List.choose(fun x -> Tag.TryParse(x.Value, Sources.sourceSet))
                                 
                             tagsFromOrderedList = orderedTags)
         ]

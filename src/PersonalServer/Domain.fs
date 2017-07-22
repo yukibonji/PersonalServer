@@ -237,15 +237,21 @@ type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option
                     else 0
                 | _ -> invalidArg "Source" "cannot compare values of different types"
 
-type Tag internal (tag: string) =
+type Tag internal (tag: TrimNonEmptyString, sources : NonEmptySet<Source>) =
     member __.Value = tag
-    override __.ToString() = tag
+    member __.Sources = sources
+    override __.ToString() = tag.Value
     override __.Equals(yobj) = 
         match yobj with
         |  :? Tag as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash tag
-    static member TryParse (tag : string) = verifyTrimNonEmptyString tag Tag
+    static member TryParse (tag : string, sources : NonEmptySet<Source>) = 
+        match TrimNonEmptyString.TryParse tag with
+        | Some x ->
+            Some <| Tag(x, sources)
+        | None ->
+            None
     with
         interface IComparable with
             member __.CompareTo yobj =
@@ -262,7 +268,7 @@ type FullName internal (first, middle, family, nameOrder, tags, sources) =
     member __.Family : TrimNonEmptyString option = family 
     member __.NameOrder : NameOrder = nameOrder
     member __.Tags : Tag Set = tags
-    member __.Sources :NonEmptySet<Source> = sources
+    member __.Sources : NonEmptySet<Source> = sources
     member __.SimpleName =
         let combineName nameParts =
             let name =

@@ -32,7 +32,7 @@ module ContactImport =
                 let sources = (Set.singleton (Source.TryParse ("test", Some "web", DateTime.UtcNow, DateTime.UtcNow)).Value |> NonEmptySet.TryParse).Value
                 (fst result) = tryParse (input, Set.empty, sources)
             | None ->                        
-                (snd result) = Set.add (Tag.TryParse <| sprintf "test::web::%s" input).Value Set.empty
+                (snd result) = Set.singleton (Tag.TryParse ((sprintf "test::web::%s" input), Sources.sourceSet)).Value
             
         testList "ContactImport.SimpleEntityBuilder" [
             testPropertyWithConfig config10k "PhoneNumber equality" <|

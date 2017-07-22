@@ -107,8 +107,9 @@ type Tag =  //to do: equals performance testing -- http://stackoverflow.com/ques
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
-    member Value : string
-    static member TryParse : tag:string -> Tag option
+    member Value : TrimNonEmptyString
+    member Sources : NonEmptySet<Source>
+    static member TryParse : tag:string * sources:NonEmptySet<Source> -> Tag option
 
 [<Class>]  
 type FullName =

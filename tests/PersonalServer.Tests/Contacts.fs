@@ -3,23 +3,23 @@
 open Jackfoxy.PersonalServer
 open System 
 
-module Tags =
-    let tagSet1 = [Tag.TryParse "foo1";Tag.TryParse "foo2";Tag.TryParse "foo3";Tag.TryParse "foo4"] |> List.choose id |> Set.ofList
-    let tagSet1a = [Tag.TryParse "foo1";Tag.TryParse "foo3";] |> List.choose id |> Set.ofList
-    let tagSet1b = [Tag.TryParse "foo1";Tag.TryParse "foo2";Tag.TryParse "foo4";] |> List.choose id |> Set.ofList
-
-    let tagSet2 = [Tag.TryParse "bar1";Tag.TryParse "bar2";Tag.TryParse "bar3";Tag.TryParse "bar4"] |> List.choose id |> Set.ofList
-    let tagSet2a = [Tag.TryParse "bar1";Tag.TryParse "bar3";] |> List.choose id |> Set.ofList
-    let tagSet2b = [Tag.TryParse "bar2";Tag.TryParse "bar4";] |> List.choose id |> Set.ofList
-
-    let tagSet3 = [Tag.TryParse "zip1";Tag.TryParse "zip2";Tag.TryParse "zip3";Tag.TryParse "zip4"] |> List.choose id |> Set.ofList
-    let tagSet3a = [Tag.TryParse "zip1";Tag.TryParse "zip3";] |> List.choose id |> Set.ofList
-    let tagSet3b = [Tag.TryParse "zip2";Tag.TryParse "zip4";] |> List.choose id |> Set.ofList
-
 module Sources =
     let primarySource = (TrimNonEmptyString.TryParse "source").Value
     let utcDateTime = UtcDateTime DateTime.UtcNow
     let sourceSet = (Source(primarySource, None, utcDateTime, utcDateTime) |> Set.singleton |> NonEmptySet.TryParse).Value
+
+module Tags =
+    let tagSet1 = [Tag.TryParse ("foo1", Sources.sourceSet);Tag.TryParse ("foo2", Sources.sourceSet);Tag.TryParse ("foo3", Sources.sourceSet);Tag.TryParse ("foo4", Sources.sourceSet)] |> List.choose id |> Set.ofList
+    let tagSet1a = [Tag.TryParse ("foo1", Sources.sourceSet);Tag.TryParse ("foo3", Sources.sourceSet);] |> List.choose id |> Set.ofList
+    let tagSet1b = [Tag.TryParse ("foo1", Sources.sourceSet);Tag.TryParse ("foo2", Sources.sourceSet);Tag.TryParse ("foo4", Sources.sourceSet);] |> List.choose id |> Set.ofList
+
+    let tagSet2 = [Tag.TryParse ("bar1", Sources.sourceSet);Tag.TryParse ("bar2", Sources.sourceSet);Tag.TryParse ("bar3", Sources.sourceSet);Tag.TryParse ("bar4", Sources.sourceSet)] |> List.choose id |> Set.ofList
+    let tagSet2a = [Tag.TryParse ("bar1", Sources.sourceSet);Tag.TryParse ("bar3", Sources.sourceSet);] |> List.choose id |> Set.ofList
+    let tagSet2b = [Tag.TryParse ("bar2", Sources.sourceSet);Tag.TryParse ("bar4", Sources.sourceSet);] |> List.choose id |> Set.ofList
+
+    let tagSet3 = [Tag.TryParse ("zip1", Sources.sourceSet);Tag.TryParse ("zip2", Sources.sourceSet);Tag.TryParse ("zip3", Sources.sourceSet);Tag.TryParse ("zip4", Sources.sourceSet)] |> List.choose id |> Set.ofList
+    let tagSet3a = [Tag.TryParse ("zip1", Sources.sourceSet);Tag.TryParse ("zip3", Sources.sourceSet);] |> List.choose id |> Set.ofList
+    let tagSet3b = [Tag.TryParse ("zip2", Sources.sourceSet);Tag.TryParse ("zip4", Sources.sourceSet);] |> List.choose id |> Set.ofList
 
 module Contacts =
     let nameAndAffixes1 =

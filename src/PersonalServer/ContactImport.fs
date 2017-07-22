@@ -37,12 +37,15 @@ module ContactImport =
         |> Set.ofSeq
         |> NonEmptySet.TryParse
 
-    let sourceTags source (headers : string []) (columns : string []) (contentIndices : int seq) =
+    let sourceTags (source : ImportSourceMeta) (headers : string []) (columns : string []) (contentIndices : int seq) =
         contentIndices
         |> Seq.choose (fun index -> 
-            match Tag.TryParse columns.[index] with
-            | Some _ ->
-                Tag.TryParse <| sprintf "%s::%s::%s" source headers.[index] columns.[index]
+            match TrimNonEmptyString.TryParse columns.[index] with
+            | Some x ->
+                let sources = 
+                    Set.singleton <| Source.Parse(source.PrimaryName, Some headers.[index], source.TimeStamp, source.TimeStamp)
+                    |> NonEmptySet.TryParse
+                Tag.TryParse ((sprintf "%s::%s::%s" source.PrimaryName.Value headers.[index] columns.[index]), sources.Value)
             | None ->
                 None )
         |> Set.ofSeq
@@ -81,9 +84,9 @@ module ContactImport =
                 | Some physicalAddress ->
                     (Some physicalAddress, Set.empty)
                 | None ->
-                    (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns contentIndices) )
+                    (None, (sourceTags sourceMeta sourceMeta.Headers columns contentIndices) )
             | None ->
-                (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns contentIndices) )
+                (None, (sourceTags sourceMeta sourceMeta.Headers columns contentIndices) )
 
     type FullNameBuilderParms =
         { 
@@ -115,9 +118,9 @@ module ContactImport =
                 | Some fullName ->
                     (Some fullName, Set.empty)
                 | None ->
-                    (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns contentIndices) )
+                    (None, (sourceTags sourceMeta sourceMeta.Headers columns contentIndices) )
             | None ->
-                (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns contentIndices) )
+                (None, (sourceTags sourceMeta sourceMeta.Headers columns contentIndices) )
 
     let headerOffsets (headers : string []) (targets : string []) =
         headers
@@ -231,9 +234,9 @@ module ContactImport =
                     | Some entity ->
                         (Some entity, Set.empty)
                     | None ->
-                        (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns [displ]) )
+                        (None, (sourceTags sourceMeta sourceMeta.Headers columns [displ]) )
                 | None ->
-                    (None, (sourceTags sourceMeta.PrimaryName.Value sourceMeta.Headers columns [displ]) )
+                    (None, (sourceTags sourceMeta sourceMeta.Headers columns [displ]) )
                      
     let entityBuilders sourceMeta tryParse coveredHeaderColumns entityCstr =
         let builders =
