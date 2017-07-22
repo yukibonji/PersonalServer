@@ -456,15 +456,20 @@ type ZipCode5Plus4 internal (zip : string) =
                 else 0
             | _ -> invalidArg "ZipCode5Plus4" "cannot compare values of different types"
 
-type NonUsPostalCode internal (postalCode) =
-    member __.Value = TrimNonEmptyString postalCode
-    override __.ToString() = postalCode
+type NonUsPostalCode internal (postalCode : TrimNonEmptyString) =
+    member __.Value = postalCode
+    override __.ToString() = postalCode.Value
     override __.Equals(yobj) = 
         match yobj with
         |  :? NonUsPostalCode as y -> (__.Value = y.Value)
         | _ -> false
     override __.GetHashCode() = hash __
-    static member TryParse postalCode = verifyTrimNonEmptyString postalCode NonUsPostalCode
+    static member TryParse (postalCode : string) = 
+        match TrimNonEmptyString.TryParse postalCode with
+        | Some x ->
+            Some <| NonUsPostalCode x
+        | None ->
+            None
     interface IComparable with
         member __.CompareTo yobj =
             match yobj with
