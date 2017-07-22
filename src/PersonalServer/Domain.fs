@@ -39,7 +39,7 @@ type UtcDateTime (dateTime : DateTime) =
         | _ -> false
     override __.GetHashCode() = hash __.Value
     override __.ToString() = 
-         dateTime.ToUniversalTime().ToString()
+            dateTime.ToUniversalTime().ToString()
     with
         interface IComparable with
             member __.CompareTo yobj =
@@ -73,59 +73,45 @@ type NonEmptySet<'T when 'T : comparison>(set : Set<'T>) =
                     else 0
                 | _ -> invalidArg "Source" "cannot compare values of different types"
 
-type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option, earliestTimeStamp : UtcDateTime, latestTimeStamp : UtcDateTime) =
-    member __.Primary = primary
-    member __.Secondary = secondary
-    member __.EarliestTimeStamp = earliestTimeStamp
-    member __.LatestTimeStamp = latestTimeStamp
+type UpperLatin2 internal (value) =
+    member __.Value = value
+    override __.ToString() = value
     override __.Equals(yobj) = 
         match yobj with
-        |  :? Source as y -> (__.Primary = y.Primary && __.Secondary = y.Secondary)
+        |  :? UpperLatin2 as y -> (__.Value = y.Value)
         | _ -> false
-    override __.GetHashCode() = hash __
-    override __.ToString() = 
-        match __.Secondary with
-        | Some x ->
-            sprintf "%s : %s - %A" __.Primary.Value x.Value __.EarliestTimeStamp
-        | None ->
-            sprintf "%s - %A" __.Primary.Value  __.EarliestTimeStamp
-    static member Parse (primary : TrimNonEmptyString , secondary : string option, earliestTimeStamp : DateTime , latestTimeStamp : DateTime) =
-        Source (primary, (TrimNonEmptyString.TryParse secondary), UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp))
-    static member TryParse (primary : string , secondary : string option, earliestTimeStamp : DateTime , latestTimeStamp : DateTime) =
-        match (TrimNonEmptyString.TryParse primary), secondary with
-        | (Some x, Some y) -> 
-            Source (x, (TrimNonEmptyString.TryParse y), UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp)) |> Some
-        | (Some x, None) -> Source (x, None, UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp)) |> Some
-        | _ -> 
-            None
+    override __.GetHashCode() = hash value
+    static member TryParse value = 
+        verifyUpperLatinString value 2 UpperLatin2
     with
         interface IComparable with
             member __.CompareTo yobj =
                 match yobj with
-                | :? Source as y -> 
-                    if __.Primary > y.Primary then 1
-                    elif __.Primary < y.Primary then -1
-                    else 0
-                | _ -> invalidArg "Source" "cannot compare values of different types"
-
-type Tag internal (tag: string) =
-    member __.Value = tag
-    override __.ToString() = tag
-    override __.Equals(yobj) = 
-        match yobj with
-        |  :? Tag as y -> (__.Value = y.Value)
-        | _ -> false
-    override __.GetHashCode() = hash tag
-    static member TryParse (tag : string) = verifyTrimNonEmptyString tag Tag
-    with
-        interface IComparable with
-            member __.CompareTo yobj =
-                match yobj with
-                | :? Tag as y -> 
+                | :? UpperLatin2 as y -> 
                     if __.Value > y.Value then 1
                     elif __.Value < y.Value then -1
                     else 0
-                | _ -> invalidArg "Tag" "cannot compare values of different types"
+                | _ -> invalidArg "UpperLatin2" "cannot compare values of different types"
+
+type UpperLatin3 internal (value) =
+    member __.Value = value
+    override __.ToString() = value
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? UpperLatin2 as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash value
+    static member TryParse value = 
+        verifyUpperLatinString value 3 UpperLatin3
+    with
+        interface IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? UpperLatin3 as y -> 
+                    if __.Value > y.Value then 1
+                    elif __.Value < y.Value then -1
+                    else 0
+                | _ -> invalidArg "UpperLatin3" "cannot compare values of different types"
 
 type Digits internal (value) =
     member __.Value = value
@@ -215,6 +201,60 @@ type Digits4 internal (value) =
                     elif __.Value < y.Value then -1
                     else 0
                 | _ -> invalidArg "Digits4" "cannot compare values of different types"
+
+type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option, earliestTimeStamp : UtcDateTime, latestTimeStamp : UtcDateTime) =
+    member __.Primary = primary
+    member __.Secondary = secondary
+    member __.EarliestTimeStamp = earliestTimeStamp
+    member __.LatestTimeStamp = latestTimeStamp
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? Source as y -> (__.Primary = y.Primary && __.Secondary = y.Secondary)
+        | _ -> false
+    override __.GetHashCode() = hash __
+    override __.ToString() = 
+        match __.Secondary with
+        | Some x ->
+            sprintf "%s : %s - %A" __.Primary.Value x.Value __.EarliestTimeStamp
+        | None ->
+            sprintf "%s - %A" __.Primary.Value  __.EarliestTimeStamp
+    static member Parse (primary : TrimNonEmptyString , secondary : string option, earliestTimeStamp : DateTime , latestTimeStamp : DateTime) =
+        Source (primary, (TrimNonEmptyString.TryParse secondary), UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp))
+    static member TryParse (primary : string , secondary : string option, earliestTimeStamp : DateTime , latestTimeStamp : DateTime) =
+        match (TrimNonEmptyString.TryParse primary), secondary with
+        | (Some x, Some y) -> 
+            Source (x, (TrimNonEmptyString.TryParse y), UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp)) |> Some
+        | (Some x, None) -> Source (x, None, UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp)) |> Some
+        | _ -> 
+            None
+    with
+        interface IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? Source as y -> 
+                    if __.Primary > y.Primary then 1
+                    elif __.Primary < y.Primary then -1
+                    else 0
+                | _ -> invalidArg "Source" "cannot compare values of different types"
+
+type Tag internal (tag: string) =
+    member __.Value = tag
+    override __.ToString() = tag
+    override __.Equals(yobj) = 
+        match yobj with
+        |  :? Tag as y -> (__.Value = y.Value)
+        | _ -> false
+    override __.GetHashCode() = hash tag
+    static member TryParse (tag : string) = verifyTrimNonEmptyString tag Tag
+    with
+        interface IComparable with
+            member __.CompareTo yobj =
+                match yobj with
+                | :? Tag as y -> 
+                    if __.Value > y.Value then 1
+                    elif __.Value < y.Value then -1
+                    else 0
+                | _ -> invalidArg "Tag" "cannot compare values of different types"
 
 type FullName internal (first, middle, family, nameOrder, tags, sources) =
     member __.First : TrimNonEmptyString option = first 
@@ -568,46 +608,6 @@ type EmailAddress internal (email : string, tags : Tag Set, sources : NonEmptySe
                 elif __.Value < y.Value then -1
                 else 0
             | _ -> invalidArg "EmailAddress" "cannot compare values of different types"
-
-type UpperLatin2 internal (value) =
-    member __.Value = value
-    override __.ToString() = value
-    override __.Equals(yobj) = 
-        match yobj with
-        |  :? UpperLatin2 as y -> (__.Value = y.Value)
-        | _ -> false
-    override __.GetHashCode() = hash value
-    static member TryParse value = 
-        verifyUpperLatinString value 2 UpperLatin2
-    with
-        interface IComparable with
-            member __.CompareTo yobj =
-                match yobj with
-                | :? UpperLatin2 as y -> 
-                    if __.Value > y.Value then 1
-                    elif __.Value < y.Value then -1
-                    else 0
-                | _ -> invalidArg "UpperLatin2" "cannot compare values of different types"
-
-type UpperLatin3 internal (value) =
-    member __.Value = value
-    override __.ToString() = value
-    override __.Equals(yobj) = 
-        match yobj with
-        |  :? UpperLatin2 as y -> (__.Value = y.Value)
-        | _ -> false
-    override __.GetHashCode() = hash value
-    static member TryParse value = 
-        verifyUpperLatinString value 3 UpperLatin3
-    with
-        interface IComparable with
-            member __.CompareTo yobj =
-                match yobj with
-                | :? UpperLatin3 as y -> 
-                    if __.Value > y.Value then 1
-                    elif __.Value < y.Value then -1
-                    else 0
-                | _ -> invalidArg "UpperLatin3" "cannot compare values of different types"
 
 type Country =
     {

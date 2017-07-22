@@ -3,7 +3,6 @@
 open System 
 open System.Collections.Generic
 
-
 [<Class>]
 type TrimNonEmptyString =
     interface IComparable
@@ -14,7 +13,6 @@ type TrimNonEmptyString =
     static member TryParse : value:string option -> TrimNonEmptyString option
     static member TryParse : value:string -> TrimNonEmptyString option
     static member Parse : value:string list -> TrimNonEmptyString list
-
 
 [<Class>]
 type UtcDateTime =
@@ -36,27 +34,22 @@ type NonEmptySet<'T when 'T : comparison> =
     static member TryParse : values : seq<'T> -> NonEmptySet<'T> option
 
 [<Class>]
-type Source =
-    interface IComparable
-    new : primary : TrimNonEmptyString * secondary : TrimNonEmptyString option * earliestTimeStamp : UtcDateTime * latestTimeStamp : UtcDateTime -> Source
-    override Equals : yobj:obj -> bool
-    override GetHashCode : unit -> int
-    override ToString : unit -> string
-    member Primary : TrimNonEmptyString
-    member Secondary : TrimNonEmptyString option
-    member EarliestTimeStamp : UtcDateTime
-    member LatestTimeStamp : UtcDateTime
-    static member TryParse : primary : string * secondary : string option * earliestTimeStamp : DateTime * latestTimeStamp : DateTime -> Source option
-    static member Parse : primary : TrimNonEmptyString * secondary : string option * earliestTimeStamp : DateTime * latestTimeStamp : DateTime -> Source
-
-[<Class>]
-type Tag =  //to do: equals performance testing -- http://stackoverflow.com/questions/28142655/iequatable-in-f-operator-performance-and-structural-equality
+type UpperLatin2 =
     interface IComparable
     override Equals : yobj:obj -> bool
     override GetHashCode : unit -> int
     override ToString : unit -> string
     member Value : string
-    static member TryParse : tag:string -> Tag option
+    static member TryParse : value:string -> UpperLatin2 option
+
+[<Class>]
+type UpperLatin3 =
+    interface IComparable
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Value : string
+    static member TryParse : value:string -> UpperLatin3 option
 
 [<Class>]
 type Digits =
@@ -93,6 +86,29 @@ type Digits4 =
     override ToString : unit -> string
     member Value : string
     static member TryParse : value:string -> Digits4 option
+
+[<Class>]
+type Source =
+    interface IComparable
+    new : primary : TrimNonEmptyString * secondary : TrimNonEmptyString option * earliestTimeStamp : UtcDateTime * latestTimeStamp : UtcDateTime -> Source
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Primary : TrimNonEmptyString
+    member Secondary : TrimNonEmptyString option
+    member EarliestTimeStamp : UtcDateTime
+    member LatestTimeStamp : UtcDateTime
+    static member TryParse : primary : string * secondary : string option * earliestTimeStamp : DateTime * latestTimeStamp : DateTime -> Source option
+    static member Parse : primary : TrimNonEmptyString * secondary : string option * earliestTimeStamp : DateTime * latestTimeStamp : DateTime -> Source
+
+[<Class>]
+type Tag =  //to do: equals performance testing -- http://stackoverflow.com/questions/28142655/iequatable-in-f-operator-performance-and-structural-equality
+    interface IComparable
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Value : string
+    static member TryParse : tag:string -> Tag option
 
 [<Class>]  
 type FullName =
@@ -239,24 +255,6 @@ type Phone =
       member Value : Digits
       interface IComparable
       static member TryParse : phone:string -> Phone option
-
-[<Class>]
-type UpperLatin2 =
-    interface IComparable
-    override Equals : yobj:obj -> bool
-    override GetHashCode : unit -> int
-    override ToString : unit -> string
-    member Value : string
-    static member TryParse : value:string -> UpperLatin2 option
-
-[<Class>]
-type UpperLatin3 =
-    interface IComparable
-    override Equals : yobj:obj -> bool
-    override GetHashCode : unit -> int
-    override ToString : unit -> string
-    member Value : string
-    static member TryParse : value:string -> UpperLatin3 option
 
 type Country =
     {
