@@ -52,15 +52,12 @@ module ContactImportExcel =
 
         use stream =
             File.OpenRead(path)
-             
-        use reader =          
+        use reader = 
             if path.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
-            then Excel.ExcelReaderFactory.CreateOpenXmlReader(stream)
-            else Excel.ExcelReaderFactory.CreateBinaryReader(stream)
+            then ExcelDataReader.ExcelReaderFactory.CreateOpenXmlReader(stream)
+            else ExcelDataReader.ExcelReaderFactory.CreateBinaryReader(stream)
 
-        // if not reader.IsValid then fail action (Exception reader.ExceptionMessage)
-
-        let dataset = reader.AsDataSet()
+        let dataset =  ExcelDataReader.ExcelDataReaderExtensions.AsDataSet(reader)
 
         (Seq.empty, excelSheets)
         ||> List.fold (fun s t ->

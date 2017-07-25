@@ -16,8 +16,9 @@ NUGET
       BenchmarkDotNet.Core (>= 0.10.8)
       Microsoft.CodeAnalysis.CSharp (>= 2.0)
       System.Threading.Tasks (>= 4.3)
-    ExcelDataReader (2.1.2.3)
-      SharpZipLib (>= 0.86)
+    ExcelDataReader (3.1)
+    ExcelDataReader.DataSet (3.1)
+      ExcelDataReader (>= 3.1)
     Expecto (5.0)
       Argu (>= 3.7)
       FSharp.Core (>= 4.1.12)
@@ -30,9 +31,9 @@ NUGET
       Expecto (>= 5.0)
       FsCheck (>= 2.8)
       FSharp.Core (>= 4.1.12)
-    Expecto.VisualStudio.TestAdapter (5.0.0) - version_in_path: true
+    Expecto.VisualStudio.TestAdapter (5.0.0.1) - version_in_path: true
       Expecto (>= 5.0 < 6.0)
-    FAKE (4.62.1)
+    FAKE (4.62.5)
     FsCheck (2.9)
       FSharp.Core (>= 4.1)
     FSharp.Compiler.Service (2.0.0.6)
@@ -55,7 +56,7 @@ NUGET
     FsRegEx (0.7)
       FSharp.Core
     Microsoft.CodeAnalysis.Analyzers (1.1)
-    Microsoft.CodeAnalysis.Common (2.2)
+    Microsoft.CodeAnalysis.Common (2.3.1)
       Microsoft.CodeAnalysis.Analyzers (>= 1.1)
       System.AppContext (>= 4.3)
       System.Collections (>= 4.3)
@@ -95,8 +96,8 @@ NUGET
       System.Xml.XDocument (>= 4.3)
       System.Xml.XmlDocument (>= 4.3)
       System.Xml.XPath.XDocument (>= 4.3)
-    Microsoft.CodeAnalysis.CSharp (2.2)
-      Microsoft.CodeAnalysis.Common (2.2)
+    Microsoft.CodeAnalysis.CSharp (2.3.1)
+      Microsoft.CodeAnalysis.Common (2.3.1)
     Microsoft.DotNet.InternalAbstractions (1.0)
     Microsoft.DotNet.PlatformAbstractions (1.1.2)
     Microsoft.Win32.Registry (4.3)
@@ -110,7 +111,6 @@ NUGET
       System.Collections.Immutable (>= 1.2)
       System.Threading (>= 4.0.11)
     Octokit (0.24)
-    SharpZipLib (0.86)
     SourceLink.Fake (1.1)
     System.AppContext (4.3)
     System.Collections (4.3)
@@ -178,5 +178,5 @@ NUGET
       System.Runtime.Serialization.Primitives (>= 4.3)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (b5933798c1944051bf358a460fcdc8ffbd678dfc)
+    modules/Octokit/Octokit.fsx (9b496581e49c116cff9911570df871eb0258ac83)
       Octokit (>= 0.20)

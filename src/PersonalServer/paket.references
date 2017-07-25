@@ -3,4 +3,5 @@ Fsharpx.Extras
 FsRegEx
 FSharp.Data
 ExcelDataReader
+ExcelDataReader.DataSet
 TweetinviAPI
