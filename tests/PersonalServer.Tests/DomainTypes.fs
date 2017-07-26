@@ -180,7 +180,7 @@ module DomainTypes =
                             x.Trim() = t.Value.Value)
 
             testPropertyWithConfig config10k "Parse on string list" <|
-                    fun  (xs : list<string>) ->
+                fun  (xs : list<string>) ->
 
                     let listNonEmptyStringSorted = 
                         TrimNonEmptyString.Parse xs
@@ -197,7 +197,7 @@ module DomainTypes =
                     filteredListSorted = listNonEmptyStringSorted
 
             testPropertyWithConfig config10k "list equality" <|
-                    fun  (xs : list<string>) ->
+                fun  (xs : list<string>) ->
 
                     let listTrimNonEmptyStringSorted = 
                         TrimNonEmptyString.Parse xs
@@ -208,6 +208,26 @@ module DomainTypes =
                         |> TrimNonEmptyString.Parse 
 
                     list2 = listTrimNonEmptyStringSorted
+        ]
+
+    [<Tests>]
+    let source =
+        testList "DomainTypes.Source" [
+            testCase "elimination 1" <| fun () ->
+                let sources = 
+                    Source.elimination Sources.source1 Sources.source2 
+                    |> Source.elimination Sources.source3
+                Expect.equal sources.Value.Count 1 "Expected one source in set"
+                Expect.equal sources.Value.MinimumElement.EarliestTimeStamp Sources.time1 "Expected earliest time 1"
+                Expect.equal sources.Value.MinimumElement.LatestTimeStamp Sources.time3 "Expected earliest time 3"
+
+            testCase "elimination with secondary" <| fun () ->
+                let sources = 
+                    Source.elimination Sources.source1b Sources.source2b 
+                    |> Source.elimination Sources.source3b
+                Expect.equal sources.Value.Count 1 "Expected one source in set"
+                Expect.equal sources.Value.MinimumElement.EarliestTimeStamp Sources.time1 "Expected earliest time 1"
+                Expect.equal sources.Value.MinimumElement.LatestTimeStamp Sources.time3 "Expected earliest time 3"
         ]
 
     [<Tests>]

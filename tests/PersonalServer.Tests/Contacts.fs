@@ -5,8 +5,21 @@ open System
 
 module Sources =
     let primarySource = (TrimNonEmptyString.TryParse "source").Value
+    let secondarySource = (TrimNonEmptyString.TryParse "second").Value
     let utcDateTime = UtcDateTime DateTime.UtcNow
-    let sourceSet = (Source(primarySource, None, utcDateTime, utcDateTime) |> Set.singleton |> NonEmptySet.TryParse).Value
+    let sourceSet = Source(primarySource, None, utcDateTime, utcDateTime) |> NonEmptySet.Singleton
+
+    let time1 =  UtcDateTime <| DateTime(2017, 2, 1)
+    let time2 =  UtcDateTime <| DateTime(2017, 3, 2)
+    let time3 =  UtcDateTime <| DateTime(2017, 4, 3)
+
+    let source1 = NonEmptySet.Singleton <| Source(primarySource, None, time1, time1)
+    let source2 = NonEmptySet.Singleton <| Source(primarySource, None, time2, time2)
+    let source3 = NonEmptySet.Singleton <| Source(primarySource, None, time3, time3)
+
+    let source1b = NonEmptySet.Singleton <| Source(primarySource, Some secondarySource, time1, time1)
+    let source2b = NonEmptySet.Singleton <| Source(primarySource, Some secondarySource, time2, time2)
+    let source3b = NonEmptySet.Singleton <| Source(primarySource, Some secondarySource, time3, time3)
 
 module Tags =
     let tagSet1 = [Tag.TryParse ("foo1", Sources.sourceSet);Tag.TryParse ("foo2", Sources.sourceSet);Tag.TryParse ("foo3", Sources.sourceSet);Tag.TryParse ("foo4", Sources.sourceSet)] |> List.choose id |> Set.ofList
