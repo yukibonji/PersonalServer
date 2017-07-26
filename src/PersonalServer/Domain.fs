@@ -63,6 +63,8 @@ type NonEmptySet<'T when 'T : comparison>(set : Set<'T>) =
         else Some (NonEmptySet set)
     static member TryParse (values : seq<'T>) =
         NonEmptySet.TryParse <| Set.ofSeq values
+    static member Singleton (value : 'T) = 
+        NonEmptySet <| Set.singleton value
     with
         interface IComparable with
             member __.CompareTo yobj =

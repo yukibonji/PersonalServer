@@ -32,6 +32,7 @@ type NonEmptySet<'T when 'T : comparison> =
     override ToString : unit -> string
     static member TryParse : set : Set<'T> -> NonEmptySet<'T> option
     static member TryParse : values : seq<'T> -> NonEmptySet<'T> option
+    static member Singleton : value : 'T -> NonEmptySet<'T>
 
 [<Class>]
 type UpperLatin2 =
@@ -368,6 +369,10 @@ module Countries =
     val byName : IDictionary<string, Country>
     val stateByAbbreviation : IDictionary<string, State>
     val stateByName : IDictionary<string, State>
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Source =
+    val elimination : sources1 : NonEmptySet<Source> -> sources2 : NonEmptySet<Source> ->  NonEmptySet<Source>
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module SimpleName =
