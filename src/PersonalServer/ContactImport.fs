@@ -4,6 +4,13 @@ open System
 
 module ContactImport =
 
+    type ImportSourceMeta =
+        {
+        PrimaryName : TrimNonEmptyString
+        TimeStamp : DateTime
+        Headers : string []
+        }
+
     //to do: eventually resource file
     let phoneNumberSynonyms = [|"phone"; "fax"; "pager"; "mobile"; "cell"; "telephone";|]
 
@@ -23,38 +30,25 @@ module ContactImport =
         | None ->
             None
 
-    let sourceHeaderTags source (headers : string []) (contentIndices : int seq) =
+    let headerSources primarySource sourceTimeStamp (headers : string []) (contentIndices : int seq) =
+        contentIndices
+        |> Seq.map (fun index -> 
+            Source.Parse (primarySource, Some headers.[index], sourceTimeStamp, sourceTimeStamp) )
+        |> Set.ofSeq
+        |> NonEmptySet.TryParse
+
+    let sourceTags (source : ImportSourceMeta) (headers : string []) (columns : string []) (contentIndices : int seq) =
         contentIndices
         |> Seq.choose (fun index -> 
-            match Tag.TryParse headers.[index] with
-            | Some _ ->
-                Tag.TryParse <| sprintf "%s::%s" source headers.[index]
+            match TrimNonEmptyString.TryParse columns.[index] with
+            | Some x ->
+                let sources = 
+                    Set.singleton <| Source.Parse(source.PrimaryName, Some headers.[index], source.TimeStamp, source.TimeStamp)
+                    |> NonEmptySet.TryParse
+                Tag.TryParse ((sprintf "%s::%s::%s" source.PrimaryName.Value headers.[index] columns.[index]), sources.Value)
             | None ->
                 None )
         |> Set.ofSeq
-
-    let sourceTags source (headers : string []) (columns : string []) (contentIndices : int seq) =
-        contentIndices
-        |> Seq.choose (fun index -> 
-            match Tag.TryParse columns.[index] with
-            | Some _ ->
-                Tag.TryParse <| sprintf "%s::%s::%s" source headers.[index] columns.[index]
-            | None ->
-                None )
-        |> Set.ofSeq
-
-    //email, phone, uri, person name
-    let simpleEntityBuilder (tryParse : string * Set<Tag> -> 'a option) displ source (headers : string []) =
-        fun (columns : string []) ->
-            if String.IsNullOrWhiteSpace columns.[displ] then
-                (None, Set.empty)
-            else
-                let tags = sourceHeaderTags source headers [displ]
-                match tryParse (columns.[displ], tags) with
-                | Some entity ->
-                    (Some entity, Set.empty)
-                | None ->
-                    (None, (sourceTags source headers columns [displ]) )
 
     type PhysicalAddressBuilderParms =
         {
@@ -65,7 +59,7 @@ module ContactImport =
         CountryIndex : int option
         }
 
-    let physicalAddressBuilder (physicalAddressBuilderParms : PhysicalAddressBuilderParms) source (headers : string []) =
+    let physicalAddressBuilder (physicalAddressBuilderParms : PhysicalAddressBuilderParms) (sourceMeta : ImportSourceMeta) =
         fun (columns : string []) ->
             let contentIndices =
                 physicalAddressBuilderParms.AddressIndex @
@@ -74,8 +68,6 @@ module ContactImport =
                     physicalAddressBuilderParms.PostalCodeIndex;
                     physicalAddressBuilderParms.CountryIndex]
                     |> List.choose id)
-                
-            let tags = sourceHeaderTags source headers contentIndices
 
             let streetAddress: string list =
                 physicalAddressBuilderParms.AddressIndex
@@ -86,11 +78,15 @@ module ContactImport =
             let postalCode = valueFromIndexOpt columns physicalAddressBuilderParms.PostalCodeIndex
             let country = valueFromIndexOpt columns physicalAddressBuilderParms.CountryIndex
 
-            match PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, tags) with
-            | Some physicalAddress ->
-                (Some physicalAddress, Set.empty)
+            match  headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers contentIndices with
+            | Some sources ->
+                match PhysicalAddress.TryParse (streetAddress, city, state, postalCode, country, Set.empty, sources) with
+                | Some physicalAddress ->
+                    (Some physicalAddress, Set.empty)
+                | None ->
+                    (None, (sourceTags sourceMeta sourceMeta.Headers columns contentIndices) )
             | None ->
-                (None, (sourceTags source headers columns contentIndices) )
+                (None, (sourceTags sourceMeta sourceMeta.Headers columns contentIndices) )
 
     type FullNameBuilderParms =
         { 
@@ -100,15 +96,13 @@ module ContactImport =
         NameOrder : NameOrder
         }
 
-    let fullNameBuilder (fullNameBuilderParms : FullNameBuilderParms) source (headers : string []) =
+    let fullNameBuilder (fullNameBuilderParms : FullNameBuilderParms) (sourceMeta : ImportSourceMeta) =
         fun (columns : string []) ->
             let contentIndices =
                 fullNameBuilderParms.MiddleIndex @
                    ([fullNameBuilderParms.FirstIndex;
                     fullNameBuilderParms.FamilyIndex]
                     |> List.choose id)
-                
-            let tags = sourceHeaderTags source headers contentIndices
 
             let middle: string list =
                 fullNameBuilderParms.MiddleIndex
@@ -118,11 +112,15 @@ module ContactImport =
             let family = valueFromIndexOpt columns fullNameBuilderParms.FamilyIndex
             let nameOrder = fullNameBuilderParms.NameOrder
 
-            match FullName.TryParse (first, middle, family, nameOrder, tags) with
-            | Some physicalAddress ->
-                (Some physicalAddress, Set.empty)
+            match headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers contentIndices with
+            | Some sources ->
+                match FullName.TryParse (first, middle, family, nameOrder, Set.empty, sources) with
+                | Some fullName ->
+                    (Some fullName, Set.empty)
+                | None ->
+                    (None, (sourceTags sourceMeta sourceMeta.Headers columns contentIndices) )
             | None ->
-                (None, (sourceTags source headers columns contentIndices) )
+                (None, (sourceTags sourceMeta sourceMeta.Headers columns contentIndices) )
 
     let headerOffsets (headers : string []) (targets : string []) =
         headers
@@ -140,14 +138,6 @@ module ContactImport =
         match rawResult with
         | (Some x), tags -> (Some <| transform x), tags
         | None, tags -> None, tags
-
-    let entityBuilders source headers coveredHeaderColumns tryParse entityCstr =
-        let builders =
-            coveredHeaderColumns
-            |> Array.fold (fun s i -> 
-                (simpleEntityBuilder tryParse i source headers >> rawToFinalResult entityCstr)::s ) []
-
-        builders, coveredHeaderColumns
 
         //to do: complete first/last name coverage (i.e. potential multiples)
         //to do: eventually resource file
@@ -168,8 +158,8 @@ module ContactImport =
         NameOrder = NameOrder.Western
         }
 
-    let fullNameBuilders fullNameBuilderParms source headers =
-        [fullNameBuilder fullNameBuilderParms source headers >> rawToFinalResult ContactName.FullName]
+    let fullNameBuilders fullNameBuilderParms sourceMeta =
+        [fullNameBuilder fullNameBuilderParms sourceMeta >> rawToFinalResult ContactName.FullName]
 
     //to do: eventually resource file
     let physicalAddressAddressSynonyms = [|"address"|]
@@ -229,11 +219,35 @@ module ContactImport =
         CountryIndex = countryIndex
         }
 
-    let physicalAddressBuilders physicalAddressBuilderParms source headers =
-        [physicalAddressBuilder physicalAddressBuilderParms source headers >> rawToFinalResult Address.PhysicalAddress]
+    let physicalAddressBuilders physicalAddressBuilderParms sourceMeta =
+        [physicalAddressBuilder physicalAddressBuilderParms sourceMeta >> rawToFinalResult Address.PhysicalAddress]
 
-    let getAddressBuilders source headers =
-        let physicalAddressBuilderParms = physicalAddressBuilderParms headers
+    //email, phone, uri, contact name
+    let simpleEntityBuilder (sourceMeta : ImportSourceMeta) (tryParse : string * Set<Tag> * NonEmptySet<Source> -> 'a option) displ =
+        fun (columns : string []) ->
+            if String.IsNullOrWhiteSpace columns.[displ] then
+                (None, Set.empty)
+            else
+                match headerSources sourceMeta.PrimaryName sourceMeta.TimeStamp sourceMeta.Headers [displ] with
+                | Some sources ->
+                    match tryParse (columns.[displ], Set.empty, sources) with
+                    | Some entity ->
+                        (Some entity, Set.empty)
+                    | None ->
+                        (None, (sourceTags sourceMeta sourceMeta.Headers columns [displ]) )
+                | None ->
+                    (None, (sourceTags sourceMeta sourceMeta.Headers columns [displ]) )
+                     
+    let entityBuilders sourceMeta tryParse coveredHeaderColumns entityCstr =
+        let builders =
+            coveredHeaderColumns
+            |> Array.fold (fun s i -> 
+                (simpleEntityBuilder sourceMeta tryParse i >> rawToFinalResult entityCstr)::s ) []
+
+        builders, coveredHeaderColumns
+
+    let getAddressBuilders sourceMeta =
+        let physicalAddressBuilderParms = physicalAddressBuilderParms sourceMeta.Headers
 
         let usedPhysicalAddressHeaderColumns = 
             [physicalAddressBuilderParms.CityIndex;
@@ -245,16 +259,16 @@ module ContactImport =
             |> List.toArray
 
         let builders, usedHeaderColumns = 
-            [|entityBuilders source headers (headerOffsets headers phoneNumberSynonyms) PhoneNumber.TryParse Address.PhoneNumber;
-            entityBuilders source headers (headerOffsets headers emailSynonyms) EmailAddress.TryParse Address.EmailAddress; 
-            entityBuilders source headers (headerOffsets headers uriSynonyms) UriTagged.TryParse Address.Url; 
-            (physicalAddressBuilders physicalAddressBuilderParms source headers), usedPhysicalAddressHeaderColumns;|]
+            [|entityBuilders sourceMeta PhoneNumber.TryParse (headerOffsets sourceMeta.Headers phoneNumberSynonyms) Address.PhoneNumber;
+            entityBuilders sourceMeta EmailAddress.TryParse (headerOffsets sourceMeta.Headers emailSynonyms) Address.EmailAddress; 
+            entityBuilders sourceMeta UriTagged.TryParse (headerOffsets sourceMeta.Headers uriSynonyms) Address.Url; 
+            (physicalAddressBuilders physicalAddressBuilderParms sourceMeta), usedPhysicalAddressHeaderColumns;|]
             |> Array.unzip
 
         (builders |> List.concat), (usedHeaderColumns |> Array.concat)
         
-    let getNameBuilders source headers =
-        let fullNameBuilderParms = fullNameBuilderParms headers
+    let getNameBuilders sourceMeta =
+        let fullNameBuilderParms = fullNameBuilderParms sourceMeta.Headers
 
         let usedNameHeaderColumns = 
             [fullNameBuilderParms.FirstIndex;
@@ -264,35 +278,53 @@ module ContactImport =
             |> List.toArray
 
         let namesOtherThanFullName = 
-            (headerOffsets headers simpleNameSynonyms)
+            (headerOffsets sourceMeta.Headers simpleNameSynonyms)
             |> List.ofArray
             |> headersNotExluded (usedNameHeaderColumns |> List.ofArray)
             |> Array.ofList
 
         let builders, usedHeaderColumns = 
-            [|entityBuilders source headers namesOtherThanFullName SimpleName.TryParse ContactName.SimpleName; 
-            (fullNameBuilders fullNameBuilderParms source headers), usedNameHeaderColumns|]
+            [|entityBuilders sourceMeta SimpleName.TryParse namesOtherThanFullName ContactName.SimpleName; 
+            (fullNameBuilders fullNameBuilderParms sourceMeta), usedNameHeaderColumns|]
             |> Array.unzip
 
         (builders |> List.concat), (usedHeaderColumns |> Array.concat)
+
+    let commonBuilders sourceMeta =
+        let addressBuilders, usedAddressColumns = getAddressBuilders sourceMeta
+        let nameBuilders, usedNameColumns = getNameBuilders sourceMeta
+
+        let usedColumns =
+            Array.concat [|usedAddressColumns; usedNameColumns|]
+            |> Array.distinct
+            
+        let unUsedColumns = 
+            sourceMeta.Headers
+            |> Array.mapi (fun i _ ->
+                if Array.exists (fun t -> i = t) usedColumns then
+                    None
+                else Some i)
+            |> Array.choose id
+
+        nameBuilders, addressBuilders, unUsedColumns
 
     let contactImport sources sourceBuilder nameBuilders addressBuilders =
         sources
         |> Seq.choose (fun source ->
             let columns = sourceBuilder source
-            let names =
+            let namesAndTags =
                 ([], nameBuilders)
                 ||> Seq.fold (fun s f -> (f columns)::s )
-            let addresses =
+            let addressesAndTags =
                 ([], addressBuilders)
                 ||> Seq.fold (fun s f -> (f columns)::s )
 
-            let nameOfPersons, nameTags =
-                names
+            let contactNames, nameTags =
+                namesAndTags
                 |> List.unzip
 
-            let addressesOpts, addressTags =
-                addresses
+            let addressOpts, addressTags =
+                addressesAndTags
                 |> List.unzip
 
             let tagSet = 
@@ -301,8 +333,8 @@ module ContactImport =
                 |> List.collect Set.toList 
                 |> Set.ofList
    
-            let names = nameOfPersons |> List.choose id
-            let addresses = addressesOpts |> List.choose id
+            let names = contactNames |> List.choose id
+            let addresses = addressOpts |> List.choose id
             match names, addresses, tagSet with
             | [], [], s when s.IsEmpty -> None
             | _ ->
@@ -312,21 +344,3 @@ module ContactImport =
                  Tags = tagSet
                  } |> Some
             )
-
-    let commonBuilders source headers =
-        let addressBuilders, usedAddressColumns = getAddressBuilders source headers
-        let nameBuilders, usedNameColumns = getNameBuilders source headers
-
-        let usedColumns =
-            Array.concat [|usedAddressColumns; usedNameColumns|]
-            |> Array.distinct
-            
-        let unUsedColumns = 
-            headers
-            |> Array.mapi (fun i _ ->
-                if Array.exists (fun t -> i = t) usedColumns then
-                    None
-                else Some i)
-            |> Array.choose id
-
-        nameBuilders, addressBuilders, unUsedColumns

@@ -2,8 +2,10 @@
 
 open DomainGeneratorsCode
 open Jackfoxy.PersonalServer
+open ContactImport
 open Expecto
 open FsCheck
+open System
 
 module ContactImport =
     let config10k = { FsCheckConfig.defaultConfig with maxTest = 10000}
@@ -12,19 +14,25 @@ module ContactImport =
     let simpleEntityBuilder =
 
         let testSimpleEntity input tryParse =
-            let t1 = tryParse (input, Set.empty<Tag>)
+            let t1 = tryParse (input, Set.empty<Tag>, Sources.sourceSet)
 
-            let headers = [|"doodle"; "web"; "doodle2";|]
             let columns = [|"a"; input; ""|]
 
-            let result = Jackfoxy.PersonalServer.ContactImport.simpleEntityBuilder tryParse 1 "test" headers columns
+            let sourceMeta =
+                {
+                PrimaryName = TrimNonEmptyString.Parse ["test"] |> List.head
+                TimeStamp = DateTime.UtcNow
+                Headers = [|"doodle"; "web"; "doodle2";|]
+                }
+
+            let result = Jackfoxy.PersonalServer.ContactImport.simpleEntityBuilder sourceMeta tryParse 1 columns
 
             match t1 with 
             | Some _ -> 
-                let tags = Set.add (Tag.TryParse "test::web").Value Set.empty
-                (fst result) = tryParse (input, tags)
+                let sources = (Set.singleton (Source.TryParse ("test", Some "web", DateTime.UtcNow, DateTime.UtcNow)).Value |> NonEmptySet.TryParse).Value
+                (fst result) = tryParse (input, Set.empty, sources)
             | None ->                        
-                (snd result) = Set.add (Tag.TryParse <| sprintf "test::web::%s" input).Value Set.empty
+                (snd result) = Set.singleton (Tag.TryParse ((sprintf "test::web::%s" input), Sources.sourceSet)).Value
             
         testList "ContactImport.SimpleEntityBuilder" [
             testPropertyWithConfig config10k "PhoneNumber equality" <|
@@ -60,7 +68,7 @@ module ContactImport =
 //                fun  () ->
 //                    Prop.forAll (Arb.fromGen <| nonEmptyNonAllWhitespaceString())
 //                        (fun  (simpleName) ->
-//                            testSimpleEntity simpleName PersonName.TryParse )
+//                            testSimpleEntity simpleName ContactName.TryParse )
         ]
 
 //        let fullNameBuilders =

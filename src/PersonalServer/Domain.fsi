@@ -4,15 +4,6 @@ open System
 open System.Collections.Generic
 
 [<Class>]
-type Tag =  //to do: equals performance testing -- http://stackoverflow.com/questions/28142655/iequatable-in-f-operator-performance-and-structural-equality
-    interface IComparable
-    override Equals : yobj:obj -> bool
-    override GetHashCode : unit -> int
-    override ToString : unit -> string
-    member Value : string
-    static member TryParse : tag:string -> Tag option
-
-[<Class>]
 type TrimNonEmptyString =
     interface IComparable
     override Equals : yobj:obj -> bool
@@ -22,6 +13,44 @@ type TrimNonEmptyString =
     static member TryParse : value:string option -> TrimNonEmptyString option
     static member TryParse : value:string -> TrimNonEmptyString option
     static member Parse : value:string list -> TrimNonEmptyString list
+
+[<Class>]
+type UtcDateTime =
+    interface IComparable
+    new : dateTime : DateTime -> UtcDateTime
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Value : DateTime
+
+[<Class>]
+type NonEmptySet<'T when 'T : comparison> =
+    interface IComparable
+    member Value : Set<'T>
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    static member TryParse : set : Set<'T> -> NonEmptySet<'T> option
+    static member TryParse : values : seq<'T> -> NonEmptySet<'T> option
+    static member Singleton : value : 'T -> NonEmptySet<'T>
+
+[<Class>]
+type UpperLatin2 =
+    interface IComparable
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Value : string
+    static member TryParse : value:string -> UpperLatin2 option
+
+[<Class>]
+type UpperLatin3 =
+    interface IComparable
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Value : string
+    static member TryParse : value:string -> UpperLatin3 option
 
 [<Class>]
 type Digits =
@@ -59,6 +88,30 @@ type Digits4 =
     member Value : string
     static member TryParse : value:string -> Digits4 option
 
+[<Class>]
+type Source =
+    interface IComparable
+    new : primary : TrimNonEmptyString * secondary : TrimNonEmptyString option * earliestTimeStamp : UtcDateTime * latestTimeStamp : UtcDateTime -> Source
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Primary : TrimNonEmptyString
+    member Secondary : TrimNonEmptyString option
+    member EarliestTimeStamp : UtcDateTime
+    member LatestTimeStamp : UtcDateTime
+    static member TryParse : primary : string * secondary : string option * earliestTimeStamp : DateTime * latestTimeStamp : DateTime -> Source option
+    static member Parse : primary : TrimNonEmptyString * secondary : string option * earliestTimeStamp : DateTime * latestTimeStamp : DateTime -> Source
+
+[<Class>]
+type Tag =  //to do: equals performance testing -- http://stackoverflow.com/questions/28142655/iequatable-in-f-operator-performance-and-structural-equality
+    interface IComparable
+    override Equals : yobj:obj -> bool
+    override GetHashCode : unit -> int
+    override ToString : unit -> string
+    member Value : TrimNonEmptyString
+    member Sources : NonEmptySet<Source>
+    static member TryParse : tag:string * sources:NonEmptySet<Source> -> Tag option
+
 [<Class>]  
 type FullName =
     interface IComparable
@@ -70,8 +123,9 @@ type FullName =
     member Family: TrimNonEmptyString option
     member NameOrder: NameOrder
     member Tags: Set<Tag>
+    member Sources : NonEmptySet<Source>
     member SimpleName : SimpleName
-    static member TryParse : first: string option * middle: string list * family: string option * nameOrder: NameOrder * tags:Set<Tag> -> FullName option
+    static member TryParse : first: string option * middle: string list * family: string option * nameOrder: NameOrder * tags:Set<Tag> * sources:NonEmptySet<Source> -> FullName option
 and NameOrder =
     /// Salutation, First, Middle, Family, Suffix
     | Western
@@ -82,17 +136,19 @@ and [<Class>] SimpleName =
     interface IComparable
     override ToString : unit -> string
     member Tags : Set<Tag>
+    member Sources : NonEmptySet<Source>
     member Value : TrimNonEmptyString
-    static member TryParse : name:string * tags:Set<Tag> -> SimpleName option
+    static member TryParse : name:string * tags:Set<Tag> * sources:NonEmptySet<Source> -> SimpleName option
 and NameAndAffixes =
-    new : salutation: TrimNonEmptyString list * simpleName : SimpleName * suffix: TrimNonEmptyString list -> NameAndAffixes
+    new : salutation: TrimNonEmptyString list * simpleName : SimpleName * suffix: TrimNonEmptyString list * sources:NonEmptySet<Source> -> NameAndAffixes
     interface IComparable
     override ToString : unit -> string
     member Salutations: TrimNonEmptyString list
     member SimpleName : SimpleName
     member Suffixes: TrimNonEmptyString list
     member Value : TrimNonEmptyString
-    static member TryParse : salutations: string list * simpleName : string * suffixes: string list * tags:Set<Tag> -> NameAndAffixes option
+    member Sources : NonEmptySet<Source>
+    static member TryParse : salutations: string list * simpleName : string * suffixes: string list * tags:Set<Tag> * sources:NonEmptySet<Source> -> NameAndAffixes option
 
 type ContactName =
     | SimpleName of SimpleName
@@ -153,7 +209,8 @@ type PhysicalAddress =
     member PostalCode: PostalCode option
     member Country: TrimNonEmptyString option
     member Tags: Set<Tag>
-    static member TryParse : streetAddress: string list * city: string option * state: string option * postalCode: string option * country: string option * tags:Set<Tag> -> PhysicalAddress option
+    member Sources : NonEmptySet<Source>
+    static member TryParse : streetAddress: string list * city: string option * state: string option * postalCode: string option * country: string option * tags:Set<Tag> * sources:NonEmptySet<Source> -> PhysicalAddress option
 
 [<Class>]
 type EmailAddress =
@@ -162,8 +219,9 @@ type EmailAddress =
       override GetHashCode : unit -> int
       override ToString : unit -> string
       member Tags : Set<Tag>
+      member Sources : NonEmptySet<Source>
       member Value : string
-      static member TryParse : email:string * tags:Tag Set -> EmailAddress option
+      static member TryParse : email:string * tags:Tag Set  * sources:NonEmptySet<Source> -> EmailAddress option
 
 [<Class>]
 type UsPhone =
@@ -200,24 +258,6 @@ type Phone =
       interface IComparable
       static member TryParse : phone:string -> Phone option
 
-[<Class>]
-type UpperLatin2 =
-    interface IComparable
-    override Equals : yobj:obj -> bool
-    override GetHashCode : unit -> int
-    override ToString : unit -> string
-    member Value : string
-    static member TryParse : value:string -> UpperLatin2 option
-
-[<Class>]
-type UpperLatin3 =
-    interface IComparable
-    override Equals : yobj:obj -> bool
-    override GetHashCode : unit -> int
-    override ToString : unit -> string
-    member Value : string
-    static member TryParse : value:string -> UpperLatin3 option
-
 type Country =
     {
     Name        : string
@@ -244,9 +284,10 @@ type PhoneNumber =
       member Formatted : string
       member Phone : Phone
       member Tags : Set<Tag>
+      member Sources : NonEmptySet<Source>
       member Value : Digits
-      static member TryParse : callingCode : string option * phone:Phone * extension:string option * tags:Set<Tag>-> PhoneNumber option
-      static member TryParse : phone:string * tags:Set<Tag> -> PhoneNumber option
+      static member TryParse : callingCode : string option * phone:Phone * extension:string option * tags:Set<Tag> * sources:NonEmptySet<Source> -> PhoneNumber option
+      static member TryParse : phone:string * tags:Set<Tag> * sources:NonEmptySet<Source> -> PhoneNumber option
 
 type Handle =
     {Address: TrimNonEmptyString
@@ -258,11 +299,12 @@ type UriTagged =
       override Equals : yobj:obj -> bool
       override GetHashCode : unit -> int
       override ToString : unit -> string
-      member Uri: Uri
+      member Uri : Uri
       member Tags : Set<Tag>
-      static member Create : uri : Uri * tags:Set<Tag>-> UriTagged
-      static member TryParse : uri : string * tags:Set<Tag>-> UriTagged option
-      static member TryParse : uri : string * uriKind:UriKind * tags:Set<Tag>-> UriTagged option
+      member Sources : NonEmptySet<Source>
+      static member Create : uri : Uri * tags:Set<Tag> * sources:NonEmptySet<Source> -> UriTagged
+      static member TryParse : uri : string * tags:Set<Tag> * sources:NonEmptySet<Source> -> UriTagged option
+      static member TryParse : uri : string * uriKind:UriKind * tags:Set<Tag> * sources:NonEmptySet<Source> -> UriTagged option
 
 type Address =
     | PhysicalAddress of PhysicalAddress
@@ -327,6 +369,10 @@ module Countries =
     val byName : IDictionary<string, Country>
     val stateByAbbreviation : IDictionary<string, State>
     val stateByName : IDictionary<string, State>
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Source =
+    val elimination : sources1 : NonEmptySet<Source> -> sources2 : NonEmptySet<Source> ->  NonEmptySet<Source>
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module SimpleName =

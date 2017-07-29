@@ -63,6 +63,7 @@
     <Compile Include="Furl.fs" />
     <Compile Include="Domain.fsi" />
     <Compile Include="Domain.fs" />
+    <Compile Include="ContactImport.fsi" />
     <Compile Include="ContactImport.fs" />
     <Compile Include="ContactImportCsv.fs" />
     <Compile Include="ContactImportExcel.fs" />
@@ -107,8 +108,19 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
       <ItemGroup>
-        <Reference Include="Excel">
-          <HintPath>..\..\packages\ExcelDataReader\lib\net45\Excel.dll</HintPath>
+        <Reference Include="ExcelDataReader">
+          <HintPath>..\..\packages\ExcelDataReader\lib\net45\ExcelDataReader.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
+      <ItemGroup>
+        <Reference Include="ExcelDataReader.DataSet">
+          <HintPath>..\..\packages\ExcelDataReader.DataSet\lib\net45\ExcelDataReader.DataSet.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -233,17 +245,6 @@
       <ItemGroup>
         <Reference Include="Nito.Disposables">
           <HintPath>..\..\packages\Nito.Disposables\lib\netstandard1.0\Nito.Disposables.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.7'">
-      <ItemGroup>
-        <Reference Include="ICSharpCode.SharpZipLib">
-          <HintPath>..\..\packages\SharpZipLib\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>

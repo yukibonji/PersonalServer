@@ -28,6 +28,7 @@ module Tests =
         Tests.runTestsWithArgs defaultConfig args DomainTypes.phone |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.phoneNumber |> ignore
         Tests.runTestsWithArgs defaultConfig args DomainTypes.uriTagged |> ignore
+        Tests.runTestsWithArgs defaultConfig args DomainTypes.source |> ignore
 
         Tests.runTestsWithArgs defaultConfig args ContactImport.simpleEntityBuilder |> ignore
         Tests.runTestsWithArgs defaultConfig args ContactImport.addressElimination |> ignore

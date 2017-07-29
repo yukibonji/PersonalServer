@@ -7,32 +7,34 @@ module ContactImportCsv =
 
     type CsvBuilder =
         {
-        Headers : string []
         Rows : seq<CsvRow>
         NameBuilders : (string [] -> ContactName option * Set<Tag>) list
         AddressBuilders : (string [] -> Address option * Set<Tag>) list
+        SourceMeta : ImportSourceMeta
         }
 
-    let getCsvBuilder source (path : string) =
+    let getCsvBuilder sourceMeta (path : string) =
         let importFile = CsvFile.Load(path).Cache()
         let headers = 
             importFile.Headers.Value
             |> Array.map (fun x -> x.Replace("\r\n", " ").Replace("\n", " "))
- 
-        let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
-        let defaultBuilders, _ = entityBuilders source headers unUsedColumns UriTagged.TryParse Address.Url
+
+        let sourceMeta' = {sourceMeta with Headers = headers}
+            
+        let nameBuilders, addressBuilders, unUsedColumns = commonBuilders sourceMeta' 
+        let defaultBuilders, _ = entityBuilders sourceMeta' UriTagged.TryParse unUsedColumns Address.Url
         
         {
-        Headers = headers
         Rows = importFile.Rows
         NameBuilders = nameBuilders
         AddressBuilders = defaultBuilders @ addressBuilders
+        SourceMeta = sourceMeta'
         }
 
-    let import source path =
+    let import sourceMeta path =
         let csvRowSequenceBuilder (row : CsvRow) =
             row.Columns
-        let csvBuilder = getCsvBuilder source path
+        let csvBuilder = getCsvBuilder sourceMeta path
 
         contactImport csvBuilder.Rows csvRowSequenceBuilder csvBuilder.NameBuilders csvBuilder.AddressBuilders
 

@@ -32,36 +32,35 @@ module ContactImportExcel =
                 
         loop (index - 1) lastHeader
 
-    let importExcelSheet source workSheet headerRows =
+    let importExcelSheet sourceMeta workSheet headerRows =
         let headers = getExcelSheetHeaders workSheet headerRows
             
         let excelRowSequenceBuilder (row : DataRow) =
             row.ItemArray
             |> Array.map (fun x -> x.ToString())
+
+        let sourceMeta' = {sourceMeta with Headers = headers}
         
-        let nameBuilders, addressBuilders, unUsedColumns = commonBuilders source headers
-        let defaultBuilders, _ = entityBuilders source headers unUsedColumns UriTagged.TryParse Address.Url
+        let nameBuilders, addressBuilders, unUsedColumns = commonBuilders sourceMeta'
+        let defaultBuilders, _ = entityBuilders sourceMeta' UriTagged.TryParse unUsedColumns Address.Url
 
         let rows = workSheet.Rows |> Seq.cast |> Seq.skip headerRows.[headerRows.Length - 1]
 
         contactImport rows excelRowSequenceBuilder nameBuilders (defaultBuilders @ addressBuilders)
 
-    let import source (path : string) (excelSheets : ExcelSheet list) =
+    let import sourceMeta (path : string) (excelSheets : ExcelSheet list) =
 
         use stream =
             File.OpenRead(path)
-             
-        use reader =          
+        use reader = 
             if path.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
-            then Excel.ExcelReaderFactory.CreateOpenXmlReader(stream)
-            else Excel.ExcelReaderFactory.CreateBinaryReader(stream)
+            then ExcelDataReader.ExcelReaderFactory.CreateOpenXmlReader(stream)
+            else ExcelDataReader.ExcelReaderFactory.CreateBinaryReader(stream)
 
-        // if not reader.IsValid then fail action (Exception reader.ExceptionMessage)
-
-        let dataset = reader.AsDataSet()
+        let dataset =  ExcelDataReader.ExcelDataReaderExtensions.AsDataSet(reader)
 
         (Seq.empty, excelSheets)
         ||> List.fold (fun s t ->
-            importExcelSheet source dataset.Tables.[t.Name] t.HeaderRows
+            importExcelSheet sourceMeta dataset.Tables.[t.Name] t.HeaderRows
             |> Seq.append s ) 
 

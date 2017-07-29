@@ -63,9 +63,9 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="Contacts.fs" />
     <Compile Include="DomainGenerators.fs" />
     <Compile Include="DomainTypes.fs" />
-    <Compile Include="Contacts.fs" />
     <Compile Include="Addresses.fs" />
     <Compile Include="ContactImport.fs" />
     <Compile Include="RunTests.fs" />
