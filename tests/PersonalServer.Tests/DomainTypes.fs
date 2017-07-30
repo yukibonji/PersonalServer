@@ -554,7 +554,8 @@ module DomainTypes =
                 Expect.isNone (NameAndAffixes.TryParse ([], System.String.Empty, [], Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
 
             testCase "TryParse None on null string" <| fun () ->
-                Expect.isNone (NameAndAffixes.TryParse ([], null, [], Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
+                let x : string = null
+                Expect.isNone (NameAndAffixes.TryParse ([], x, [], Set.empty<Tag>, Sources.sourceSet) ) "Expected None"
 
             testPropertyWithConfig config10k "equality" <|
                 fun  () ->

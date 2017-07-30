@@ -73,7 +73,7 @@ module Contacts =
         nameAndAffixes2
         nameAndAffixes3 
         simpleName1  //non-deterministically eliminates into one of the others
-        fullName1
+        fullNameFoo1
         ]
 
     let simpleNameElim2 =
@@ -138,7 +138,7 @@ module Contacts =
         nameAndAffixes2
         nameAndAffixes3 
         simpleName2  
-        fullName1
+        fullNameFoo2
         ContactName.FullName <| (FullName.TryParse (Some "Anthony", [], Some "Foo", NameOrder.Western, Set.empty, Sources.sourceSet)).Value
         ]
 
@@ -156,6 +156,17 @@ module Contacts =
         nameAndAffixes3 
         simpleName2  
         fullName1
+        ]
+
+    let nameAndAffixesElim2 =
+        [
+        nameAndAffixes1
+        ContactName.NameAndAffixes <| (NameAndAffixes.TryParse (["Herr";"Dr"; "Dr"], "Anthony Foo", ["esq"; "IV"], Set.empty, Sources.sourceSet)).Value
+        nameAndAffixes2
+        nameAndAffixes3 
+        simpleName2  
+        fullName1
+        ContactName.FullName <| (FullName.TryParse (Some "Anthony", [], Some "Foo", NameOrder.Western, Set.empty, Sources.sourceSet)).Value
         ]
 
     let nameAndAffixesTagMerge =
