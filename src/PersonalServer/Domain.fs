@@ -229,6 +229,30 @@ type Source (primary : TrimNonEmptyString, secondary : TrimNonEmptyString option
         | (Some x, None) -> Source (x, None, UtcDateTime(earliestTimeStamp),  UtcDateTime(latestTimeStamp)) |> Some
         | _ -> 
             None
+    static member elimination (sources1 : NonEmptySet<Source>) (sources2 : NonEmptySet<Source>) =
+        let toElim = Set.intersect sources1.Value sources2.Value
+
+        if toElim.IsEmpty then
+            Set.union sources1.Value sources2.Value
+            |> NonEmptySet
+        else
+            let list1 = Set.toList sources1.Value
+            let list2 = Set.toList sources2.Value
+            let mergedDates =
+                (Set.empty, toElim)
+                ||> Set.fold (fun s t -> 
+                    let source1 = list1 |> List.find (fun lt -> lt = t)
+                    let source2 = list2 |> List.find (fun lt -> lt = t)
+                    let merged = Source(t.Primary, t.Secondary, 
+                        (if source1.EarliestTimeStamp < source2.EarliestTimeStamp then source1.EarliestTimeStamp else source2.EarliestTimeStamp),
+                        (if source1.EarliestTimeStamp > source2.EarliestTimeStamp then source1.EarliestTimeStamp else source2.EarliestTimeStamp) )
+                    s.Add merged
+                     )
+
+            toElim
+            |> Set.difference (Set.union sources1.Value sources2.Value)
+            |> Set.union mergedDates
+            |> NonEmptySet
     with
         interface IComparable with
             member __.CompareTo yobj =
@@ -328,6 +352,9 @@ and NameOrder =
     | Western
     | FamilyFirst
     | Custom of (FullName -> SimpleName)
+and SimpleOrFullName =
+    | Simple of SimpleName
+    | Full of FullName
 and SimpleName internal (name, tags : Tag Set, sources : NonEmptySet<Source>) = 
     member __.Value = TrimNonEmptyString name
     member __.Tags = tags
@@ -351,14 +378,27 @@ and SimpleName internal (name, tags : Tag Set, sources : NonEmptySet<Source>) =
                 elif __.Value < y.Value then -1
                 else 0
             | _ -> invalidArg "SimpleName" "cannot compare values of different types"
-and NameAndAffixes (salutations, simpleName, suffixes, sources : NonEmptySet<Source>) =
+and NameAndAffixes internal (salutations : TrimNonEmptyString list, name : SimpleOrFullName, suffixes, tags : Tag Set, sources : NonEmptySet<Source>) =
     member __.Salutations = salutations 
-    member __.SimpleName : SimpleName = simpleName
+    member __.FullName = 
+        match name with
+        | Simple _ -> None
+        | Full full -> Some full
+    member __.SimpleName = 
+        match name with
+        | Simple simple -> simple
+        | Full full -> full.SimpleName
     member __.Suffixes = suffixes
+    member __.Tags = tags
     member __.Sources = sources
     member __.Value =
         TrimNonEmptyString <| __.ToString()
     override __.ToString() = 
+        let simpleName =
+            match name with
+            | Simple simple -> simple
+            | Full full -> full.SimpleName
+
         [salutations |> List.map (fun (x : TrimNonEmptyString) -> x.Value);
         [simpleName.ToString()];
         suffixes |> List.map (fun (x : TrimNonEmptyString) -> x.Value)]
@@ -372,13 +412,12 @@ and NameAndAffixes (salutations, simpleName, suffixes, sources : NonEmptySet<Sou
     static member TryParse ((salutations : string list), (simpleName : string), (suffixes : string list), tags, sources) =
         match SimpleName.TryParse (simpleName, tags, sources) with
         | Some x -> 
-            Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), x, (TrimNonEmptyString.Parse suffixes), sources)
+            Some <| NameAndAffixes ((TrimNonEmptyString.Parse salutations), Simple x, (TrimNonEmptyString.Parse suffixes),  tags, sources)
         | None -> None
-    static member TryParse ((salutations : TrimNonEmptyString list), (simpleName : SimpleName), (suffixes : TrimNonEmptyString list), tags, sources) = 
-        match SimpleName.TryParse (simpleName.Value.Value, tags, sources) with
-        | Some s ->
-            Some <| NameAndAffixes (salutations, s, suffixes, sources)
-        | None -> None
+    static member Create ((salutations : TrimNonEmptyString list), (simpleName : SimpleName), (suffixes : TrimNonEmptyString list), tags, sources) = 
+       NameAndAffixes (salutations, Simple simpleName, suffixes, (Set.union tags simpleName.Tags), (Source.elimination sources simpleName.Sources))
+    static member Create ((salutations : TrimNonEmptyString list), (fullName : FullName), (suffixes : TrimNonEmptyString list), tags, sources) = 
+        NameAndAffixes (salutations, Full fullName, suffixes, (Set.union tags fullName.Tags), (Source.elimination sources fullName.Sources))
 
     interface IComparable with
         member __.CompareTo yobj =
@@ -1384,34 +1423,6 @@ type EmailAccount =
     }
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
-module Source =
-    
-    let elimination (sources1 : NonEmptySet<Source>) (sources2 : NonEmptySet<Source>) =
-        let toElim = Set.intersect sources1.Value sources2.Value
-
-        if toElim.IsEmpty then
-            Set.union sources1.Value sources2.Value
-            |> NonEmptySet
-        else
-            let list1 = Set.toList sources1.Value
-            let list2 = Set.toList sources2.Value
-            let mergedDates =
-                (Set.empty, toElim)
-                ||> Set.fold (fun s t -> 
-                    let source1 = list1 |> List.find (fun lt -> lt = t)
-                    let source2 = list2 |> List.find (fun lt -> lt = t)
-                    let merged = Source(t.Primary, t.Secondary, 
-                        (if source1.EarliestTimeStamp < source2.EarliestTimeStamp then source1.EarliestTimeStamp else source2.EarliestTimeStamp),
-                        (if source1.EarliestTimeStamp > source2.EarliestTimeStamp then source1.EarliestTimeStamp else source2.EarliestTimeStamp) )
-                    s.Add merged
-                     )
-
-            toElim
-            |> Set.difference (Set.union sources1.Value sources2.Value)
-            |> Set.union mergedDates
-            |> NonEmptySet
-
-[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module SimpleName =
 
     let elimination (simpleName1 : SimpleName) (simpleName2 : SimpleName) = 
@@ -1462,7 +1473,7 @@ module NameAndAffixes =
         if (nameAndAffixes1.Salutations = nameAndAffixes2.Salutations || nameAndAffixes2.Salutations.IsEmpty)
             && nameAndAffixes1.SimpleName = nameAndAffixes2.SimpleName  
             && (nameAndAffixes1.Suffixes = nameAndAffixes2.Suffixes || nameAndAffixes2.Suffixes.IsEmpty) then
-                NameAndAffixes.TryParse (nameAndAffixes1.Salutations, nameAndAffixes1.SimpleName, nameAndAffixes1.Suffixes, 
+                Some <| NameAndAffixes.Create (nameAndAffixes1.Salutations, nameAndAffixes1.SimpleName, nameAndAffixes1.Suffixes, 
                     (Set.union nameAndAffixes1.SimpleName.Tags nameAndAffixes2.SimpleName.Tags), (Source.elimination nameAndAffixes1.Sources nameAndAffixes2.Sources))
         else
             None
@@ -1474,8 +1485,15 @@ module NameAndAffixes =
 
     let tryEliminateSimpleName (nameAndAffixes : NameAndAffixes) (simpleName : SimpleName) =  
         if nameAndAffixes.SimpleName.Value = simpleName.Value then
-            NameAndAffixes.TryParse (nameAndAffixes.Salutations, nameAndAffixes.SimpleName, nameAndAffixes.Suffixes, 
-                (Set.union nameAndAffixes.SimpleName.Tags simpleName.Tags), (Source.elimination nameAndAffixes.Sources simpleName.Sources))
+            NameAndAffixes.Create (nameAndAffixes.Salutations, simpleName, nameAndAffixes.Suffixes, nameAndAffixes.Tags, nameAndAffixes.Sources)
+            |> Some
+        else
+            None
+
+    let tryEliminateFullName (nameAndAffixes : NameAndAffixes) (fullName : FullName) =  
+        if nameAndAffixes.SimpleName.Value = fullName.SimpleName.Value then
+            NameAndAffixes.Create (nameAndAffixes.Salutations, fullName, nameAndAffixes.Suffixes, nameAndAffixes.Tags, nameAndAffixes.Sources)
+            |> Some
         else
             None
 
@@ -1491,10 +1509,7 @@ module ContactName =
             match FullName.tryElimination cntct elim with
             | Some x -> ContactName.FullName x |> Some
             | None -> None
-        | (ContactName.FullName cntct), (ContactName.SimpleName elim) -> 
-            match FullName.tryEliminateSimpleName cntct elim with
-            | Some x -> ContactName.FullName x |> Some
-            | None -> None
+        | (ContactName.FullName cntct), (ContactName.SimpleName elim) 
         | (ContactName.SimpleName elim), (ContactName.FullName cntct) -> 
             match FullName.tryEliminateSimpleName cntct elim with
             | Some x -> ContactName.FullName x |> Some
@@ -1503,12 +1518,14 @@ module ContactName =
             match NameAndAffixes.tryElimination cntct elim with
             | Some x -> ContactName.NameAndAffixes x |> Some
             | None -> None
-        | (ContactName.NameAndAffixes cntct), (ContactName.SimpleName elim) -> 
+        | (ContactName.NameAndAffixes cntct), (ContactName.SimpleName elim)
+        | (ContactName.SimpleName elim), (ContactName.NameAndAffixes cntct) -> 
             match NameAndAffixes.tryEliminateSimpleName cntct elim with
             | Some x -> ContactName.NameAndAffixes x |> Some
             | None -> None
-        | (ContactName.SimpleName elim), (ContactName.NameAndAffixes cntct) -> 
-            match NameAndAffixes.tryEliminateSimpleName cntct elim with
+        | (ContactName.NameAndAffixes cntct), (ContactName.FullName elim)
+        | (ContactName.FullName elim), (ContactName.NameAndAffixes cntct) -> 
+            match NameAndAffixes.tryEliminateFullName cntct elim with
             | Some x -> ContactName.NameAndAffixes x |> Some
             | None -> None
         | _ -> 

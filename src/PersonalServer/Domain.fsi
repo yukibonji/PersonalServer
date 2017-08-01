@@ -101,6 +101,7 @@ type Source =
     member LatestTimeStamp : UtcDateTime
     static member TryParse : primary : string * secondary : string option * earliestTimeStamp : DateTime * latestTimeStamp : DateTime -> Source option
     static member Parse : primary : TrimNonEmptyString * secondary : string option * earliestTimeStamp : DateTime * latestTimeStamp : DateTime -> Source
+    static member elimination : sources1 : NonEmptySet<Source> -> sources2 : NonEmptySet<Source> ->  NonEmptySet<Source>
 
 [<Class>]
 type Tag =  //to do: equals performance testing -- http://stackoverflow.com/questions/28142655/iequatable-in-f-operator-performance-and-structural-equality
@@ -125,7 +126,8 @@ type FullName =
     member Tags: Set<Tag>
     member Sources : NonEmptySet<Source>
     member SimpleName : SimpleName
-    static member TryParse : first: string option * middle: string list * family: string option * nameOrder: NameOrder * tags:Set<Tag> * sources:NonEmptySet<Source> -> FullName option
+    static member TryParse : first: string option * middle: string list * family: string option * nameOrder: NameOrder * tags:Set<Tag> * sources:NonEmptySet<Source> 
+        -> FullName option
 and NameOrder =
     /// Salutation, First, Middle, Family, Suffix
     | Western
@@ -139,16 +141,22 @@ and [<Class>] SimpleName =
     member Sources : NonEmptySet<Source>
     member Value : TrimNonEmptyString
     static member TryParse : name:string * tags:Set<Tag> * sources:NonEmptySet<Source> -> SimpleName option
-and NameAndAffixes =
-    new : salutation: TrimNonEmptyString list * simpleName : SimpleName * suffix: TrimNonEmptyString list * sources:NonEmptySet<Source> -> NameAndAffixes
+and [<Class>] NameAndAffixes =
     interface IComparable
     override ToString : unit -> string
     member Salutations: TrimNonEmptyString list
     member SimpleName : SimpleName
+    member FullName : FullName option
     member Suffixes: TrimNonEmptyString list
     member Value : TrimNonEmptyString
+    member Tags : Set<Tag>
     member Sources : NonEmptySet<Source>
-    static member TryParse : salutations: string list * simpleName : string * suffixes: string list * tags:Set<Tag> * sources:NonEmptySet<Source> -> NameAndAffixes option
+    static member TryParse : salutations: string list * simpleName : string * suffixes: string list * tags:Set<Tag> * sources:NonEmptySet<Source> 
+        -> NameAndAffixes option
+    static member Create : salutations : TrimNonEmptyString list * simpleName : SimpleName * suffixes : TrimNonEmptyString list * tags:Set<Tag> * sources:NonEmptySet<Source> 
+        -> NameAndAffixes 
+    static member Create : salutations : TrimNonEmptyString list * fullName : FullName * suffixes : TrimNonEmptyString list * tags:Set<Tag> * sources:NonEmptySet<Source> 
+        -> NameAndAffixes 
 
 type ContactName =
     | SimpleName of SimpleName
@@ -369,10 +377,6 @@ module Countries =
     val byName : IDictionary<string, Country>
     val stateByAbbreviation : IDictionary<string, State>
     val stateByName : IDictionary<string, State>
-
-[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
-module Source =
-    val elimination : sources1 : NonEmptySet<Source> -> sources2 : NonEmptySet<Source> ->  NonEmptySet<Source>
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
 module SimpleName =

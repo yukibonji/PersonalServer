@@ -115,7 +115,10 @@ module ContactImport =
                 nameElim Contacts.fullNameElim1 1
 
             testCase "NameAndAffixes elim1" <| fun () ->
-                nameElim Contacts.nameAndAffixesElim1 1
+                nameElim Contacts.nameAndAffixesElim1 2
+
+            testCase "NameAndAffixes elim2" <| fun () ->
+                nameElim Contacts.nameAndAffixesElim2 3
         ]
 
     [<Tests>]

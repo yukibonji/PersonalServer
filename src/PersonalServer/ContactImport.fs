@@ -11,14 +11,20 @@ module ContactImport =
         Headers : string []
         }
 
-    //to do: eventually resource file
-    let phoneNumberSynonyms = [|"phone"; "fax"; "pager"; "mobile"; "cell"; "telephone";|]
-
-    let emailSynonyms = [|"email"; "e-mail"; "emailaddress"|]
-
-    let uriSynonyms = [|"web";|]
-
-    let simpleNameSynonyms = [|"display name"; "nickname"; "screen name"; "name";|]
+    type ContactSynonyms =
+        {
+        PhoneNumber: string []
+        Email : string []
+        Uri : string []
+        SimpleName : string []
+        FullNameFirstName : string []
+        FullNameLastName : string []
+        PhysicalAddress : string []
+        PhysicalCity : string []
+        PhysicalState : string []
+        PhysicalPostalCode : string []
+        PhysicalCountry : string []
+        }
 
     let valueFromIndexOpt (columns : string []) indexOpt = 
         match indexOpt with
@@ -139,20 +145,15 @@ module ContactImport =
         | (Some x), tags -> (Some <| transform x), tags
         | None, tags -> None, tags
 
-        //to do: complete first/last name coverage (i.e. potential multiples)
-        //to do: eventually resource file
-    let fullNameFirstNameSynonyms = [|"first name"; "given name"; "firstname"|]
-    let fullNameLastNameSynonyms = [|"last name"; "family name"; "lastname"|]
-
-    let fullNameBuilderParms headers =
+    let fullNameBuilderParms headers (synonyms : ContactSynonyms) =
         { 
         FirstIndex =
-            match headerOffsets headers fullNameFirstNameSynonyms |> Array.toList with
+            match headerOffsets headers synonyms.FullNameFirstName |> Array.toList with
             | hd::_ -> Some hd
             | [] -> None
         MiddleIndex = []
         FamilyIndex =
-            match headerOffsets headers fullNameLastNameSynonyms |> Array.toList with
+            match headerOffsets headers synonyms.FullNameLastName |> Array.toList with
             | hd::_ -> Some hd
             | [] -> None
         NameOrder = NameOrder.Western
@@ -161,62 +162,42 @@ module ContactImport =
     let fullNameBuilders fullNameBuilderParms sourceMeta =
         [fullNameBuilder fullNameBuilderParms sourceMeta >> rawToFinalResult ContactName.FullName]
 
-    //to do: eventually resource file
-    let physicalAddressAddressSynonyms = [|"address"|]
-    let physicalAddressCitySynonyms = [|"city"|]
-    let physicalAddressStateSynonyms = [|"state"|]
-    let physicalAddressPostalCodeSynonyms = [|"zip"; "zipcode"; "postal code"|]
-    let physicalAddressCountrySynonyms = [|"country"|]
-
-    //to do: complete address coverage (i.e. potential multiples)
-    let headersNotExluded excludes headers =
+    let headersNotExluded synonyms excludes headers =
         headers
         |> List.filter (fun n -> (List.exists (fun x -> x = n) excludes) |> not)
 
-    let physicalAddressBuilderParms headers =
-        let cityList = headerOffsets headers physicalAddressCitySynonyms |> Array.toList
-        let stateList = headerOffsets headers physicalAddressStateSynonyms |> Array.toList
-        let postalCodeList = headerOffsets headers physicalAddressPostalCodeSynonyms |> Array.toList
-        let countryList = headerOffsets headers physicalAddressCountrySynonyms |> Array.toList
+    let physicalAddressBuilderParms synonyms headers  =
+        let cityList = headerOffsets headers synonyms.PhysicalCity |> Array.toList
+        let stateList = headerOffsets headers synonyms.PhysicalState |> Array.toList
+        let postalCodeList = headerOffsets headers synonyms.PhysicalPostalCode |> Array.toList
+        let countryList = headerOffsets headers synonyms.PhysicalCountry |> Array.toList
 
-        let cityIndex =
-            match cityList with
-            | hd::_ -> Some hd
-            | [] -> None
-        let stateIndex =
-            match stateList with
-            | hd::_ -> Some hd
-            | [] -> None
-        let postalCodeIndex =
-            match postalCodeList with
-            | hd::_ -> Some hd
-            | [] -> None
-        let countryIndex = 
-            match countryList with
+        let optIndex intList =
+            match intList with
             | hd::_ -> Some hd
             | [] -> None
 
         let excludes =
-            (headerOffsets headers emailSynonyms)
+            (headerOffsets headers synonyms.Email)
             |> Array.toList
             |> List.append ([cityList; stateList; postalCodeList; countryList] |> List.concat )
             |> List.distinct
 
         let addressIndex = 
-            headerOffsets headers physicalAddressAddressSynonyms 
+            headerOffsets headers synonyms.PhysicalAddress
             |> Array.filter (fun x ->
                 List.exists (fun x' -> x' = x) excludes
                 |> not
                 )
             |> Array.toList
-            |> headersNotExluded excludes
+            |> headersNotExluded synonyms excludes
 
         {
         AddressIndex = addressIndex
-        CityIndex = cityIndex
-        StateIndex = stateIndex
-        PostalCodeIndex = postalCodeIndex
-        CountryIndex = countryIndex
+        CityIndex = optIndex cityList 
+        StateIndex = optIndex stateList
+        PostalCodeIndex = optIndex postalCodeList
+        CountryIndex =  optIndex countryList
         }
 
     let physicalAddressBuilders physicalAddressBuilderParms sourceMeta =
@@ -246,8 +227,8 @@ module ContactImport =
 
         builders, coveredHeaderColumns
 
-    let getAddressBuilders sourceMeta =
-        let physicalAddressBuilderParms = physicalAddressBuilderParms sourceMeta.Headers
+    let getAddressBuilders sourceMeta synonyms =
+        let physicalAddressBuilderParms = physicalAddressBuilderParms synonyms sourceMeta.Headers
 
         let usedPhysicalAddressHeaderColumns = 
             [physicalAddressBuilderParms.CityIndex;
@@ -259,16 +240,16 @@ module ContactImport =
             |> List.toArray
 
         let builders, usedHeaderColumns = 
-            [|entityBuilders sourceMeta PhoneNumber.TryParse (headerOffsets sourceMeta.Headers phoneNumberSynonyms) Address.PhoneNumber;
-            entityBuilders sourceMeta EmailAddress.TryParse (headerOffsets sourceMeta.Headers emailSynonyms) Address.EmailAddress; 
-            entityBuilders sourceMeta UriTagged.TryParse (headerOffsets sourceMeta.Headers uriSynonyms) Address.Url; 
+            [|entityBuilders sourceMeta PhoneNumber.TryParse (headerOffsets sourceMeta.Headers synonyms.PhoneNumber) Address.PhoneNumber;
+            entityBuilders sourceMeta EmailAddress.TryParse (headerOffsets sourceMeta.Headers synonyms.Email) Address.EmailAddress; 
+            entityBuilders sourceMeta UriTagged.TryParse (headerOffsets sourceMeta.Headers synonyms.Uri) Address.Url; 
             (physicalAddressBuilders physicalAddressBuilderParms sourceMeta), usedPhysicalAddressHeaderColumns;|]
             |> Array.unzip
 
         (builders |> List.concat), (usedHeaderColumns |> Array.concat)
         
-    let getNameBuilders sourceMeta =
-        let fullNameBuilderParms = fullNameBuilderParms sourceMeta.Headers
+    let getNameBuilders sourceMeta synonyms =
+        let fullNameBuilderParms = fullNameBuilderParms sourceMeta.Headers synonyms
 
         let usedNameHeaderColumns = 
             [fullNameBuilderParms.FirstIndex;
@@ -278,9 +259,9 @@ module ContactImport =
             |> List.toArray
 
         let namesOtherThanFullName = 
-            (headerOffsets sourceMeta.Headers simpleNameSynonyms)
+            (headerOffsets sourceMeta.Headers synonyms.SimpleName)
             |> List.ofArray
-            |> headersNotExluded (usedNameHeaderColumns |> List.ofArray)
+            |> headersNotExluded synonyms (usedNameHeaderColumns |> List.ofArray)
             |> Array.ofList
 
         let builders, usedHeaderColumns = 
@@ -291,8 +272,23 @@ module ContactImport =
         (builders |> List.concat), (usedHeaderColumns |> Array.concat)
 
     let commonBuilders sourceMeta =
-        let addressBuilders, usedAddressColumns = getAddressBuilders sourceMeta
-        let nameBuilders, usedNameColumns = getNameBuilders sourceMeta
+        let synonyms =
+            {
+            PhoneNumber = [|"phone"; "fax"; "pager"; "mobile"; "cell"; "telephone";|]
+            Email = [|"email"; "e-mail"; "emailaddress"|]
+            Uri = [|"web";|]
+            SimpleName = [|"display name"; "nickname"; "screen name"; "name";|]
+            FullNameFirstName = [|"first name"; "given name"; "firstname"|]
+            FullNameLastName = [|"last name"; "family name"; "lastname"|]
+            PhysicalAddress = [|"address"|]
+            PhysicalCity = [|"city"|]
+            PhysicalState = [|"state"|]
+            PhysicalPostalCode = [|"zip"; "zipcode"; "postal code"|]
+            PhysicalCountry = [|"country"|]
+            }
+
+        let addressBuilders, usedAddressColumns = getAddressBuilders sourceMeta synonyms
+        let nameBuilders, usedNameColumns = getNameBuilders sourceMeta synonyms
 
         let usedColumns =
             Array.concat [|usedAddressColumns; usedNameColumns|]
@@ -312,20 +308,17 @@ module ContactImport =
         sources
         |> Seq.choose (fun source ->
             let columns = sourceBuilder source
-            let namesAndTags =
-                ([], nameBuilders)
+
+            let objectsAndTags builders =
+                ([], builders)
                 ||> Seq.fold (fun s f -> (f columns)::s )
-            let addressesAndTags =
-                ([], addressBuilders)
-                ||> Seq.fold (fun s f -> (f columns)::s )
+                |> List.unzip
 
             let contactNames, nameTags =
-                namesAndTags
-                |> List.unzip
+                objectsAndTags nameBuilders
 
             let addressOpts, addressTags =
-                addressesAndTags
-                |> List.unzip
+                objectsAndTags addressBuilders
 
             let tagSet = 
                 [nameTags; addressTags]
@@ -335,10 +328,10 @@ module ContactImport =
    
             let names = contactNames |> List.choose id
             let addresses = addressOpts |> List.choose id
+
             match names, addresses, tagSet with
             | [], [], s when s.IsEmpty -> None
             | _ ->
-
                 {Names = names |> ContactName.elimination |> Set.ofList
                  Addresses = addresses |> Address.elimination |> Set.ofList
                  Tags = tagSet
