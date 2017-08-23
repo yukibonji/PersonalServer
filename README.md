@@ -12,5 +12,7 @@ Reproduction steps:
 
 File: PersonalServer\tests\PersonalServer.Tests\DomainTypes.fs
 
-At top of file is FsCheckConfig binding both with and without setting arbitrary list.
+At top of file are 2 FsCheckConfig bindings one with and one without setting arbitrary list.
+
+Commenting out the test that takes binding with arbitrary allows the adapter to discover tests.
 
